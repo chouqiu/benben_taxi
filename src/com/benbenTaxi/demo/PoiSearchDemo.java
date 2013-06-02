@@ -1,4 +1,4 @@
-package baidumapsdk.demo;
+package com.benbenTaxi.demo;
 
 import android.app.Activity;
 import android.graphics.Bitmap;
@@ -27,6 +27,7 @@ import com.baidu.mapapi.search.MKSearchListener;
 import com.baidu.mapapi.search.MKSuggestionResult;
 import com.baidu.mapapi.search.MKTransitRouteResult;
 import com.baidu.mapapi.search.MKWalkingRouteResult;
+import com.benbenTaxi.R;
 
 
 public class PoiSearchDemo extends Activity {

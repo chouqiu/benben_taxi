@@ -1,4 +1,4 @@
-package baidumapsdk.demo;
+package com.benbenTaxi.demo;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -33,6 +33,7 @@ import com.baidu.mapapi.map.PopupClickListener;
 import com.baidu.mapapi.map.PopupOverlay;
 import com.baidu.mapapi.utils.CoordinateConvert;
 import com.baidu.platform.comapi.basestruct.GeoPoint;
+import com.benbenTaxi.R;
 /**
  *  在一个圆周上添加自定义overlay. 
  */

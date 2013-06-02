@@ -4,21 +4,20 @@
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     >
-    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="horizontal"
-    android:layout_width="fill_parent"
-    android:layout_height="wrap_content">
+
+    <com.baidu.mapapi.map.MapView android:id="@+id/bmapView"
+	    android:layout_width="fill_parent"
+		android:layout_height="0dip" 
+	    android:clickable="true"
+	    android:layout_weight="100"
+	/>
     
 
+
     <Button
-    	android:id="@+id/button1"
-    	android:text="Update"
+    	android:id="@+id/btn_callTaxi"
+    	android:text="@string/call_taxi"
     	android:layout_width="fill_parent"
     	android:layout_height="wrap_content"
     />
-    </LinearLayout>
-    <com.baidu.mapapi.map.MapView android:id="@+id/bmapView"
-	    android:layout_width="fill_parent" android:layout_height="fill_parent" 
-	    android:clickable="true"     
-	/>
 </LinearLayout>

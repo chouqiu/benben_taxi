@@ -1,6 +1,4 @@
-package com.android.task.main.function;
-
-import com.android.task.main.WebMainActivity;
+package com.benbenTaxi.v1.function;
 
 import android.app.Service;
 import android.content.Intent;
@@ -8,7 +6,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
-import android.util.Log;
 import android.widget.Toast;
 
 public class LocationService extends Service {

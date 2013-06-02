@@ -1,4 +1,4 @@
-﻿package baidumapsdk.demo;
+﻿package com.benbenTaxi.demo;
 
 
 import android.app.Application;
@@ -16,7 +16,7 @@ public class DemoApplication extends Application {
     public boolean m_bKeyRight = true;
     BMapManager mBMapManager = null;
 
-    public static final String strKey = "请输入你的key";
+    public static final String strKey = "1BE33CC3A1DEBDC8FF3A8A3F23A5E208C27E5C83";
 	
 	@Override
     public void onCreate() {

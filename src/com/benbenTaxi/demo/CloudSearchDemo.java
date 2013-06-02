@@ -1,4 +1,4 @@
-﻿package baidumapsdk.demo;
+﻿package com.benbenTaxi.demo;
 
 import java.util.List;
 
@@ -24,6 +24,7 @@ import com.baidu.mapapi.map.ItemizedOverlay;
 import com.baidu.mapapi.map.MapView;
 import com.baidu.mapapi.map.OverlayItem;
 import com.baidu.platform.comapi.basestruct.GeoPoint;
+import com.benbenTaxi.R;
 
 public class CloudSearchDemo extends Activity implements GeoSearchListener {
     

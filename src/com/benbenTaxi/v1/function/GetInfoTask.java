@@ -1,6 +1,9 @@
-package com.android.task.main.function;
+package com.benbenTaxi.v1.function;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.apache.http.Header;
@@ -24,8 +27,13 @@ import org.apache.http.protocol.HttpContext;
 import org.apache.http.util.EntityUtils;
 
 import android.os.AsyncTask;
+import android.webkit.CookieManager;
+import android.webkit.CookieSyncManager;
 
 public class GetInfoTask extends AsyncTask<String, Integer, Boolean> {
+	public final static String TYPE_GET = "get";
+	public final static String TYPE_POST = "post";
+	
 	protected String _errmsg;
 	protected List<NameValuePair> sess_params;
 	protected String post_param;
@@ -52,7 +60,16 @@ public class GetInfoTask extends AsyncTask<String, Integer, Boolean> {
 		bc1.setVersion(0);
         bc1.setDomain(domain);
         bc1.setPath("/");
-        cs.addCookie(bc1);
+        
+        final SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+		try {
+			final Date ed = df.parse("2050-04-23");
+	        bc1.setExpiryDate(ed);
+	        cs.addCookie(bc1);
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	
 	protected void initHeaders(String Key, String Val) {
@@ -76,7 +93,7 @@ public class GetInfoTask extends AsyncTask<String, Integer, Boolean> {
 			HttpProtocolParams.setUserAgent(httpparam, useragent);
 			
 			
-			if ( _type.equals("get") ) {
+			if ( _type.equals(TYPE_GET) ) {
 				HttpGet httpRequest = new HttpGet(urlstr);
 				_httpResp = new DefaultHttpClient(httpparam).execute(httpRequest, hcon);
 				for ( Header hh : _headers ) {
@@ -123,7 +140,7 @@ public class GetInfoTask extends AsyncTask<String, Integer, Boolean> {
 	protected void onPostExecute(final Boolean succ) {
 		//showProgress(false);
 		
-		if ( _type.equals("get") ) {
+		if ( _type.equals(TYPE_GET) ) {
 			onPostExecGet(succ);
 			// TODO: get data
 			//Bundle sess_data = new Bundle();

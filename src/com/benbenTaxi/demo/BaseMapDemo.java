@@ -1,4 +1,4 @@
-package baidumapsdk.demo;
+package com.benbenTaxi.demo;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -25,6 +25,7 @@ import com.baidu.mapapi.map.MapPoi;
 import com.baidu.mapapi.map.MapView;
 import com.baidu.platform.comapi.basestruct.GeoPoint;
 import com.baidu.platform.comapi.map.Projection;
+import com.benbenTaxi.R;
 
 public class BaseMapDemo extends Activity {
 

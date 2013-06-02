@@ -1,4 +1,4 @@
-package baidumapsdk.demo;
+package com.benbenTaxi.demo;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -20,6 +20,7 @@ import com.baidu.mapapi.map.MapPoi;
 import com.baidu.mapapi.map.MapView;
 import com.baidu.mapapi.map.Symbol;
 import com.baidu.platform.comapi.basestruct.GeoPoint;
+import com.benbenTaxi.R;
 
 public class GeometryDemo extends Activity{
 

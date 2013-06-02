@@ -1,4 +1,4 @@
-package baidumapsdk.demo;
+package com.benbenTaxi.demo;
 
 import android.app.Activity;
 

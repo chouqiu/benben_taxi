@@ -1,4 +1,4 @@
-package com.android.task.main.function;
+package com.benbenTaxi.v1.function;
 
 import java.util.Timer;
 import java.util.TimerTask;
@@ -8,13 +8,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
-import com.android.task.main.LoginActivity;
-import com.android.task.main.WebMainActivity;
 import com.baidu.location.*;
 
 import android.content.Context;
-import android.content.Intent;
-import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 

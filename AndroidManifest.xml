@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="baidumapsdk.demo"
+    package="com.benbenTaxi"
     android:versionCode="1"
     android:versionName="1.0" >
 
@@ -9,66 +9,71 @@
         android:targetSdkVersion="10" />
 
     <application
-        android:name="baidumapsdk.demo.DemoApplication"
+        android:name="com.benbenTaxi.demo.DemoApplication"
         android:debuggable="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name" >
-        <activity
-            android:name="baidumapsdk.demo.BMapApiDemoMain"
-            android:label="BaiduMapSDKDemo" >
+        <activity 
+            android:name="com.benbenTaxi.v1.LoginActivity"
+            android:label="benbenTaxi">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        
         <activity
-            android:name="baidumapsdk.demo.BaseMapDemo"
+            android:name="com.benbenTaxi.demo.BMapApiDemoMain"
+            android:label="BaiduMapSDKDemo" >
+        </activity>
+        <activity
+            android:name="com.benbenTaxi.demo.BaseMapDemo"
             android:configChanges="orientation|keyboardHidden"
             android:screenOrientation="sensor" >
         </activity>
         <activity
-            android:name="baidumapsdk.demo.GeometryDemo"
+            android:name="com.benbenTaxi.demo.GeometryDemo"
             android:configChanges="orientation|keyboardHidden"
             android:screenOrientation="sensor" >
         </activity>
         <activity
-            android:name="baidumapsdk.demo.ItemizedOverlayDemo"
+            android:name="com.benbenTaxi.demo.ItemizedOverlayDemo"
             android:configChanges="orientation|keyboardHidden"
             android:screenOrientation="sensor" >
         </activity>
         <activity
-            android:name="baidumapsdk.demo.PoiSearchDemo"
+            android:name="com.benbenTaxi.demo.PoiSearchDemo"
             android:configChanges="orientation|keyboardHidden"
             android:screenOrientation="sensor" >
         </activity>
         <activity
-            android:name="baidumapsdk.demo.LocationOverlayDemo"
+            android:name="com.benbenTaxi.demo.LocationOverlayDemo"
             android:configChanges="orientation|keyboardHidden"
             android:screenOrientation="sensor" >
         </activity>
         <activity
-            android:name="baidumapsdk.demo.OfflineDemo"
+            android:name="com.benbenTaxi.demo.OfflineDemo"
             android:configChanges="orientation|keyboardHidden"
             android:screenOrientation="sensor" >
         </activity>
         <activity
-            android:name="baidumapsdk.demo.RoutePlanDemo"
+            android:name="com.benbenTaxi.demo.RoutePlanDemo"
             android:configChanges="orientation|keyboardHidden"
             android:screenOrientation="sensor" >
         </activity>
         <activity
-            android:name="baidumapsdk.demo.GeoCoderDemo"
+            android:name="com.benbenTaxi.demo.GeoCoderDemo"
             android:configChanges="orientation|keyboardHidden"
             android:screenOrientation="sensor" >
         </activity>
         <activity
-            android:name="baidumapsdk.demo.BusLineSearchDemo"
+            android:name="com.benbenTaxi.demo.BusLineSearchDemo"
             android:configChanges="orientation|keyboardHidden"
             android:screenOrientation="sensor" >
         </activity>
         <activity
-            android:name="baidumapsdk.demo.CloudSearchDemo"
+            android:name="com.benbenTaxi.demo.CloudSearchDemo"
             android:configChanges="orientation|keyboardHidden"
             android:screenOrientation="sensor" >
         </activity>
@@ -90,7 +95,7 @@
         </service>
 
         <activity
-            android:name="baidumapsdk.demo.NaviDemo"
+            android:name="com.benbenTaxi.demo.NaviDemo"
             android:label="@string/title_activity_navi_demo" >
         </activity>
     </application>

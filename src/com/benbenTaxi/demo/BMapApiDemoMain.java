@@ -1,4 +1,4 @@
-package baidumapsdk.demo;
+package com.benbenTaxi.demo;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,6 +16,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.baidu.mapapi.VersionInfo;
+import com.benbenTaxi.R;
 
 public class BMapApiDemoMain extends Activity {
     
