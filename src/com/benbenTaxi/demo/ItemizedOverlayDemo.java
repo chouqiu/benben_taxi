@@ -233,7 +233,7 @@ class OverlayTest extends ItemizedOverlay<OverlayItem> {
 	public OverlayTest(Drawable marker,Context context, MapView mapView){
 		super(marker,mapView);
 		this.mContext = context;
-        pop = new PopupOverlay( ItemizedOverlayDemo.mMapView,new PopupClickListener() {
+        pop = new PopupOverlay( mapView,new PopupClickListener() {
 			
 			@Override
 			public void onClickedPopup(int index) {

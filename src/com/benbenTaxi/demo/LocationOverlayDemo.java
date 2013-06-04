@@ -1,5 +1,8 @@
 package com.benbenTaxi.demo;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -8,6 +11,7 @@ import org.json.JSONTokener;
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.Menu;
@@ -30,6 +34,7 @@ import com.baidu.mapapi.map.MapController;
 import com.baidu.mapapi.map.MapPoi;
 import com.baidu.mapapi.map.MapView;
 import com.baidu.mapapi.map.MyLocationOverlay;
+import com.baidu.mapapi.map.OverlayItem;
 import com.baidu.platform.comapi.basestruct.GeoPoint;
 import com.benbenTaxi.R;
 import com.benbenTaxi.v1.LoginActivity;
@@ -63,6 +68,13 @@ public class LocationOverlayDemo extends Activity {
     
     private String mTokenKey, mTokenVal;
 	private static final String mTestHost = "42.121.55.211:8081";
+	
+	OverlayTest ov = null;
+	// 存放overlayitem 
+	public List<OverlayItem> mGeoList = new ArrayList<OverlayItem>();
+	// 存放overlay图片
+	public List<Drawable>  res = new ArrayList<Drawable>();
+	private Drawable mDrvMarker;
     
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -125,6 +137,14 @@ public class LocationOverlayDemo extends Activity {
 			}
 		};
 		mMapView.regMapViewListener(DemoApplication.getInstance().mBMapManager, mMapListener);
+		
+	    // 初始化出租车位置列表
+	    mDrvMarker = this.getResources().getDrawable(R.drawable.icon_marka);
+	    ov = new OverlayTest(mDrvMarker, this,mMapView); 
+	    mMapView.getOverlays().add(ov);
+	    res.add(getResources().getDrawable(R.drawable.icon_marka));
+    	res.add(getResources().getDrawable(R.drawable.icon_markb));
+	    
 		myLocationOverlay = new MyLocationOverlay(mMapView);
 		locData = new LocationData();
 	    myLocationOverlay.setData(locData);
@@ -238,9 +258,12 @@ public class LocationOverlayDemo extends Activity {
 		private String _useragent = "ning@benbentaxi";
 		private JSONObject _json_data;
 		private int _type;
+		double _lat = 0.0, _lng = 0.0;
 		
 		public void getTaxi(double lng, double lat) {
-			String url =  "http://"+mTestHost+"/api/v1/users/nearby_driver?lat="+lat+"&lng="+lng;
+			_lat = lat;
+			_lng = lng;
+			String url =  "http://"+mTestHost+"/api/v1/users/nearby_driver?lat="+_lat+"&lng="+_lng;
 			super.initCookies(mTokenKey, mTokenVal, "42.121.55.211");
 			execute(url, _useragent, super.TYPE_GET);
 		}
@@ -265,7 +288,30 @@ public class LocationOverlayDemo extends Activity {
 				
 				try {
 					ret = new JSONArray(data);
-					Toast.makeText(LocationOverlayDemo.this.getApplicationContext(), "附近有"+ret.length()+"辆出租车", Toast.LENGTH_SHORT).show();
+					
+					//清除所有添加的Overlay
+			        ov.removeAll();
+			        mGeoList.clear();
+			        
+					//添加一个item
+			    	//当要添加的item较多时，可以使用addItem(List<OverlayItem> items) 接口
+			        for( int i=0; i<ret.length(); ++i ) {
+			        	JSONObject pos = ret.getJSONObject(i);
+			        	int lat = (int)(pos.getDouble("lat")*1E6);
+			        	int lng = (int)(pos.getDouble("lng")*1E6);
+				        OverlayItem item= new OverlayItem(new GeoPoint(lat, lng),
+				        		"司机"+pos.getInt("driver_id"),"创建时间: "+pos.getString("created_at"));
+					   	item.setMarker(res.get(i%res.size()));
+					   	mGeoList.add(item);
+			        }
+			    	if ( ov.size() < mGeoList.size()){
+			    		//ov.addItem(mGeoList.get(ov.size() ));
+			    		ov.addItem(mGeoList);
+			    	}
+				    mMapView.refresh();
+				    
+					Toast.makeText(LocationOverlayDemo.this.getApplicationContext(), "附近有"+ret.length()+"辆出租车",
+							Toast.LENGTH_SHORT).show();
 				} catch (JSONException e) {
 					// TODO Auto-generated catch block
 					//e.printStackTrace();
