@@ -7,6 +7,7 @@ import org.json.JSONTokener;
 
 import com.benbenTaxi.R;
 import com.benbenTaxi.demo.LocationOverlayDemo;
+import com.benbenTaxi.v1.function.DataPreference;
 import com.benbenTaxi.v1.function.EquipmentId;
 import com.benbenTaxi.v1.function.GetInfoTask;
 
@@ -14,6 +15,7 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Build;
@@ -40,7 +42,6 @@ public class LoginActivity extends Activity {
 	 * The default email to populate the email field with.
 	 */
 	public static final String EXTRA_EMAIL = "com.example.android.authenticatordemo.extra.EMAIL";
-	private static final String PREFS_NAME = "yunjian_pref";
 	private static final String mTestHost = "42.121.55.211:8081";
 
 	/**
@@ -67,6 +68,7 @@ public class LoginActivity extends Activity {
 	//private UrlConfigure mUrlConf;
 	
 	private long exitTime;
+	private DataPreference mData;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -133,6 +135,7 @@ public class LoginActivity extends Activity {
 			}
 		});
 		
+		mData = new DataPreference(this.getApplicationContext());
 		Toast.makeText(this, "点击菜单键进行参数配置", Toast.LENGTH_SHORT).show();
 	}
 
@@ -147,11 +150,10 @@ public class LoginActivity extends Activity {
 	protected void onResume() {
 		super.onResume();
 		
-		// 载入保存的车牌车架号
-		SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);  
-		mEmailView.setText(settings.getString("user", ""));
-		mPasswordView.setText(settings.getString("pass", ""));
-		mSavePass.setChecked(settings.getBoolean("savePass", true));
+		// 载入账号信息
+		mEmailView.setText(mData.LoadString("user"));
+		mPasswordView.setText(mData.LoadString("pass"));
+		mSavePass.setChecked(mData.LoadBool("savePass"));
 	}
 	
 	@Override
@@ -169,7 +171,6 @@ public class LoginActivity extends Activity {
 			try {
 				Thread.sleep(1000);
 			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			*/
@@ -225,21 +226,13 @@ public class LoginActivity extends Activity {
 		}
 
 		// 保存账号信息
-		try {
-			SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);  
-			SharedPreferences.Editor editor = settings.edit();  
-			editor.putString("user", mEmail);
-			if ( saveFlag ) {
-				editor.putString("pass", mPassword);
-			} else {
-				editor.putString("pass", "");
-			}
-			editor.putBoolean("savePass", saveFlag);
-			// Don't forget to commit your edits!!!  
-			editor.commit();
-		} catch (Exception e) {
-			// TODO
+		mData.SaveData("user", mEmail);
+		if ( saveFlag ) {
+			mData.SaveData("pass", mPassword);
+		} else {
+			mData.SaveData("pass", "");
 		}
+		mData.SaveData("savePass", saveFlag);
 		
 		if (cancel) {
 			// There was an error; don't attempt login and focus the first
@@ -330,12 +323,11 @@ public class LoginActivity extends Activity {
 				sess.put("password", pass);
 				_json_data.put("session", sess);
 			} catch (JSONException e) {
-				// TODO Auto-generated catch block
 				//_info.append("form json error: "+e.toString());
 			}
 
 			String url =  "http://"+host+"/api/v1/sessions/passenger_signin";
-			execute(url, _useragent, super.TYPE_POST);
+			execute(url, _useragent, GetInfoTask.TYPE_POST);
 		}
 		
 		public void doCreate(String name, String pass, String host, String ua) {
@@ -352,12 +344,11 @@ public class LoginActivity extends Activity {
 				sess.put("password_confirmation", pass);
 				_json_data.put("user", sess);
 			} catch (JSONException e) {
-				// TODO Auto-generated catch block
 				//_info.append("form json error: "+e.toString());
 			}
 
 			String url =  "http://"+host+"/api/v1/users/create_passenger";
-			execute(url, _useragent, super.TYPE_POST);
+			execute(url, _useragent, GetInfoTask.TYPE_POST);
 		}
 		
 		@Override
@@ -381,13 +372,12 @@ public class LoginActivity extends Activity {
 					ret = (JSONObject)jsParser.nextValue();
 					int total = ret.getInt("total_entries");
 					if ( total > 0 ) {
-						JSONArray orglst = ret.getJSONArray("zones");
+						//JSONArray orglst = ret.getJSONArray("zones");
 						//_info.append("zone_id: "+orglst.getJSONObject(0).getInt("zone_admin_id")+"\n");
 						//_info.append("name: "+orglst.getJSONObject(0).getString("name")+"\n");
 						//_info.append("des: "+orglst.getJSONObject(0).getString("des")+"\n");
 					}
 				} catch (JSONException e) {
-					// TODO Auto-generated catch block
 					//e.printStackTrace();
 					try {
 						JSONObject err = ret.getJSONObject("errors");
@@ -418,19 +408,17 @@ public class LoginActivity extends Activity {
 					mAuthTask = null;
 					showProgress(false);
 					
-					Bundle sess_data = new Bundle();
-					//sess_data.putString("remember_token", ret.getString("token_value"));
-					sess_data.putString("token_key", ret.getString("token_key"));
-					sess_data.putString("token_value", ret.getString("token_value"));
-					//sess_data.putInt("type", _type);
-					//sess_data.putString("token", mToken);
-					//sess_data.putString("csrf", mCode);
+					// 保存cookie
+					mData.SaveData("token_key", ret.getString("token_key"));
+					mData.SaveData("token_value", ret.getString("token_value"));
+					//Bundle sess_data = new Bundle();
+					//sess_data.putString("token_key", ret.getString("token_key"));
+					//sess_data.putString("token_value", ret.getString("token_value"));
 					Intent yunjianIntent = new Intent(LoginActivity.this,LocationOverlayDemo.class);
-					yunjianIntent.putExtras(sess_data);
+					//yunjianIntent.putExtras(sess_data);
 					
 					startActivity(yunjianIntent);
 				} catch (JSONException e) {
-					// TODO Auto-generated catch block
 					//e.printStackTrace();
 					try {
 						JSONObject err = ret.getJSONObject("errors");

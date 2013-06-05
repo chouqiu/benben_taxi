@@ -9,7 +9,6 @@ import org.json.JSONObject;
 import org.json.JSONTokener;
 
 import android.app.Activity;
-import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
@@ -37,7 +36,7 @@ import com.baidu.mapapi.map.MyLocationOverlay;
 import com.baidu.mapapi.map.OverlayItem;
 import com.baidu.platform.comapi.basestruct.GeoPoint;
 import com.benbenTaxi.R;
-import com.benbenTaxi.v1.LoginActivity;
+import com.benbenTaxi.v1.function.DataPreference;
 import com.benbenTaxi.v1.function.GetInfoTask;
 public class LocationOverlayDemo extends Activity {
 	
@@ -75,6 +74,11 @@ public class LocationOverlayDemo extends Activity {
 	// 存放overlay图片
 	public List<Drawable>  res = new ArrayList<Drawable>();
 	private Drawable mDrvMarker;
+	
+	private DataPreference mData;
+	private String mUserMobile;
+	private int mReqId = -1;
+	private boolean mNeedTaxi = false; // 判断是否已发起打车请求
     
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -88,9 +92,10 @@ public class LocationOverlayDemo extends Activity {
         mMapView = (MapView)findViewById(R.id.bmapView);
         mMapController = mMapView.getController();
         
-        Bundle bs = this.getIntent().getExtras();
-        mTokenKey = bs.getString("token_key");
-        mTokenVal = bs.getString("token_value");
+        mData = new DataPreference(this.getApplicationContext());
+        mTokenKey = mData.LoadString("token_key");
+        mTokenVal = mData.LoadString("token_value");
+        mUserMobile = mData.LoadString("user");
         
         initMapView();
         
@@ -156,6 +161,7 @@ public class LocationOverlayDemo extends Activity {
 		OnClickListener clickListener = new OnClickListener(){
 				public void onClick(View v) {
 					testUpdateClick();
+					mNeedTaxi = true;
 				}
 	        };
 	    testUpdateButton.setOnClickListener(clickListener);
@@ -239,6 +245,17 @@ public class LocationOverlayDemo extends Activity {
             // 获取周边Taxi
             GetTaxiTask gtt = new GetTaxiTask();
             gtt.getTaxi(locData.longitude, locData.latitude);
+            
+            // 发起打车请求
+            if ( mNeedTaxi && mReqId < 0 ) {
+	            GetTaxiTask reqtt = new GetTaxiTask();
+	            reqtt.requestTaxi(locData.longitude, locData.latitude);
+	            mNeedTaxi = false;
+            } else if ( mReqId > 0 ) {
+            // 发起轮询
+            	GetTaxiTask getrr = new GetTaxiTask();
+            	getrr.getRequest(mReqId);
+            }
         }
         
         public void onReceivePoi(BDLocation poiLocation) {
@@ -255,17 +272,55 @@ public class LocationOverlayDemo extends Activity {
 
     
 	private class GetTaxiTask extends GetInfoTask {
+		private static final int TYPE_GET_TAXI = 0;
+		private static final int TYPE_REQ_TAXI = 1;
+		private static final int TYPE_GET_REQ = 2;
 		private String _useragent = "ning@benbentaxi";
 		private JSONObject _json_data;
-		private int _type;
+		private int _type = -1;
 		double _lat = 0.0, _lng = 0.0;
 		
 		public void getTaxi(double lng, double lat) {
 			_lat = lat;
 			_lng = lng;
+			_type = TYPE_GET_TAXI;
 			String url =  "http://"+mTestHost+"/api/v1/users/nearby_driver?lat="+_lat+"&lng="+_lng;
 			super.initCookies(mTokenKey, mTokenVal, "42.121.55.211");
-			execute(url, _useragent, super.TYPE_GET);
+			execute(url, _useragent, GetInfoTask.TYPE_GET);
+		}
+		
+		public void getRequest(int id) {
+			_type = TYPE_GET_REQ;
+			String url = "http://"+mTestHost+"/api/v1/taxi_requests/"+id;
+			super.initCookies(mTokenKey, mTokenVal, "42.121.55.211");
+			execute(url, _useragent, GetInfoTask.TYPE_GET);
+		}
+		
+		public void requestTaxi(double lng, double lat) {
+			_lat = lat;
+			_lng = lng;
+			_type = TYPE_REQ_TAXI;
+			String url = "http://"+mTestHost+"/api/v1/taxi_requests";
+			
+			// 一定要初始化cookie和content-type!!!!!
+			super.initCookies(mTokenKey, mTokenVal, "42.121.55.211");
+			super.initHeaders("Content-Type", "application/json");
+			
+			_json_data = new JSONObject();
+			try {
+				//{\"taxi_request\":{\"passenger_mobile\":\"15910676326\",\"passenger_lng\":\"8\",\"passenger_lat\":\"8\",\"waiting_time_range\":30}}" 
+				JSONObject sess = new JSONObject();
+				sess.put("passenger_mobile", mUserMobile);
+				sess.put("passenger_lng", lng);
+				sess.put("passenger_lat", lat);
+				sess.put("waiting_time_range", 10);
+				sess.put("passenger_voice", "aSB3aWxsIGJlIHRoZXJl");
+				sess.put("passenger_voice_format", "m4a");
+				_json_data.put("taxi_request", sess);
+			} catch (JSONException e) {
+				//_info.append("form json error: "+e.toString());
+			}
+			execute(url, _useragent, GetInfoTask.TYPE_POST);
 		}
 		
 		@Override
@@ -284,36 +339,19 @@ public class LocationOverlayDemo extends Activity {
 				String data = this.toString();
 				//_info.append("get result: \n"+data);
 				JSONTokener jsParser = new JSONTokener(data);
-				JSONArray ret = null;
 				
 				try {
-					ret = new JSONArray(data);
-					
-					//清除所有添加的Overlay
-			        ov.removeAll();
-			        mGeoList.clear();
-			        
-					//添加一个item
-			    	//当要添加的item较多时，可以使用addItem(List<OverlayItem> items) 接口
-			        for( int i=0; i<ret.length(); ++i ) {
-			        	JSONObject pos = ret.getJSONObject(i);
-			        	int lat = (int)(pos.getDouble("lat")*1E6);
-			        	int lng = (int)(pos.getDouble("lng")*1E6);
-				        OverlayItem item= new OverlayItem(new GeoPoint(lat, lng),
-				        		"司机"+pos.getInt("driver_id"),"创建时间: "+pos.getString("created_at"));
-					   	item.setMarker(res.get(i%res.size()));
-					   	mGeoList.add(item);
-			        }
-			    	if ( ov.size() < mGeoList.size()){
-			    		//ov.addItem(mGeoList.get(ov.size() ));
-			    		ov.addItem(mGeoList);
-			    	}
-				    mMapView.refresh();
-				    
-					Toast.makeText(LocationOverlayDemo.this.getApplicationContext(), "附近有"+ret.length()+"辆出租车",
-							Toast.LENGTH_SHORT).show();
+					switch ( _type ) {
+					case TYPE_GET_TAXI:
+						doGetTaxi(data);
+						break;
+					case TYPE_GET_REQ:
+						doGetRequest(jsParser);
+						break;
+					default:
+						break;
+					} 
 				} catch (JSONException e) {
-					// TODO Auto-generated catch block
 					//e.printStackTrace();
 					try {
 						JSONObject retobj = (JSONObject)jsParser.nextValue();
@@ -325,7 +363,7 @@ public class LocationOverlayDemo extends Activity {
 						//_info.append("json error: "+ee.toString()+"\n"+"ret: "+data);
 					}
 				} catch (Exception e) {
-					Toast.makeText(LocationOverlayDemo.this.getApplicationContext(), "err返回: "+data, Toast.LENGTH_LONG).show();
+					Toast.makeText(LocationOverlayDemo.this.getApplicationContext(), "错误返回: "+data, Toast.LENGTH_LONG).show();
 				}
 			} else {
 				//_info.append("get errmsg: \n"+_errmsg);
@@ -334,18 +372,19 @@ public class LocationOverlayDemo extends Activity {
 		
 		@Override
 		protected void onPostExecPost(Boolean succ) {
+			String data = this.toString();
 			//_info.setText("Post "+this.getHttpCode()+"\n");
 			if ( succ ) {
 				//_info.append("result: "+this.getHttpCode()+"\n"+this.toString());
-				JSONTokener jsParser = new JSONTokener(this.toString());
+				JSONTokener jsParser = new JSONTokener(data);
 				JSONObject ret = null;
 
 				try {
 					ret = (JSONObject)jsParser.nextValue();
+					mReqId = ret.getInt("id");
 					//_info.append("result \n"+ret.getString("token_key")+": "+ret.getString("token_value"));
 					//_sess_key = new BasicNameValuePair(ret.getString("token_key"), ret.getString("token_value"));
 				} catch (JSONException e) {
-					// TODO Auto-generated catch block
 					//e.printStackTrace();
 					try {
 						JSONObject err = ret.getJSONObject("errors");
@@ -365,6 +404,65 @@ public class LocationOverlayDemo extends Activity {
 				
 			} else {
 				//_info.append("errmsg: \n"+_errmsg);
+			}
+			
+			if( succ == false ) {
+				Toast.makeText(LocationOverlayDemo.this.getApplicationContext(), "错误返回: "+_errmsg+"\n"+data, Toast.LENGTH_SHORT).show();
+			}
+		}
+		
+		private void doGetTaxi(String data) throws JSONException {
+			JSONArray ret = new JSONArray(data);
+				
+			//清除所有添加的Overlay
+	        ov.removeAll();
+	        mGeoList.clear();
+	        
+			//添加一个item
+	    	//当要添加的item较多时，可以使用addItem(List<OverlayItem> items) 接口
+	        for( int i=0; i<ret.length(); ++i ) {
+	        	JSONObject pos = ret.getJSONObject(i);
+	        	int lat = (int)(pos.getDouble("lat")*1E6);
+	        	int lng = (int)(pos.getDouble("lng")*1E6);
+		        OverlayItem item= new OverlayItem(new GeoPoint(lat, lng),
+		        		"司机"+pos.getInt("driver_id"),"创建时间: "+pos.getString("created_at"));
+			   	item.setMarker(res.get(i%res.size()));
+			   	mGeoList.add(item);
+	        }
+	    	if ( ov.size() < mGeoList.size()){
+	    		//ov.addItem(mGeoList.get(ov.size() ));
+	    		ov.addItem(mGeoList);
+	    	}
+		    mMapView.refresh();
+		    
+		    if ( mReqId < 0 ) {
+		    	Toast.makeText(LocationOverlayDemo.this.getApplicationContext(), "附近有"+ret.length()+"辆出租车",
+						Toast.LENGTH_SHORT).show();
+		    }
+		}
+		
+		private void doGetRequest(JSONTokener jsParser) throws JSONException {
+			// {"id":28,"state":"Waiting_Driver_Response","passenger_lat":8.0,"passenger_lng":8.0,"passenger_voice_url":"/uploads/taxi_request/voice/2013-05-31/03bd766e8ecc2e2429f1610c7bf6c3ec.m4a"}
+			// 用户只要处理state即可
+			String stat = ((JSONObject)jsParser.nextValue()).getString("state");
+			if ( stat.equals("Waiting_Driver_Response") ) {
+				// 继续等待
+				Toast.makeText(LocationOverlayDemo.this.getApplicationContext(), "请求["+mReqId+"]等待司机响应, 附近"+mGeoList.size()+"辆",
+						Toast.LENGTH_SHORT).show();
+			} else if ( stat.equals("Waiting_Passenger_Confirm") ) {
+				// 司机已应答，等待用户确认
+				Toast.makeText(LocationOverlayDemo.this.getApplicationContext(), "请求["+mReqId+"]已有司机应答, 附近"+mGeoList.size()+"辆",
+						Toast.LENGTH_SHORT).show();
+			} else if ( stat.equals("TimeOut") ) {
+				// 超时
+				Toast.makeText(LocationOverlayDemo.this.getApplicationContext(), "请求["+mReqId+"]已超时, 附近"+mGeoList.size()+"辆",
+						Toast.LENGTH_SHORT).show();
+				mReqId = -1;
+			} else if ( stat.equals("Canceled_By_Passenger") ) {
+				// 用户取消
+				Toast.makeText(LocationOverlayDemo.this.getApplicationContext(), "请求["+mReqId+"]已被取消, 附近"+mGeoList.size()+"辆",
+						Toast.LENGTH_SHORT).show();
+				mReqId = -1;
 			}
 		}
 	}
