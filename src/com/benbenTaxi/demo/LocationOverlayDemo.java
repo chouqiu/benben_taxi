@@ -79,6 +79,10 @@ public class LocationOverlayDemo extends Activity {
 	private String mUserMobile;
 	private int mReqId = -1;
 	private boolean mNeedTaxi = false; // 判断是否已发起打车请求
+	private String mStatus;
+	
+	private final static String STAT_WAITING_DRV_RESP = "Waiting_Driver_Response";
+	private final static String STAT_WAITING_PAS_CONF = "Waiting_Passenger_Confirm";
     
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -255,6 +259,11 @@ public class LocationOverlayDemo extends Activity {
             // 发起轮询
             	GetTaxiTask getrr = new GetTaxiTask();
             	getrr.getRequest(mReqId);
+            }
+            
+            if ( mStatus.equals(LocationOverlayDemo.STAT_WAITING_PAS_CONF) ) {
+            // 确认司机请求，本次打车行为结束
+            	
             }
         }
         
@@ -444,21 +453,21 @@ public class LocationOverlayDemo extends Activity {
 		private void doGetRequest(JSONTokener jsParser) throws JSONException {
 			// {"id":28,"state":"Waiting_Driver_Response","passenger_lat":8.0,"passenger_lng":8.0,"passenger_voice_url":"/uploads/taxi_request/voice/2013-05-31/03bd766e8ecc2e2429f1610c7bf6c3ec.m4a"}
 			// 用户只要处理state即可
-			String stat = ((JSONObject)jsParser.nextValue()).getString("state");
-			if ( stat.equals("Waiting_Driver_Response") ) {
+			mStatus = ((JSONObject)jsParser.nextValue()).getString("state");
+			if ( mStatus.equals("Waiting_Driver_Response") ) {
 				// 继续等待
 				Toast.makeText(LocationOverlayDemo.this.getApplicationContext(), "请求["+mReqId+"]等待司机响应, 附近"+mGeoList.size()+"辆",
 						Toast.LENGTH_SHORT).show();
-			} else if ( stat.equals("Waiting_Passenger_Confirm") ) {
+			} else if ( mStatus.equals("Waiting_Passenger_Confirm") ) {
 				// 司机已应答，等待用户确认
 				Toast.makeText(LocationOverlayDemo.this.getApplicationContext(), "请求["+mReqId+"]已有司机应答, 附近"+mGeoList.size()+"辆",
 						Toast.LENGTH_SHORT).show();
-			} else if ( stat.equals("TimeOut") ) {
+			} else if ( mStatus.equals("TimeOut") ) {
 				// 超时
 				Toast.makeText(LocationOverlayDemo.this.getApplicationContext(), "请求["+mReqId+"]已超时, 附近"+mGeoList.size()+"辆",
 						Toast.LENGTH_SHORT).show();
 				mReqId = -1;
-			} else if ( stat.equals("Canceled_By_Passenger") ) {
+			} else if ( mStatus.equals("Canceled_By_Passenger") ) {
 				// 用户取消
 				Toast.makeText(LocationOverlayDemo.this.getApplicationContext(), "请求["+mReqId+"]已被取消, 附近"+mGeoList.size()+"辆",
 						Toast.LENGTH_SHORT).show();
