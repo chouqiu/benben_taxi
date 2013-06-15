@@ -6,7 +6,7 @@
     <string name="prompt_email">用户名</string>
     <string name="prompt_password">密码</string>
     <string name="action_sign_in_register"><b>登录</b></string>
-    <string name="action_create_register"><b>注册新用户</b></string>
+    <string name="action_create_register"><b>注册</b></string>
     <string name="action_sign_in_short">登录</string>
     <string name="menu_forgot_password">找回密码</string>
     <string name="login_progress_signing_in">登录&#8230;</string>
@@ -16,6 +16,7 @@
     <string name="error_incorrect_password">密码不正确</string>
     <string name="error_field_required">必填</string>
     <string name="save_password">保存密码</string>
+    <string name="driver_login">我是司机</string>
     <string name="menu_about">关于</string>
     <string name="menu_setup">设置</string>
 

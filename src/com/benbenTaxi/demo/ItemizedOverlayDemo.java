@@ -9,10 +9,12 @@ import java.util.List;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.Menu;
 import android.view.View;
@@ -34,6 +36,7 @@ import com.baidu.mapapi.map.PopupOverlay;
 import com.baidu.mapapi.utils.CoordinateConvert;
 import com.baidu.platform.comapi.basestruct.GeoPoint;
 import com.benbenTaxi.R;
+import com.benbenTaxi.v1.function.IdShow;
 /**
  *  在一个圆周上添加自定义overlay. 
  */
@@ -227,8 +230,10 @@ class OverlayTest extends ItemizedOverlay<OverlayItem> {
     public List<OverlayItem> mGeoList = new ArrayList<OverlayItem>();
 	private Context mContext = null;
     static PopupOverlay pop = null;
+    private Handler mH = null;
 
     Toast mToast = null;
+
     
 	public OverlayTest(Drawable marker,Context context, MapView mapView){
 		super(marker,mapView);
@@ -247,8 +252,14 @@ class OverlayTest extends ItemizedOverlay<OverlayItem> {
 	   // populate();
 		
 	}
+	
+	public OverlayTest(Drawable marker,Context context, MapView mapView, Handler h){
+		this(marker, context, mapView);
+		mH = h;
+	}
+	
 	protected boolean onTap(int index) {
-		System.out.println("item onTap: "+index);
+		//System.out.println("item onTap: "+index);
 	    
 	    Bitmap[] bmps = new Bitmap[3];
 	    if (index %2 == 0) {
@@ -270,12 +281,15 @@ class OverlayTest extends ItemizedOverlay<OverlayItem> {
             }
 	    }
         
-	    pop.showPopup(bmps, getItem(index).getPoint(), 32);
-		if (null == mToast)
-            mToast = Toast.makeText(mContext, getItem(index).getTitle(), Toast.LENGTH_SHORT);
-        else mToast.setText(getItem(index).getTitle());
-		mToast.show();
-		
+	    //pop.showPopup(bmps, getItem(index).getPoint(), 32);
+		//if (null == mToast)
+        //  mToast = Toast.makeText(mContext, getItem(index).getTitle(), Toast.LENGTH_SHORT);
+        //else mToast.setText(getItem(index).getTitle());
+		//mToast.show();
+	    
+	    if ( mH != null ) {
+	    	mH.dispatchMessage(mH.obtainMessage(LocationOverlayDemo.MSG_HANDLE_ITEM_TOUCH+index));
+	    }
 		
 		return true;
 	}

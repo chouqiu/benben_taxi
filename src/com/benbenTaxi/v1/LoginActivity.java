@@ -57,7 +57,7 @@ public class LoginActivity extends Activity {
 	// UI references.
 	private EditText mEmailView;
 	private EditText mPasswordView;
-	private CheckBox mSavePass;
+	private CheckBox mSavePass, mIsDriver;
 	private View mLoginFormView;
 	private View mFillView;
 	private View mLoginStatusView;
@@ -80,6 +80,9 @@ public class LoginActivity extends Activity {
 		mEmail = getIntent().getStringExtra(EXTRA_EMAIL);
 		mEmailView = (EditText) findViewById(R.id.email);
 		mEmailView.setText(mEmail);
+		
+		mSavePass = (CheckBox) findViewById(R.id.checkBox_save);
+		mIsDriver = (CheckBox) findViewById(R.id.checkBox_driver);
 
 		mPasswordView = (EditText) findViewById(R.id.password);
 		mPasswordView
@@ -87,7 +90,7 @@ public class LoginActivity extends Activity {
 					public boolean onEditorAction(TextView textView, int id,
 							KeyEvent keyEvent) {
 						if (id == R.id.login || id == EditorInfo.IME_NULL) {
-							attemptLogin(mSavePass.isChecked(), UserLoginTask.LOGINTYPE_LOGIN);
+							attemptLogin(mSavePass.isChecked(), mIsDriver.isChecked(), UserLoginTask.LOGINTYPE_LOGIN);
 							return true;
 						}
 						return false;
@@ -102,7 +105,7 @@ public class LoginActivity extends Activity {
 		mSignInBtn.setOnClickListener(
 				new View.OnClickListener() {
 					public void onClick(View view) {
-						attemptLogin(mSavePass.isChecked(), UserLoginTask.LOGINTYPE_LOGIN);
+						attemptLogin(mSavePass.isChecked(), mIsDriver.isChecked(), UserLoginTask.LOGINTYPE_LOGIN);
 					}
 				});
 		
@@ -110,11 +113,9 @@ public class LoginActivity extends Activity {
 		mCreateBtn.setOnClickListener(
 				new View.OnClickListener() {
 					public void onClick(View view) {
-						attemptLogin(mSavePass.isChecked(), UserLoginTask.LOGINTYPE_CREATE);
+						attemptLogin(mSavePass.isChecked(), mIsDriver.isChecked(), UserLoginTask.LOGINTYPE_CREATE);
 					}
 				});
-		
-		mSavePass = (CheckBox) findViewById(R.id.checkBox_save);
 		
 		if ( this.getIntent().getExtras() != null ) {
 			String getClass = this.getIntent().getExtras().getString("class");
@@ -154,6 +155,7 @@ public class LoginActivity extends Activity {
 		mEmailView.setText(mData.LoadString("user"));
 		mPasswordView.setText(mData.LoadString("pass"));
 		mSavePass.setChecked(mData.LoadBool("savePass"));
+		mIsDriver.setChecked(mData.LoadBool("isdriver"));
 	}
 	
 	@Override
@@ -187,7 +189,7 @@ public class LoginActivity extends Activity {
 	 * If there are form errors (invalid email, missing fields, etc.), the
 	 * errors are presented and no actual login attempt is made.
 	 */
-	public void attemptLogin(boolean saveFlag, int type) {
+	public void attemptLogin(boolean saveFlag, boolean isDriver, int type) {
 		if (mAuthTask != null) {
 			return;
 		}
@@ -233,24 +235,29 @@ public class LoginActivity extends Activity {
 			mData.SaveData("pass", "");
 		}
 		mData.SaveData("savePass", saveFlag);
+		mData.SaveData("isdriver", isDriver);
 		
 		if (cancel) {
 			// There was an error; don't attempt login and focus the first
 			// form field with an error.
 			focusView.requestFocus();
 		} else {
+			String usertype = UserLoginTask.TYPE_PASSENGER;
+			if ( isDriver == true ) {
+				usertype = UserLoginTask.TYPE_DRIVER;
+			}
 			// Show a progress spinner, and kick off a background task to
 			// perform the user login attempt.
 			if ( type == UserLoginTask.LOGINTYPE_LOGIN ) {
 				mLoginStatusMessageView.setText(R.string.login_progress_signing_in);
 				showProgress(true);
 				mAuthTask = new UserLoginTask();
-				mAuthTask.doLogin(mEmail, mPassword, mTestHost, mEquipmentId.getId());
+				mAuthTask.doLogin(mEmail, mPassword, mTestHost, mEquipmentId.getId(), usertype);
 			} else if ( type == UserLoginTask.LOGINTYPE_CREATE ) {
 				mLoginStatusMessageView.setText(R.string.login_progress_signing_in);
 				showProgress(true);
 				mAuthTask = new UserLoginTask();
-				mAuthTask.doCreate(mEmail, mPassword, mTestHost, mEquipmentId.getId());
+				mAuthTask.doCreate(mEmail, mPassword, mTestHost, mEquipmentId.getId(), usertype);
 			}
 		}
 	}
@@ -306,11 +313,15 @@ public class LoginActivity extends Activity {
 		//private final static String _url = "http://peterwolf.cn.mu/zone_supervisor/sessions.json";
 		//private final static String _url = "http://v2.365check.net/api/v1/sessions";
 		//private final static String _testagent = "351554052661692@460018882023767@0.14@android42";
+		
+		public static final String TYPE_DRIVER = "driver";
+		public static final String TYPE_PASSENGER = "passenger";
+		
 		private String _useragent;
 		private JSONObject _json_data;
 		private int _type;
 		
-		public void doLogin(String name, String pass, String host, String ua) {
+		public void doLogin(String name, String pass, String host, String ua, String type) {
 			_type = LOGINTYPE_LOGIN;
 			_useragent = ua;
 			
@@ -326,11 +337,11 @@ public class LoginActivity extends Activity {
 				//_info.append("form json error: "+e.toString());
 			}
 
-			String url =  "http://"+host+"/api/v1/sessions/passenger_signin";
+			String url =  "http://"+host+"/api/v1/sessions/"+type+"_signin";
 			execute(url, _useragent, GetInfoTask.TYPE_POST);
 		}
 		
-		public void doCreate(String name, String pass, String host, String ua) {
+		public void doCreate(String name, String pass, String host, String ua, String type) {
 			_type = LOGINTYPE_CREATE;
 			_useragent = ua;
 			
@@ -347,7 +358,7 @@ public class LoginActivity extends Activity {
 				//_info.append("form json error: "+e.toString());
 			}
 
-			String url =  "http://"+host+"/api/v1/users/create_passenger";
+			String url =  "http://"+host+"/api/v1/users/create_"+type;
 			execute(url, _useragent, GetInfoTask.TYPE_POST);
 		}
 		
@@ -411,6 +422,7 @@ public class LoginActivity extends Activity {
 					// ±£´æcookie
 					mData.SaveData("token_key", ret.getString("token_key"));
 					mData.SaveData("token_value", ret.getString("token_value"));
+					mData.SaveData("useragent",  mEquipmentId.getId());
 					//Bundle sess_data = new Bundle();
 					//sess_data.putString("token_key", ret.getString("token_key"));
 					//sess_data.putString("token_value", ret.getString("token_value"));

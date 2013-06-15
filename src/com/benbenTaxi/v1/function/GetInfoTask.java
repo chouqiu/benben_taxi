@@ -49,6 +49,7 @@ public class GetInfoTask extends AsyncTask<String, Integer, Boolean> {
 		sess_params = new ArrayList<NameValuePair>();
 		post_param = new String();
 		_headers = new ArrayList<Header>();
+		result = new byte[1];
 	}
 	
 	protected void initPostValues() {
