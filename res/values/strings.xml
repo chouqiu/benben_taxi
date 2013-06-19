@@ -1,11 +1,19 @@
 <resources>
 
-    <string name="app_name">笨笨打车</string>
+    <string name="app_name">奔奔打车</string>
+    <string name="app_name1">奔奔</string>
+    <string name="app_name2">打车</string>
+    <string name="sub_app_name">司机版</string>
+    <string name="company_name">帷幄科技</string>
+    <string name="foot_name">科技 | 生活</string>
     <string name="hello_world">Hello world!</string>
     <string name="menu_settings">设置</string>
     <string name="title_activity_navi_demo">导航</string>
     <string name="title_activity_main">一键打车</string>
     
     <string name="call_taxi">一键打车</string>
-
+    
+	<color name="blue">#1b75ab</color>
+	<color name="red">#ff0000</color>
+	<color name="gray">#5f5f5f</color>
 </resources>

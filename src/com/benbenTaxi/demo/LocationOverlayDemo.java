@@ -16,6 +16,7 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -62,6 +63,9 @@ public class LocationOverlayDemo extends Activity {
 	MyLocationOverlay myLocationOverlay = null;
 	int index =0;
 	LocationData locData = null;
+	
+	private long exitTime = 0;
+	
 	
 	Handler MsgHandler = new Handler() {
         public void handleMessage(android.os.Message msg) {
@@ -896,6 +900,26 @@ public class LocationOverlayDemo extends Activity {
 						Toast.LENGTH_SHORT).show();
 			}
 		}
+	}
+	
+	@Override
+	public boolean onKeyDown( int keyCode, KeyEvent event ) {
+		/*
+		if(keyCode == KeyEvent.KEYCODE_BACK && 
+				event.getAction() == KeyEvent.ACTION_DOWN) {
+			// 这里不需要再按两次，一次退出
+			if( exitTime == 0 ) {
+	            Toast.makeText(getApplicationContext(), "再按一次返回键退出", Toast.LENGTH_SHORT).show();
+	            exitTime = System.currentTimeMillis();
+			} else {
+				Toast.makeText(getApplicationContext(), "退出中...", Toast.LENGTH_SHORT).show();
+				exitTime = System.currentTimeMillis();
+				finish();
+			}
+	        return true;   
+	    }
+	    */
+	    return super.onKeyDown(keyCode, event);
 	}
 }
 

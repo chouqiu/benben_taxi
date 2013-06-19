@@ -57,7 +57,6 @@ public class LoginActivity extends Activity {
 	// UI references.
 	private EditText mEmailView;
 	private EditText mPasswordView;
-	private CheckBox mSavePass, mIsDriver;
 	private View mLoginFormView;
 	private View mFillView;
 	private View mLoginStatusView;
@@ -81,16 +80,13 @@ public class LoginActivity extends Activity {
 		mEmailView = (EditText) findViewById(R.id.email);
 		mEmailView.setText(mEmail);
 		
-		mSavePass = (CheckBox) findViewById(R.id.checkBox_save);
-		mIsDriver = (CheckBox) findViewById(R.id.checkBox_driver);
-
 		mPasswordView = (EditText) findViewById(R.id.password);
 		mPasswordView
 				.setOnEditorActionListener(new TextView.OnEditorActionListener() {
 					public boolean onEditorAction(TextView textView, int id,
 							KeyEvent keyEvent) {
 						if (id == R.id.login || id == EditorInfo.IME_NULL) {
-							attemptLogin(mSavePass.isChecked(), mIsDriver.isChecked(), UserLoginTask.LOGINTYPE_LOGIN);
+							attemptLogin(true, true, UserLoginTask.LOGINTYPE_LOGIN);
 							return true;
 						}
 						return false;
@@ -105,7 +101,7 @@ public class LoginActivity extends Activity {
 		mSignInBtn.setOnClickListener(
 				new View.OnClickListener() {
 					public void onClick(View view) {
-						attemptLogin(mSavePass.isChecked(), mIsDriver.isChecked(), UserLoginTask.LOGINTYPE_LOGIN);
+						attemptLogin(true, true, UserLoginTask.LOGINTYPE_LOGIN);
 					}
 				});
 		
@@ -113,7 +109,7 @@ public class LoginActivity extends Activity {
 		mCreateBtn.setOnClickListener(
 				new View.OnClickListener() {
 					public void onClick(View view) {
-						attemptLogin(mSavePass.isChecked(), mIsDriver.isChecked(), UserLoginTask.LOGINTYPE_CREATE);
+						attemptLogin(true, true, UserLoginTask.LOGINTYPE_CREATE);
 					}
 				});
 		
@@ -154,8 +150,8 @@ public class LoginActivity extends Activity {
 		// ‘ÿ»Î’À∫≈–≈œ¢
 		mEmailView.setText(mData.LoadString("user"));
 		mPasswordView.setText(mData.LoadString("pass"));
-		mSavePass.setChecked(mData.LoadBool("savePass"));
-		mIsDriver.setChecked(mData.LoadBool("isdriver"));
+		//mSavePass.setChecked(mData.LoadBool("savePass"));
+		//mIsDriver.setChecked(mData.LoadBool("isdriver"));
 	}
 	
 	@Override
