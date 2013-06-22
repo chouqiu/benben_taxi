@@ -62,12 +62,14 @@ public class LoginActivity extends Activity {
 	private View mLoginStatusView;
 	private Button mSignInBtn;
 	private Button mCreateBtn;
-	private TextView mLoginStatusMessageView;
+	private TextView mLoginStatusMessageView, mSubTitle3;
 	private EquipmentId mEquipmentId;
 	//private UrlConfigure mUrlConf;
 	
 	private long exitTime;
 	private DataPreference mData;
+	
+	private boolean mIsSave = true, mIsDriver = false;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -86,7 +88,7 @@ public class LoginActivity extends Activity {
 					public boolean onEditorAction(TextView textView, int id,
 							KeyEvent keyEvent) {
 						if (id == R.id.login || id == EditorInfo.IME_NULL) {
-							attemptLogin(true, true, UserLoginTask.LOGINTYPE_LOGIN);
+							attemptLogin(mIsSave, mIsDriver, UserLoginTask.LOGINTYPE_LOGIN);
 							return true;
 						}
 						return false;
@@ -101,7 +103,7 @@ public class LoginActivity extends Activity {
 		mSignInBtn.setOnClickListener(
 				new View.OnClickListener() {
 					public void onClick(View view) {
-						attemptLogin(true, true, UserLoginTask.LOGINTYPE_LOGIN);
+						attemptLogin(mIsSave, mIsDriver, UserLoginTask.LOGINTYPE_LOGIN);
 					}
 				});
 		
@@ -109,7 +111,7 @@ public class LoginActivity extends Activity {
 		mCreateBtn.setOnClickListener(
 				new View.OnClickListener() {
 					public void onClick(View view) {
-						attemptLogin(true, true, UserLoginTask.LOGINTYPE_CREATE);
+						attemptLogin(mIsSave, mIsDriver, UserLoginTask.LOGINTYPE_CREATE);
 					}
 				});
 		
@@ -131,6 +133,13 @@ public class LoginActivity extends Activity {
 				mPasswordView.requestFocus();
 			}
 		});
+		
+		mSubTitle3 = (TextView)findViewById(R.id.textTitle3);
+		if ( mIsDriver ) {
+			mSubTitle3.setText(this.getResources().getString(R.string.sub_app_name));
+		} else {
+			mSubTitle3.setText(this.getResources().getString(R.string.sub_app_name_pass));
+		}
 		
 		mData = new DataPreference(this.getApplicationContext());
 		Toast.makeText(this, "点击菜单键进行参数配置", Toast.LENGTH_SHORT).show();

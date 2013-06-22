@@ -59,7 +59,9 @@ public class IdShow
 	}
 	
 	public AlertDialog getIdDialog() {
-		create();
+		if ( mIdDialog == null ) {
+			create();
+		}
 		return mIdDialog;
 	}
 	

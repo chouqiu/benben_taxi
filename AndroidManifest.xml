@@ -74,6 +74,7 @@
         android:label="@string/app_name" >
         <activity 
             android:name="com.benbenTaxi.v1.LoginActivity"
+            android:windowSoftInputMode="stateAlwaysHidden"
             android:label="benbenTaxi">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

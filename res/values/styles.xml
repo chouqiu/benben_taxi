@@ -18,4 +18,27 @@
         <item name="android:paddingRight">32dp</item>
         <item name="android:layout_margin">3dp</item>
     </style>
+    
+    <style name="confirmButton">
+        <item name="android:background">@drawable/button_corner</item>
+        <item name="android:textColor">#fff</item>
+        <item name="android:layout_gravity">center</item>
+        <item name="android:gravity">center</item>
+    </style>
+    
+    <style name="listButton">
+        <item name="android:background">#00a2e8</item>
+        <item name="android:textColor">#ffffff</item>
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_gravity">center</item>
+        <item name="android:paddingBottom">10dp</item>
+        <item name="android:paddingTop">10dp</item>
+        <item name="android:paddingLeft">40dp</item>
+        <item name="android:paddingRight">40dp</item>
+    </style>
+    
+     <style name="dialog">
+         <item name="android:background">#b0000000</item>
+     </style>
 </resources>

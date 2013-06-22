@@ -34,6 +34,9 @@ public class GetInfoTask extends AsyncTask<String, Integer, Boolean> {
 	public final static String TYPE_GET = "get";
 	public final static String TYPE_POST = "post";
 	
+	public final static int REQUEST_SEND = 10;
+	public final static int REQUEST_DONE = 100;
+	
 	protected String _errmsg;
 	protected List<NameValuePair> sess_params;
 	protected String post_param;
@@ -79,11 +82,10 @@ public class GetInfoTask extends AsyncTask<String, Integer, Boolean> {
 	
 	@Override
 	protected Boolean doInBackground(String... params) {
-		// TODO: attempt authentication against a network service.
+		// attempt authentication against a network service.
 		String urlstr = params[0];
 		String useragent = params[1];
-		_type = new String(params[2]);
-		
+		_type = new String(params[2]);		
 		_errmsg = new String();
 		
 		try {
@@ -115,7 +117,9 @@ public class GetInfoTask extends AsyncTask<String, Integer, Boolean> {
 				}
 				
 				_httpResp = new DefaultHttpClient(httpparam).execute(httpRequest, hcon);
+				publishProgress(REQUEST_SEND);
 				result = EntityUtils.toByteArray(_httpResp.getEntity());
+				publishProgress(REQUEST_DONE);
 			}
 
 		} catch ( Exception e ) {

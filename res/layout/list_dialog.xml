@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/listDialog"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/pop_corner"
+    android:gravity="center"
+    android:orientation="vertical" >
+
+	    <ListView
+	        android:id="@+id/listView"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:layout_marginTop="30dp"
+	        android:layout_marginLeft="40dp"
+            android:layout_marginRight="40dp"
+	        android:layout_gravity="center" >
+
+	    </ListView>
+
+        <Button
+            android:id="@+id/btnListOk"
+            style="@style/listButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="80dp"
+            android:layout_marginLeft="40dp"
+            android:layout_marginRight="40dp"
+            android:layout_marginBottom="30dp"
+            android:text="@string/confirm_ok" />
+
+</LinearLayout>

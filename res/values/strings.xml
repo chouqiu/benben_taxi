@@ -4,6 +4,7 @@
     <string name="app_name1">奔奔</string>
     <string name="app_name2">打车</string>
     <string name="sub_app_name">司机版</string>
+    <string name="sub_app_name_pass">乘客版</string>
     <string name="company_name">帷幄科技</string>
     <string name="foot_name">科技 | 生活</string>
     <string name="hello_world">Hello world!</string>
@@ -12,8 +13,22 @@
     <string name="title_activity_main">一键打车</string>
     
     <string name="call_taxi">一键打车</string>
+    <string name="recall_taxi">重新打车</string>
+    
+    <string name="record_play">录音/播放</string>
+    <string name="rec_info">按下录音，释放后发送请求</string>
+    <string name="play_info">点击播放</string>
+    
+    <string name="rec_ing">录音中</string>
+    <string name="rec_short">录音时间太短，请重录</string>
+    <string name="rec_send">正在发送</string>
+    <string name="rec_retry">正在为您定位，请稍后再试</string>
+    
+    <string name="confirm_ok">确认</string>
+    <string name="confirm_cancel">取消</string>
     
 	<color name="blue">#1b75ab</color>
 	<color name="red">#ff0000</color>
 	<color name="gray">#5f5f5f</color>
+	<color name="black">#000000</color>
 </resources>
