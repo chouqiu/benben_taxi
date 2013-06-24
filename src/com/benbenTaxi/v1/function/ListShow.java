@@ -57,17 +57,12 @@ public class ListShow
 	
 	private void init() {
 		mView = mAct.getLayoutInflater().inflate(R.layout.list_dialog, null);
-    	mPop = new PopupWindow(mView, LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
+    	mPop = new PopupWindow(mView, LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
 
     	mList = (ListView)mView.findViewById(R.id.listView);
     	mBtnPos = (Button)mView.findViewById(R.id.btnListOk);
     	
-    	mImgId = new int[3];
-    	mImgId[0] = R.drawable.user;
-    	mImgId[1] = R.drawable.telephone;
-    	mImgId[2] = R.drawable.location2;
-    	
-    	mList.setAdapter(new CallAdapter(mImgId, mContents, mAct));  
+    	mList.setAdapter(new CallAdapter(mContents, mAct));  
     	
 		tip_pos = "È·¶¨";
 		mPosfunc = new View.OnClickListener() {		

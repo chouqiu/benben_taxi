@@ -12,13 +12,22 @@ import android.widget.TextView;
 
 public class CallAdapter extends BaseAdapter {
 	private LayoutInflater mInflater;
-	private String[] mContent;
+	private String[] mContent, mTitle;
 	private int[] mImgIdLst;
 	
-	public CallAdapter(int[] idLst, String[] contents, Context con) {
+	public CallAdapter(String[] contents, Context con) {
 		mInflater = LayoutInflater.from(con);
-		mImgIdLst = idLst;
 		mContent = contents;
+			
+    	mImgIdLst = new int[3];
+    	mImgIdLst[0] = R.drawable.user;
+    	mImgIdLst[1] = R.drawable.telephone;
+    	mImgIdLst[2] = R.drawable.location2;
+    	
+    	mTitle = new String[3];
+    	mTitle[0] = "姓名";
+    	mTitle[1] = "电话";
+    	mTitle[2] = "位置";
 	}
 	
 	@Override
@@ -47,7 +56,8 @@ public class CallAdapter extends BaseAdapter {
 			lh = new ListHolder();
 			convertView = mInflater.inflate(R.layout.list_item, null);
 			lh.img = (ImageView) convertView.findViewById(R.id.lst_imgView);
-			lh.content = (TextView) convertView.findViewById(R.id.lst_textView);
+			lh.content = (TextView) convertView.findViewById(R.id.lst_textView_content);
+			lh.title = (TextView) convertView.findViewById(R.id.lst_textView_title);
 			convertView.setTag(lh);
 		} else {
 			lh = (ListHolder) convertView.getTag();
@@ -55,6 +65,7 @@ public class CallAdapter extends BaseAdapter {
 		
 		lh.img.setImageResource(mImgIdLst[position]);
 		lh.content.setText(mContent[position]);
+		lh.title.setText(mTitle[position]);
 		
 		return convertView;
 	}
@@ -62,5 +73,6 @@ public class CallAdapter extends BaseAdapter {
 	public final class ListHolder {
 		public ImageView img;
 		public TextView content;
+		public TextView title;
 	}
 }

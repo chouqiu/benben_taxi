@@ -535,36 +535,45 @@ public class LocationOverlayDemo extends Activity {
     	confirm.getIdDialog().show();
     }
     
-    private void showPassengerRequestInfo(int idx, JSONObject obj) throws JSONException {
-    	String voiceUrl;
+    private void showPassengerRequestInfo(int idx, final JSONObject obj) throws JSONException {
+    	String[] voiceUrl = new String[3];
+    	final DecimalFormat df = new DecimalFormat("#.##");
 		try {
-			voiceUrl = obj.getString("passenger_voice_url");
+			voiceUrl[0] = "ID"+obj.getInt("id");
+			voiceUrl[1] = "12345";
+			voiceUrl[2] = df.format(obj.getDouble("passenger_lat"))+"/"+df.format(obj.getDouble("passenger_lng"));
+			//voiceUrl[3] = obj.getString("passenger_voice_url");
 		} catch (JSONException e) {
-			voiceUrl = "乘客信息获取错误: "+e.toString();
+			voiceUrl[0] = "未知";
+			voiceUrl[1] = "未知";
+			voiceUrl[2] = "未知";
+			//voiceUrl[3] = "乘客信息获取错误: "+e.toString();
 		}
-		
-		IdShow confirm = new IdShow("乘客信息", voiceUrl+"\n确认是否接受", this);
-    	DialogInterface.OnClickListener doOK = new DialogInterface.OnClickListener() {
+				
+		ListShow info = new ListShow(voiceUrl, this);
+    	View.OnClickListener doOK = new View.OnClickListener() {
 			@Override
-			public void onClick(DialogInterface dialog, int which) {
+			public void onClick(View v) {
 				// 确认request
 	    		mStatus = STAT_DRV_TRY_GET_REQUEST;
 	    		GetTaxiTask drvcon = new GetTaxiTask();
 	    		drvcon.driverConfirm(locData.longitude, locData.latitude, mReqId);
+	    		
+	    		String mobile;
+	    		try {
+	    			mobile = "86"+obj.getInt("id");
+	    			//mobile = "12345";
+	    		} catch (JSONException e) {
+	    			mobile = "000000";
+	    		}
+	    		Uri uri = Uri.parse("tel:"+mobile);
+			    Intent incall = new Intent(Intent.ACTION_DIAL, uri);
+			    LocationOverlayDemo.this.startActivity(incall);
 			}
     	};
     	
-    	DialogInterface.OnClickListener doCancel = new DialogInterface.OnClickListener() {
-    		@Override
-			public void onClick(DialogInterface dialog, int which) {
-				// 不处理这个乘客
-    			resetStatus();
-			}
-    	};
-    	
-    	confirm.SetNegativeOnclick("再看看", doCancel);
-    	confirm.SetPositiveOnclick("接受请求", doOK);
-    	confirm.getIdDialog().show();
+    	info.SetPositiveOnclick("电话乘客", doOK);
+    	info.show();
     }
 	
 	/**

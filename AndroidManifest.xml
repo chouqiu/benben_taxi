@@ -158,6 +158,10 @@
             android:name="com.benbenTaxi.demo.NaviDemo"
             android:label="@string/title_activity_navi_demo" >
         </activity>
+        
+        <activity android:name="com.benbenTaxi.v1.ListDetail"
+            android:label="@string/detail_title">
+        </activity>
     </application>
 
 </manifest>

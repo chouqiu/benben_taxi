@@ -1,27 +1,62 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/listDialog"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#00000000"
+    android:background="#ff463e30"
     android:gravity="center"
     android:orientation="horizontal" >
 
-    <ImageView
-        android:contentDescription="@string/app_name"
-        android:id="@+id/lst_imgView"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_weight="3"
-        android:layout_marginRight="20dp"
-        android:src="@drawable/icon_marke" />
+    <TableRow>
+	    <ImageView
+	        android:contentDescription="@string/app_name"
+	        android:id="@+id/lst_imgView"
+	        android:layout_width="80dp"
+	        android:layout_height="wrap_content"
+	        android:paddingTop="20dp"
+	        android:paddingBottom="20dp"
+	        android:layout_weight="3"
+	        android:layout_marginRight="2dp"
+	        android:background="#ff3d3526"
+	        android:layout_gravity="center"
+	        android:src="@drawable/icon_marke" />
+	    
+	    <TableLayout 
+		    android:id="@+id/listDialog1"
+		    android:layout_width="match_parent"
+		    android:layout_height="match_parent"
+		    android:background="#ff463e30"
+		    android:gravity="center"
+		    android:layout_weight="5"
+		    android:orientation="horizontal" >
+		    <TextView
+		        android:id="@+id/lst_textView_title"
+		        android:layout_width="match_parent"
+		        android:layout_height="0dip"
+		        android:layout_weight="5"
+		        android:text="@string/app_name"
+		        android:background="#ff3d3526"
+		        android:textAppearance="?android:attr/textAppearanceLarge" />
+		    
+		    <View
+		        android:layout_height="2dip" 
+		        android:background="#ff463e30" />
+		
+		    <TextView
+		        android:id="@+id/lst_textView_content"
+		        android:layout_width="match_parent"
+		        android:layout_height="0dip"
+		        android:layout_weight="5"
+		        android:text="@string/app_name"
+		       	android:background="#ff3d3526"
+		        android:textAppearance="?android:attr/textAppearanceLarge" />
 
-    <TextView
-        android:id="@+id/lst_textView"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_weight="5"
-        android:text="@string/app_name"
-        android:textAppearance="?android:attr/textAppearanceLarge" />
+		</TableLayout>
+	</TableRow>
+	    
+    	
+    <View
+        android:layout_height="2dip" 
+        android:background="#ff463e30" />
 
-</LinearLayout>
+</TableLayout>

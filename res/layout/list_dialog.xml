@@ -3,13 +3,13 @@
     android:id="@+id/listDialog"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/pop_corner"
     android:gravity="center"
+    android:background="#ff3d3526"
     android:orientation="vertical" >
 
 	    <ListView
 	        android:id="@+id/listView"
-	        android:layout_width="wrap_content"
+	        android:layout_width="match_parent"
 	        android:layout_height="wrap_content"
 	        android:layout_marginTop="30dp"
 	        android:layout_marginLeft="40dp"

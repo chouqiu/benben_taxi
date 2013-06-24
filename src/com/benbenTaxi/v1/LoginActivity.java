@@ -69,7 +69,7 @@ public class LoginActivity extends Activity {
 	private long exitTime;
 	private DataPreference mData;
 	
-	private boolean mIsSave = true, mIsDriver = false;
+	private boolean mIsSave = true, mIsDriver = true;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {

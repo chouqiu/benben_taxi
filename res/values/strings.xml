@@ -26,6 +26,7 @@
     
     <string name="confirm_ok">确认</string>
     <string name="confirm_cancel">取消</string>
+    <string name="detail_title">详细信息</string>
     
 	<color name="blue">#1b75ab</color>
 	<color name="red">#ff0000</color>
