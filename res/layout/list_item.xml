@@ -11,7 +11,7 @@
 	    <ImageView
 	        android:contentDescription="@string/app_name"
 	        android:id="@+id/lst_imgView"
-	        android:layout_width="80dp"
+	        android:layout_width="match_parent"
 	        android:layout_height="wrap_content"
 	        android:paddingTop="20dp"
 	        android:paddingBottom="20dp"
@@ -19,7 +19,7 @@
 	        android:layout_marginRight="2dp"
 	        android:background="#ff3d3526"
 	        android:layout_gravity="center"
-	        android:src="@drawable/icon_marke" />
+	        android:src="@drawable/user" />
 	    
 	    <TableLayout 
 		    android:id="@+id/listDialog1"

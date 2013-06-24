@@ -22,7 +22,6 @@ public class ListShow
 	private String tip_pos;
 	private View.OnClickListener mPosfunc = null;
 	
-	private int[] mImgId;
 	private String[] mContents;
 	
 	public ListShow(String[] contents, Activity a) {

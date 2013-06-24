@@ -425,16 +425,20 @@ public class LocationOverlayDemo extends Activity {
         	}
         } else if ( mReqId > 0 && mStatus != null && mStatus.equals(STAT_PASSENGER_CONFIRM) ) {
         	if ( mShowDialogStat == 0 ) {
-        		String[] info = new String[3];
+        		String[] info = new String[5];
         		final DecimalFormat df = new DecimalFormat("#.##");
 	        	try {
 	        		info[1] = mConfirmObj.getString("driver_mobile");
-	        		info[0] = "请求ID"+mConfirmObj.getInt("id");
-	        		info[2] = "司机位置"+df.format(mConfirmObj.getDouble("driver_lat"))+"/"+df.format(mConfirmObj.getDouble("driver_lng"));
+	        		info[0] = "ID"+mConfirmObj.getInt("id");
+	        		info[3] = df.format(mConfirmObj.getDouble("driver_lat"))+"/"+df.format(mConfirmObj.getDouble("driver_lng"));
+	        		info[2] = "晋C 68812";
+	        		info[4] = "天翼出租公司";
 	        	} catch (JSONException e) {
 	        		info[0] = "未知";
 	        		info[1] = "未知";
 	        		info[2] = "未知";
+	        		info[3] = "未知";
+	        		info[4] = "未知";
 	        	}
 	        	
 	        	ListShow showinfo = new ListShow(info, this);
@@ -536,17 +540,21 @@ public class LocationOverlayDemo extends Activity {
     }
     
     private void showPassengerRequestInfo(int idx, final JSONObject obj) throws JSONException {
-    	String[] voiceUrl = new String[3];
+    	String[] voiceUrl = new String[5];
     	final DecimalFormat df = new DecimalFormat("#.##");
 		try {
 			voiceUrl[0] = "ID"+obj.getInt("id");
 			voiceUrl[1] = "12345";
 			voiceUrl[2] = df.format(obj.getDouble("passenger_lat"))+"/"+df.format(obj.getDouble("passenger_lng"));
+			voiceUrl[3] = "大连西路120号";
+			voiceUrl[4] = "2013-06-25 00:44:22";
 			//voiceUrl[3] = obj.getString("passenger_voice_url");
 		} catch (JSONException e) {
 			voiceUrl[0] = "未知";
 			voiceUrl[1] = "未知";
 			voiceUrl[2] = "未知";
+			voiceUrl[3] = "未知";
+			voiceUrl[4] = "未知";
 			//voiceUrl[3] = "乘客信息获取错误: "+e.toString();
 		}
 				

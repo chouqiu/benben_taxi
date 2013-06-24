@@ -4,9 +4,9 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:gravity="center"
-    android:background="#ff3d3526"
+    android:background="#ff303030"
     android:orientation="vertical" >
-
+<!-- 
 	    <ListView
 	        android:id="@+id/listView"
 	        android:layout_width="match_parent"
@@ -16,7 +16,18 @@
             android:layout_marginRight="40dp"
 	        android:layout_gravity="center" >
 
-	    </ListView>
+	    </ListView> -->
+	    
+	    <ListView
+	        android:id="@+id/listView"
+	        android:layout_width="match_parent"
+	        android:layout_height="wrap_content"
+	        android:layout_alignParentLeft="true"
+	        android:layout_alignParentTop="true"
+	        android:divider="#535353"
+	        android:dividerHeight="1dp"
+	        android:background="#303030">
+        </ListView>
 
         <Button
             android:id="@+id/btnListOk"

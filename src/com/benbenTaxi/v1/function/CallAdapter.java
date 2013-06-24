@@ -19,15 +19,19 @@ public class CallAdapter extends BaseAdapter {
 		mInflater = LayoutInflater.from(con);
 		mContent = contents;
 			
-    	mImgIdLst = new int[3];
+    	mImgIdLst = new int[5];
     	mImgIdLst[0] = R.drawable.user;
-    	mImgIdLst[1] = R.drawable.telephone;
-    	mImgIdLst[2] = R.drawable.location2;
+    	mImgIdLst[1] = R.drawable.phone_13;
+    	mImgIdLst[2] = R.drawable.location;
+    	mImgIdLst[3] = R.drawable.location2;
+    	mImgIdLst[4] = R.drawable.time_07;
     	
-    	mTitle = new String[3];
-    	mTitle[0] = "姓名";
-    	mTitle[1] = "电话";
-    	mTitle[2] = "位置";
+    	mTitle = new String[5];
+    	mTitle[0] = "乘客姓名";
+    	mTitle[1] = "乘客电话";
+    	mTitle[2] = "当前位置";
+    	mTitle[3] = "目的位置";
+    	mTitle[4] = "乘客确认";
 	}
 	
 	@Override
@@ -54,7 +58,7 @@ public class CallAdapter extends BaseAdapter {
 		
 		if ( convertView == null ) {
 			lh = new ListHolder();
-			convertView = mInflater.inflate(R.layout.list_item, null);
+			convertView = mInflater.inflate(R.layout.list_item1, null);
 			lh.img = (ImageView) convertView.findViewById(R.id.lst_imgView);
 			lh.content = (TextView) convertView.findViewById(R.id.lst_textView_content);
 			lh.title = (TextView) convertView.findViewById(R.id.lst_textView_title);
