@@ -579,8 +579,15 @@ public class LocationOverlayDemo extends Activity {
 			    LocationOverlayDemo.this.startActivity(incall);
 			}
     	};
-    	
+    	View.OnClickListener doCancel = new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				// 取消request
+	    		resetStatus();
+			}
+    	};
     	info.SetPositiveOnclick("电话乘客", doOK);
+    	info.SetNegtiveOnclick("再看看", doCancel);
     	info.show();
     }
 	

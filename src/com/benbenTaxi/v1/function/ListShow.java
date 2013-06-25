@@ -18,9 +18,9 @@ public class ListShow
 	private View mView;
 	private PopupWindow mPop;
 	private ListView mList;
-	private Button mBtnPos;
-	private String tip_pos;
-	private View.OnClickListener mPosfunc = null;
+	private Button mBtnPos, mBtnNeg;
+	private String tip_pos, tip_neg;
+	private View.OnClickListener mPosfunc = null, mNegfunc = null;
 	
 	private String[] mContents;
 	
@@ -38,7 +38,26 @@ public class ListShow
 		mPosfunc = new View.OnClickListener() {		
 			@Override
 			public void onClick(View v) {
-				mf.onClick(v);
+				if (mf != null) {
+					mf.onClick(v);
+				}
+				if ( mPop.isShowing() ) {
+					mPop.dismiss();
+				}
+			}
+		};
+	}
+	
+	public void SetNegtiveOnclick(String tip, View.OnClickListener func) {
+		tip_neg = tip;
+		final View.OnClickListener mf = func;
+		
+		mNegfunc = new View.OnClickListener() {		
+			@Override
+			public void onClick(View v) {
+				if (mf != null) {
+					mf.onClick(v);
+				}
 				if ( mPop.isShowing() ) {
 					mPop.dismiss();
 				}
@@ -48,8 +67,18 @@ public class ListShow
 	
 	public void show()
 	{
-		mBtnPos.setText(tip_pos);
-		mBtnPos.setOnClickListener(mPosfunc);
+		if ( tip_pos != null ) {
+			mBtnPos.setText(tip_pos);
+			mBtnPos.setOnClickListener(mPosfunc);
+		} else {
+			mBtnPos.setVisibility(View.GONE);
+		}
+		if ( tip_neg != null ) {
+			mBtnNeg.setText(tip_neg);
+			mBtnNeg.setOnClickListener(mNegfunc);
+		} else {
+			mBtnNeg.setVisibility(View.GONE);
+		}
 		
 		mPop.showAtLocation(mView, Gravity.CENTER, 0, 0);
 	}
@@ -60,6 +89,7 @@ public class ListShow
 
     	mList = (ListView)mView.findViewById(R.id.listView);
     	mBtnPos = (Button)mView.findViewById(R.id.btnListOk);
+    	mBtnNeg = (Button)mView.findViewById(R.id.btnListCancel);
     	
     	mList.setAdapter(new CallAdapter(mContents, mAct));  
     	

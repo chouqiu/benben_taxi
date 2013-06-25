@@ -19,5 +19,6 @@
     <string name="driver_login">我是司机</string>
     <string name="menu_about">关于</string>
     <string name="menu_setup">设置</string>
+    <string name="menu_info">查看</string>
 
 </resources>
