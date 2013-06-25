@@ -1,6 +1,8 @@
 ﻿package com.benbenTaxi.demo;
 
 
+import org.json.JSONObject;
+
 import android.app.Application;
 import android.content.Context;
 import android.widget.Toast;
@@ -17,6 +19,34 @@ public class DemoApplication extends Application {
     BMapManager mBMapManager = null;
 
     public static final String strKey = "1BE33CC3A1DEBDC8FF3A8A3F23A5E208C27E5C83";
+	
+    private String[] mCurrentInfo = new String[5];
+	private JSONObject mCurrentObj = new JSONObject();
+	private int mReqId = -1; // 乘客发起的请求id
+	
+	public String[] getCurrentInfo() {
+		return mCurrentInfo;
+	}
+	
+	public JSONObject getCurrentObject() {
+		return mCurrentObj;
+	}
+	
+	public int getRequestID() {
+		return mReqId;
+	}
+	
+	public void setCurrentInfo(String[] info) {
+		mCurrentInfo = info;
+	}
+	
+	public void setCurrentObject(JSONObject obj) {
+		mCurrentObj = obj;
+	}
+	
+	public void setRequestID(int id) {
+		mReqId = id;
+	}
 	
 	@Override
     public void onCreate() {

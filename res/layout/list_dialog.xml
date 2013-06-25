@@ -2,7 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" 
     android:id="@+id/listDialog"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="match_parent"
     android:gravity="center"
     android:background="#ff303030"
     android:orientation="vertical" >
@@ -29,7 +29,7 @@
 	        android:layout_weight="3"
 	        android:background="#303030">
         </ListView>
-		<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+		<LinearLayout
 		    android:id="@+id/listDialog_sub"
 		    android:layout_width="match_parent"
 		    android:layout_height="wrap_content"
@@ -42,7 +42,7 @@
 	            style="@style/listButton"
 	            android:layout_width="wrap_content"
 	            android:layout_height="wrap_content"
-	            android:layout_marginTop="1dp"
+	            android:layout_marginTop="20dp"
 	            android:layout_marginLeft="20dp"
 	            android:layout_marginRight="20dp"
 	            android:layout_marginBottom="30dp"
@@ -54,7 +54,7 @@
 	            style="@style/listButton"
 	            android:layout_width="wrap_content"
 	            android:layout_height="wrap_content"
-	            android:layout_marginTop="1dp"
+	            android:layout_marginTop="20dp"
 	            android:layout_marginLeft="20dp"
 	            android:layout_marginRight="20dp"
 	            android:layout_marginBottom="30dp"

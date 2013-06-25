@@ -29,6 +29,7 @@ import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
+import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -56,6 +57,8 @@ import com.baidu.mapapi.map.MyLocationOverlay;
 import com.baidu.mapapi.map.OverlayItem;
 import com.baidu.platform.comapi.basestruct.GeoPoint;
 import com.benbenTaxi.R;
+import com.benbenTaxi.v1.BenbenApp;
+import com.benbenTaxi.v1.ListDetail;
 import com.benbenTaxi.v1.function.ConfirmShow;
 import com.benbenTaxi.v1.function.DataPreference;
 import com.benbenTaxi.v1.function.GetInfoTask;
@@ -146,6 +149,7 @@ public class LocationOverlayDemo extends Activity {
 	private boolean mIsDriver = false; // 是否是司机
 	//private boolean mDrvConfirm = false; // 司机是否确认了请求
 	private double mDistance = 0.0; // 乘客/司机间距离
+	private DemoApplication mApp;
 	
 	private AudioRecord mAudioRecord; //  乘客声音
 	private AudioTrack mAudioTrack; // 播放乘客声音
@@ -195,6 +199,7 @@ public class LocationOverlayDemo extends Activity {
         mTokenVal = mData.LoadString("token_value");
         mUserMobile = mData.LoadString("user");
         mIsDriver = mData.LoadBool("isdriver");
+        mApp = (DemoApplication) getApplicationContext();
         
         initMapView();
         
@@ -365,10 +370,28 @@ public class LocationOverlayDemo extends Activity {
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.activity_main, menu);
         return true;
-    }
-
+    }  
     
-    private void doDriver() {
+    @Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch(item.getItemId()) {
+		case R.id.menu_info:
+			int rid = mApp.getRequestID();
+			JSONObject obj = mApp.getCurrentObject();
+			if ( rid > 0 && obj != null ) {
+				mReqId = rid;
+				mConfirmObj = obj;
+			}
+			Intent detail = new Intent(this, ListDetail.class);
+			this.startActivityForResult(detail, 1);
+			break;
+		default:
+			break;
+		}
+		return super.onOptionsItemSelected(item);
+	}
+
+	private void doDriver() {
     	// 上报司机位置
     	GetTaxiTask dtt = new GetTaxiTask();
     	dtt.driverReport(locData.longitude, locData.latitude, locData.accuracy, "gsm");
@@ -558,18 +581,29 @@ public class LocationOverlayDemo extends Activity {
 			//voiceUrl[3] = "乘客信息获取错误: "+e.toString();
 		}
 				
-		ListShow info = new ListShow(voiceUrl, this);
-    	View.OnClickListener doOK = new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				// 确认request
-	    		mStatus = STAT_DRV_TRY_GET_REQUEST;
+		DemoApplication app = (DemoApplication) this.getApplicationContext();
+		app.setCurrentInfo(voiceUrl);
+		app.setCurrentObject(mConfirmObj);
+		app.setRequestID(mReqId);
+		Intent detail = new Intent(this, ListDetail.class);
+		this.startActivityForResult(detail, 1);
+    }
+	
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		super.onActivityResult(requestCode, resultCode, data);
+		
+		switch(requestCode) {
+		case 1:
+			// 司机处理用户请求
+			if ( resultCode > 0 ) {
+				mStatus = STAT_DRV_TRY_GET_REQUEST;
 	    		GetTaxiTask drvcon = new GetTaxiTask();
 	    		drvcon.driverConfirm(locData.longitude, locData.latitude, mReqId);
 	    		
 	    		String mobile;
 	    		try {
-	    			mobile = "86"+obj.getInt("id");
+	    			mobile = "86"+this.mConfirmObj.getInt("id");
 	    			//mobile = "12345";
 	    		} catch (JSONException e) {
 	    			mobile = "000000";
@@ -577,20 +611,17 @@ public class LocationOverlayDemo extends Activity {
 	    		Uri uri = Uri.parse("tel:"+mobile);
 			    Intent incall = new Intent(Intent.ACTION_DIAL, uri);
 			    LocationOverlayDemo.this.startActivity(incall);
+			} else {
+				resetStatus();
 			}
-    	};
-    	View.OnClickListener doCancel = new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				// 取消request
-	    		resetStatus();
-			}
-    	};
-    	info.SetPositiveOnclick("电话乘客", doOK);
-    	info.SetNegtiveOnclick("再看看", doCancel);
-    	info.show();
-    }
-	
+			break;
+		default:
+			break;
+		}
+	}
+
+
+
 	/**
      * 监听函数，又新位置的时候，格式化成字符串，输出到屏幕中
      */
