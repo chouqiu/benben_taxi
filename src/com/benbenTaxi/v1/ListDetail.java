@@ -29,6 +29,12 @@ public class ListDetail extends Activity {
 		
 		mApp = (DemoApplication) this.getApplicationContext();
 		mContents = mApp.getCurrentInfo();
+		Bundle tips = getIntent().getExtras();
+		if ( tips != null ) {
+			tip_pos = tips.getString("pos");
+			tip_neg = tips.getString("neg");
+		}
+		
 		init();
 	}
 	
@@ -39,7 +45,9 @@ public class ListDetail extends Activity {
     	
     	mLv.setAdapter(new CallAdapter(mContents, this));  
     	
-		tip_pos = "电话乘客";
+    	if ( tip_pos == null ) {
+    		tip_pos = "电话乘客";
+    	}
 		mPosfunc = new View.OnClickListener() {		
 			@Override
 			public void onClick(View v) {
@@ -49,7 +57,9 @@ public class ListDetail extends Activity {
 			}
 		};
 		
-		tip_neg = "再看看";
+		if ( tip_neg == null ) {
+			tip_neg = "再看看";
+		}
 		mNegfunc = new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {

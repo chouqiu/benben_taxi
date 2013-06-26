@@ -106,9 +106,14 @@ public class LocationOverlayDemo extends Activity {
         			int idx = msg.what-MSG_HANDLE_ITEM_TOUCH;
             		try {
 						if ( mIsDriver ) {
-							mConfirmObj = mReqInfo.getJSONObject(idx);
-							mReqId = mConfirmObj.getInt("id");
-							showPassengerRequestInfo(mReqId, mConfirmObj);
+							if (mReqId < 0) {
+								mConfirmObj = mReqInfo.getJSONObject(idx);
+								mReqId = mConfirmObj.getInt("id");
+								showPassengerRequestInfo(mReqId, mConfirmObj);
+							} else {
+								// 当前已有请求在处理，不能响应
+								Toast.makeText(LocationOverlayDemo.this, "当前已有请求在处理，请点击查看了解详情", Toast.LENGTH_LONG).show();
+							}
 						} else {
 							// 乘客态，显示司机信息
 							JSONObject obj = mReqInfo.getJSONObject(idx);
@@ -378,12 +383,9 @@ public class LocationOverlayDemo extends Activity {
 		case R.id.menu_info:
 			int rid = mApp.getRequestID();
 			JSONObject obj = mApp.getCurrentObject();
-			if ( rid > 0 && obj != null ) {
-				mReqId = rid;
-				mConfirmObj = obj;
-			}
+			
 			Intent detail = new Intent(this, ListDetail.class);
-			this.startActivityForResult(detail, 1);
+			this.startActivityForResult(detail, 3);
 			break;
 		default:
 			break;
@@ -567,7 +569,7 @@ public class LocationOverlayDemo extends Activity {
     	final DecimalFormat df = new DecimalFormat("#.##");
 		try {
 			voiceUrl[0] = "ID"+obj.getInt("id");
-			voiceUrl[1] = "12345";
+			voiceUrl[1] = obj.getString("passenger_mobile");
 			voiceUrl[2] = df.format(obj.getDouble("passenger_lat"))+"/"+df.format(obj.getDouble("passenger_lng"));
 			voiceUrl[3] = "大连西路120号";
 			voiceUrl[4] = "2013-06-25 00:44:22";
@@ -585,7 +587,11 @@ public class LocationOverlayDemo extends Activity {
 		app.setCurrentInfo(voiceUrl);
 		app.setCurrentObject(mConfirmObj);
 		app.setRequestID(mReqId);
+		
+		Bundle tips = new Bundle();
+		tips.putString("pos", "确认乘客");
 		Intent detail = new Intent(this, ListDetail.class);
+		detail.putExtras(tips);
 		this.startActivityForResult(detail, 1);
     }
 	
@@ -595,24 +601,32 @@ public class LocationOverlayDemo extends Activity {
 		
 		switch(requestCode) {
 		case 1:
-			// 司机处理用户请求
+			// 来自点击用户请求图标，司机处理用户请求
 			if ( resultCode > 0 ) {
 				mStatus = STAT_DRV_TRY_GET_REQUEST;
 	    		GetTaxiTask drvcon = new GetTaxiTask();
 	    		drvcon.driverConfirm(locData.longitude, locData.latitude, mReqId);
 	    		
-	    		String mobile;
+			} else {
+				resetStatus();
+			}
+			break;
+		case 2:
+			// 来自Success状态，电话乘客
+		case 3:
+			// 来自查看
+			if ( resultCode > 0 ) {
+				String mobile;
 	    		try {
-	    			mobile = "86"+this.mConfirmObj.getInt("id");
+	    			mobile = mApp.getCurrentObject().getString("passenger_mobile");
 	    			//mobile = "12345";
 	    		} catch (JSONException e) {
 	    			mobile = "000000";
 	    		}
-	    		Uri uri = Uri.parse("tel:"+mobile);
+	    		
+				Uri uri = Uri.parse("tel:"+mobile);
 			    Intent incall = new Intent(Intent.ACTION_DIAL, uri);
 			    LocationOverlayDemo.this.startActivity(incall);
-			} else {
-				resetStatus();
 			}
 			break;
 		default:
@@ -1037,6 +1051,12 @@ public class LocationOverlayDemo extends Activity {
 					msg = "请求["+mReqId+"]打车成功！";
 				} else {
 					// 司机态
+		    		Bundle tips = new Bundle();
+		    		tips.putString("pos", "电话乘客");
+		    		Intent detail = new Intent(LocationOverlayDemo.this, ListDetail.class);
+		    		detail.putExtras(tips);
+		    		LocationOverlayDemo.this.startActivityForResult(detail, 2);
+		    		
 					msg = "乘客请求["+mReqId+"]已确认，请前往乘客所在地！";
 				}
 				LocationOverlayDemo.this.resetStatus();
