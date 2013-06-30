@@ -5,7 +5,7 @@
     android:versionName="1.0" >
 
     <uses-sdk
-        android:minSdkVersion="7"
+        android:minSdkVersion="11"
         android:targetSdkVersion="17" />
 
     
@@ -70,11 +70,16 @@
         android:allowBackup="false"
         android:name="com.benbenTaxi.demo.DemoApplication"
         android:icon="@drawable/ic_launcher"
-        android:label="@string/app_name" >
+        android:label="@string/app_name"
+        android:screenOrientation="portrait" >
         <activity 
             android:name="com.benbenTaxi.v1.LoginActivity"
             android:windowSoftInputMode="stateAlwaysHidden"
-            android:label="benbenTaxi">
+            android:excludeFromRecents="false"
+            android:noHistory="true"
+            android:label="@string/app_name"
+            android:theme="@android:style/Theme.Holo.NoActionBar.Fullscreen"
+            android:screenOrientation="portrait" >      
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -108,7 +113,7 @@
         <activity
             android:name="com.benbenTaxi.demo.LocationOverlayDemo"
             android:configChanges="orientation|keyboardHidden"
-            android:screenOrientation="sensor" >
+            android:screenOrientation="portrait" >
         </activity>
         <activity
             android:name="com.benbenTaxi.demo.OfflineDemo"
@@ -158,6 +163,10 @@
         </activity>
         
         <activity android:name="com.benbenTaxi.v1.ListDetail"
+            android:label="@string/detail_title">
+        </activity>
+        
+        <activity android:name="com.benbenTaxi.v1.WaitingActivity"
             android:label="@string/detail_title">
         </activity>
     </application>

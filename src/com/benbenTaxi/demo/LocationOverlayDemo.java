@@ -11,7 +11,6 @@ import org.json.JSONTokener;
 
 import android.app.Activity;
 import android.app.Application;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
@@ -27,7 +26,6 @@ import android.os.Handler;
 import android.os.SystemClock;
 import android.view.Gravity;
 import android.view.KeyEvent;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -57,13 +55,13 @@ import com.baidu.mapapi.map.MyLocationOverlay;
 import com.baidu.mapapi.map.OverlayItem;
 import com.baidu.platform.comapi.basestruct.GeoPoint;
 import com.benbenTaxi.R;
-import com.benbenTaxi.v1.BenbenApp;
 import com.benbenTaxi.v1.ListDetail;
 import com.benbenTaxi.v1.function.ConfirmShow;
 import com.benbenTaxi.v1.function.DataPreference;
 import com.benbenTaxi.v1.function.GetInfoTask;
 import com.benbenTaxi.v1.function.IdShow;
 import com.benbenTaxi.v1.function.ListShow;
+import com.benbenTaxi.v1.function.WaitingShow;
 public class LocationOverlayDemo extends Activity {
 	
 	static MapView mMapView = null;
@@ -101,13 +99,18 @@ public class LocationOverlayDemo extends Activity {
                 	doPassenger();
                 }
         		break;
+        	case MSG_HANDLE_REQ_TIMEOUT:
+        		Toast.makeText(LocationOverlayDemo.this, "请求超时，请重新选择", Toast.LENGTH_SHORT).show();
+        		requestAbandon();
+        		resetStatus();
+        		break;
         	default:
         		if ( msg.what >= MSG_HANDLE_ITEM_TOUCH ) {
-        			int idx = msg.what-MSG_HANDLE_ITEM_TOUCH;
+        			mReqIdx = msg.what-MSG_HANDLE_ITEM_TOUCH;
             		try {
 						if ( mIsDriver ) {
 							if (mReqId < 0) {
-								mConfirmObj = mReqInfo.getJSONObject(idx);
+								mConfirmObj = mReqInfo.getJSONObject(mReqIdx);
 								mReqId = mConfirmObj.getInt("id");
 								showPassengerRequestInfo(mReqId, mConfirmObj);
 							} else {
@@ -116,14 +119,14 @@ public class LocationOverlayDemo extends Activity {
 							}
 						} else {
 							// 乘客态，显示司机信息
-							JSONObject obj = mReqInfo.getJSONObject(idx);
+							JSONObject obj = mReqInfo.getJSONObject(mReqIdx);
 							int drvid = obj.getInt("driver_id");
 							showDriverInfo(drvid, obj);
 						}
 					} catch (JSONException e) {
 						resetStatus();
 						// 下标异常
-		        		Toast.makeText(LocationOverlayDemo.this.getApplicationContext(), "请求状态异常: "+idx+"/"+mReqInfo.length(),
+		        		Toast.makeText(LocationOverlayDemo.this.getApplicationContext(), "请求状态异常: "+mReqIdx+"/"+mReqInfo.length(),
 								Toast.LENGTH_SHORT).show();
 					}
         		}
@@ -148,7 +151,7 @@ public class LocationOverlayDemo extends Activity {
 	
 	private DataPreference mData;
 	private String mUserMobile;
-	private int mReqId = -1; // 乘客发起的请求id
+	private int mReqId = -1, mReqIdx = -1; // 乘客发起的请求id
 	private boolean mIsGetLocation = false; // 判断是否成功获取地理位置
 	private String mStatus;
 	private boolean mIsDriver = false; // 是否是司机
@@ -164,17 +167,25 @@ public class LocationOverlayDemo extends Activity {
 	private View mDialogView; // 录音对话框的view
 	private PopupWindow mPopCallTaxi; // 录音的弹出窗口
 	
-	private final static String STAT_DRV_TRY_GET_REQUEST = "Driver_Try_Get_Request";
-	private final static String STAT_WAITING_DRV_RESP = "Waiting_Driver_Response";
-	private final static String STAT_WAITING_PAS_CONF = "Waiting_Passenger_Confirm";
+	private WaitingShow mWs; // 等待响应popwin
+	
+	private Drawable mOldMarker = null; // 保存更新前使用的标记
+	
+	private final static String STAT_DRV_TRY_GET_REQUEST = "Driver_Try_Get_Request";	
 	private final static String STAT_PASSENGER_CONFIRM = "Passenger_Confirm";
-	private final static String STAT_PASSENGER_TRY_CONFIRM = "Passenger_Try_Confirm";
-	private final static String STAT_SUCCESS = "Success";
+	private final static String STAT_PASSENGER_TRY_CONFIRM = "Passenger_Try_Confirm";	
 	private final static String STAT_PASSENGER_CANCEL = "Passenger_Cancel";
 	private final static String STAT_PASSENGER_TRY_CANCEL = "Passenger_Try_cancel";
 	
+	public final static String STAT_WAITING_DRV_RESP = "Waiting_Driver_Response";
+	public final static String STAT_WAITING_PAS_CONF = "Waiting_Passenger_Confirm";
+	public final static String STAT_CANCEL = "Canceled_By_Passenger";
+	public final static String STAT_SUCCESS = "Success";
+	public final static String STAT_TIMEOUT = "TimeOut";
+	
 	public final static int MSG_HANDLE_MAP_MOVE = 1;
 	public final static int MSG_HANDLE_POS_REFRESH = 2;
+	public final static int MSG_HANDLE_REQ_TIMEOUT = 3;
 	public final static int MSG_HANDLE_ITEM_TOUCH = 10000;
 	
 	private static int mShowDialogStat = 0;
@@ -291,6 +302,11 @@ public class LocationOverlayDemo extends Activity {
 	    
     	mDialogView = getLayoutInflater().inflate(R.layout.record_dialog, null);
     	mPopCallTaxi = new PopupWindow(mDialogView, 600, 600);
+    	
+    	View vv = getLayoutInflater().inflate(R.layout.waiting_dialog, null);
+    	mWs = new WaitingShow("等待乘客响应", 30, vv);
+    	mWs.SetNegativeOnclick("取消请求", null);
+    	mWs.setHandler(MsgHandler);
 	    
 	    Toast.makeText(this.getApplicationContext(), mTokenKey+": "+mTokenVal, Toast.LENGTH_SHORT).show();
     }
@@ -381,10 +397,12 @@ public class LocationOverlayDemo extends Activity {
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch(item.getItemId()) {
 		case R.id.menu_info:
-			int rid = mApp.getRequestID();
-			JSONObject obj = mApp.getCurrentObject();
-			
 			Intent detail = new Intent(this, ListDetail.class);
+			detail.putExtra("neg", "再看看");
+			if ( mApp.getCurrentStat().equals(STAT_SUCCESS) ) {
+				// 显示电话乘客按钮
+				detail.putExtra("pos", "电话乘客");
+			}
 			this.startActivityForResult(detail, 3);
 			break;
 		default:
@@ -517,7 +535,7 @@ public class LocationOverlayDemo extends Activity {
 					}
 					
 					if (event.getAction() == MotionEvent.ACTION_UP) {
-						if ( (System.currentTimeMillis()-mRecTime) < 1000 ) {
+						if ( (System.currentTimeMillis()-mRecTime) < 500 ) {
 							// 时间太短
 							//Toast.makeText(LocationOverlayDemo.this, "录音时间太短，请重新录制", Toast.LENGTH_SHORT).show();
 							tv.setText(app.getResources().getString(R.string.rec_short));
@@ -538,7 +556,7 @@ public class LocationOverlayDemo extends Activity {
 						if ( dismiss ) {
 							// 延迟退出
 							DelayTask dt = new DelayTask(DelayTask.TYPE_CLOSE_POPUP);
-							dt.execute(1000);
+							dt.execute(500);
 						}
 					}
 				}
@@ -583,13 +601,13 @@ public class LocationOverlayDemo extends Activity {
 			//voiceUrl[3] = "乘客信息获取错误: "+e.toString();
 		}
 				
-		DemoApplication app = (DemoApplication) this.getApplicationContext();
-		app.setCurrentInfo(voiceUrl);
-		app.setCurrentObject(mConfirmObj);
-		app.setRequestID(mReqId);
+		mApp.setCurrentInfo(voiceUrl);
+		mApp.setCurrentObject(mConfirmObj);
+		mApp.setRequestID(mReqId);
 		
 		Bundle tips = new Bundle();
 		tips.putString("pos", "确认乘客");
+		tips.putString("neg", "再看看");
 		Intent detail = new Intent(this, ListDetail.class);
 		detail.putExtras(tips);
 		this.startActivityForResult(detail, 1);
@@ -605,14 +623,26 @@ public class LocationOverlayDemo extends Activity {
 			if ( resultCode > 0 ) {
 				mStatus = STAT_DRV_TRY_GET_REQUEST;
 	    		GetTaxiTask drvcon = new GetTaxiTask();
-	    		drvcon.driverConfirm(locData.longitude, locData.latitude, mReqId);
+	    		// 这里是用保存的reqid，防止被更新为无效值
+	    		drvcon.driverConfirm(locData.longitude, locData.latitude, mApp.getRequestID());
 	    		
+	    		// 显示延迟进度条，等待30s
+	    		/*
+	    		Intent it = new Intent(this, WaitingActivity.class);
+	    		it.putExtra("timeout", 30);
+	    		it.putExtra("title", "等待乘客响应");
+	    		this.startActivityForResult(it, 4);
+	    		*/
+	    		// 问题已解决，可以使用popwin，注意不要在回调函数中dismiss当前的popwin
+	    		mWs.show();
+
 			} else {
 				resetStatus();
 			}
 			break;
 		case 2:
-			// 来自Success状态，电话乘客
+			// 来自Success状态，电话乘客，其余动作与查看(3)相同
+			Toast.makeText(this, "乘客已确认，请前往指定地点", Toast.LENGTH_SHORT).show();
 		case 3:
 			// 来自查看
 			if ( resultCode > 0 ) {
@@ -629,6 +659,22 @@ public class LocationOverlayDemo extends Activity {
 			    LocationOverlayDemo.this.startActivity(incall);
 			}
 			break;
+		case 4:
+			// 来自WaitingActivity，司机等待乘客响应
+			switch (resultCode) {
+			case DemoApplication.STATVAL_CANCEL:
+				Toast.makeText(this, "本次请求已被取消，请重新选择其他请求", Toast.LENGTH_SHORT).show();
+				resetStatus();
+				break;
+			case DemoApplication.STATVAL_SUCCESS:
+				Toast.makeText(this, "乘客已确认，请前往指定地点", Toast.LENGTH_SHORT).show();
+				resetStatus();
+				break;
+			case DemoApplication.STATVAL_TIMEOUT:
+				Toast.makeText(this, "本次请求已超时，请重新选择其他请求", Toast.LENGTH_SHORT).show();
+				resetStatus();
+				break;
+			}
 		default:
 			break;
 		}
@@ -674,13 +720,34 @@ public class LocationOverlayDemo extends Activity {
     
     private void resetStatus() {
     	this.mReqId = -1;
+    	this.mReqIdx = -1;
     	//this.mDrvConfirm = false;
     	this.mConfirmObj = null;
     	this.mStatus = "";
     	
     	testUpdateButton.setText(this.getResources().getString(R.string.call_taxi));
     }
+    
+    private void requestAbandon() {
+    	mWs.Dismiss();
+    	
+    	if ( mReqIdx > 0 && mOldMarker != null ) {
+			OverlayItem it = mGeoList.get(mReqIdx);
+			it.setMarker(mOldMarker);
+			mOldMarker = null;
+			mGeoList.set(mReqIdx, it);
+			updateMapView();
+		}
+    }
 
+    private void updateMapView() {
+    	ov.removeAll();
+    	if ( ov.size() < mGeoList.size()){
+    		//ov.addItem(mGeoList.get(ov.size() ));
+    		ov.addItem(mGeoList);
+    	}
+	    mMapView.refresh();
+    }
     
 	private class GetTaxiTask extends GetInfoTask {
 		private static final int TYPE_GET_TAXI = 0;
@@ -692,6 +759,7 @@ public class LocationOverlayDemo extends Activity {
 		private static final int TYPE_DRV_REQ = 6;
 		private static final int TYPE_DRV_CON = 7;
 		private static final int TYPE_DRV_ASK = 8;
+		private static final int TYPE_CANCEL = 9;
 		
 		public static final String PASS_CONFIRM = "confirm";
 		public static final String PASS_CANCEL = "cancel";
@@ -707,8 +775,12 @@ public class LocationOverlayDemo extends Activity {
 			execute(url, _useragent, GetInfoTask.TYPE_GET);
 		}
 		
-		public void CancelTaxi() {
-			// TODO: 取消打车
+		public void CancelTaxi(int id) {
+			// 取消打车: /api/v1/taxi_requests/:id/cancel
+			_type = TYPE_CANCEL;
+			String url = "http://"+mTestHost+"/api/v1/taxi_requests/"+id+"/cancel";
+			_json_data = new JSONObject();
+			doPOST(url);
 		}
 		
 		public void getRequest(int id) {
@@ -900,13 +972,16 @@ public class LocationOverlayDemo extends Activity {
 						doPassengerConfirm(jsParser);
 						break;
 					case TYPE_PAS_CAN:
-						doPassengerCancel(jsParser);
+						doCancel(jsParser);
 						break;
 					case TYPE_DRV_CON:
 						doDriverConfirm(jsParser);
 						break;
 					case TYPE_DRV_REP:
 						doDriverReport(jsParser);
+						break;
+					case TYPE_CANCEL:
+						doCancel(jsParser);
 						break;
 					default:
 						break;
@@ -946,7 +1021,6 @@ public class LocationOverlayDemo extends Activity {
 			mReqInfo = new JSONArray(data);
 				
 			//清除所有添加的Overlay
-	        ov.removeAll();
 	        mGeoList.clear();
 	        
 			//添加一个item
@@ -979,11 +1053,7 @@ public class LocationOverlayDemo extends Activity {
 				   	mGeoList.add(item);
 	        	}
 	        }
-	    	if ( ov.size() < mGeoList.size()){
-	    		//ov.addItem(mGeoList.get(ov.size() ));
-	    		ov.addItem(mGeoList);
-	    	}
-		    mMapView.refresh();
+	    	updateMapView();
 		    
 		    if ( _type == TYPE_GET_TAXI && mReqId < 0 ) {
 		    	Toast.makeText(LocationOverlayDemo.this.getApplicationContext(), "附近有"+mReqInfo.length()+"辆出租车",
@@ -1001,6 +1071,8 @@ public class LocationOverlayDemo extends Activity {
 			// {"id":28,"state":"Waiting_Driver_Response","passenger_lat":8.0,"passenger_lng":8.0,"passenger_voice_url":"/uploads/taxi_request/voice/2013-05-31/03bd766e8ecc2e2429f1610c7bf6c3ec.m4a"}
 			// 用户只要处理state即可
 			mStatus = ((JSONObject)jsParser.nextValue()).getString("state");
+			mApp.setCurrentStat(mStatus);
+			
 			String msg = null;
 			if ( mStatus.equals("Waiting_Driver_Response") ) {
 				// 继续等待
@@ -1012,47 +1084,62 @@ public class LocationOverlayDemo extends Activity {
 					msg = "乘客请求["+mReqId+"]等待您接受, 附近有"+mGeoList.size()+"个乘客";
 				}
 				
-			} else if ( mStatus.equals("Waiting_Passenger_Confirm") ) {
+			} else if ( mStatus.equals(STAT_WAITING_PAS_CONF) ) {
 				// 司机已应答，等待用户确认
 				if ( _type == TYPE_ASK_REQ ) {
 					// 乘客态
 					msg = "请求["+mReqId+"]已有司机应答, 附近"+mGeoList.size()+"辆";
 				} else {
-					// 司机态
+					// 司机态，更新乘客图标
 					msg = "乘客请求["+mReqId+"]您已接受, 附近有"+mGeoList.size()+"个乘客";
+					if ( mReqIdx >= 0 ) {
+						OverlayItem it = mGeoList.get(mReqIdx);
+						mOldMarker = it.getMarker();
+						it.setMarker(getResources().getDrawable(R.drawable.location2));
+						mGeoList.set(mReqIdx, it);
+						updateMapView();
+					}
 				}
 				
-			} else if ( mStatus.equals("TimeOut") ) {
+			} else if ( mStatus.equals(STAT_TIMEOUT) ) {
 				// 超时
 				if ( _type == TYPE_ASK_REQ ) {
 					// 乘客态
 					msg = "请求["+mReqId+"]已超时, 附近"+mGeoList.size()+"辆";
 				} else {
 					// 司机态
+					requestAbandon();
 					msg = "乘客请求["+mReqId+"]已超时, 附近有"+mGeoList.size()+"个乘客";
 				}
 				LocationOverlayDemo.this.resetStatus();
 				
-			} else if ( mStatus.equals("Canceled_By_Passenger") ) {
-				// 用户取消
+			} else if ( mStatus.equals(STAT_CANCEL) ) {
+				mApp.setCurrentStatVal(DemoApplication.STATVAL_CANCEL);
+				
+				// 用户取消，更新乘客/司机图标
 				if ( _type == TYPE_ASK_REQ ) {
 					// 乘客态
 					msg = "请求["+mReqId+"]已被乘客取消, 附近"+mGeoList.size()+"辆";
 				} else {
 					// 司机态
 					msg = "乘客请求["+mReqId+"]已被取消, 附近有"+mGeoList.size()+"个乘客";
+					requestAbandon();
 				}
 				LocationOverlayDemo.this.resetStatus();
 				
 			} else if ( mStatus.equals("Success") ) {
+				mApp.setCurrentStatVal(DemoApplication.STATVAL_SUCCESS);
+				mWs.Dismiss();
+				
 				// 用户确认，本次打车成功
 				if ( _type == TYPE_ASK_REQ ) {
 					// 乘客态
 					msg = "请求["+mReqId+"]打车成功！";
 				} else {
-					// 司机态
+					// 司机态，暂停计时
 		    		Bundle tips = new Bundle();
 		    		tips.putString("pos", "电话乘客");
+		    		tips.putString("neg", "直接前往");
 		    		Intent detail = new Intent(LocationOverlayDemo.this, ListDetail.class);
 		    		detail.putExtras(tips);
 		    		LocationOverlayDemo.this.startActivityForResult(detail, 2);
@@ -1080,9 +1167,9 @@ public class LocationOverlayDemo extends Activity {
 			mStatus = STAT_PASSENGER_CONFIRM;
 		}
 		
-		private void doPassengerCancel(JSONTokener jsParser) throws JSONException {
+		private void doCancel(JSONTokener jsParser) throws JSONException {
 			// 不需处理，由doGetRequest轮询得到
-			mStatus = STAT_PASSENGER_CANCEL;
+			mStatus = STAT_CANCEL;
 		}
 		
 		private void doDriverConfirm(JSONTokener jsParser) throws JSONException {

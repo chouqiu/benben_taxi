@@ -35,7 +35,8 @@
    <ScrollView
         android:id="@+id/login_form"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" >
+        android:layout_height="match_parent"
+        android:fillViewport="true" >
 
        <LinearLayout
            style="@style/LoginFormContainer"
@@ -112,13 +113,21 @@
                 android:inputType="textPassword"
                 android:maxLines="1"
                 android:singleLine="true" />
-
+            </LinearLayout>
+            
+			<LinearLayout
+				android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:padding="8dp"
+                android:orientation="horizontal" >
             <Button
                 android:id="@+id/sign_in_button"
                 style="@style/loginButton"
-                android:layout_width="match_parent"
+                android:layout_width="0dip"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
+                android:layout_weight="5"
                 android:layout_marginTop="16dp"
                 android:paddingLeft="32dp"
                 android:paddingRight="32dp"
@@ -127,26 +136,27 @@
 			<Button
 			    android:id="@+id/create_button"
 			    style="@style/loginButton"
-			    android:layout_width="match_parent"
+			    android:layout_width="0dip"
 			    android:layout_height="wrap_content"
 			    android:layout_gravity="center"
+			    android:layout_weight="5"
 			    android:paddingLeft="32dp"
 			    android:paddingRight="32dp"
 			    android:text="@string/action_create_register" />
 			</LinearLayout>
 
+						<TextView
+			    android:id="@+id/tv_fill"
+			    android:layout_width="match_parent"
+			    android:layout_height="0dip"
+			    android:layout_weight="0.8" />
 			
 			<LinearLayout
 			    android:layout_width="match_parent"
 			    android:layout_height="wrap_content"
 			    android:layout_marginTop="20dp"
 			    android:orientation="vertical" >
-						
-			<TextView
-			    android:id="@+id/tv_fill"
-			    android:layout_width="match_parent"
-			    android:layout_height="match_parent"
-			/>
+
 			<TextView
 			    android:id="@+id/textfoot1"
 			    android:layout_width="match_parent"

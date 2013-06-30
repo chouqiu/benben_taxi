@@ -45,9 +45,6 @@ public class ListDetail extends Activity {
     	
     	mLv.setAdapter(new CallAdapter(mContents, this));  
     	
-    	if ( tip_pos == null ) {
-    		tip_pos = "电话乘客";
-    	}
 		mPosfunc = new View.OnClickListener() {		
 			@Override
 			public void onClick(View v) {
@@ -57,9 +54,6 @@ public class ListDetail extends Activity {
 			}
 		};
 		
-		if ( tip_neg == null ) {
-			tip_neg = "再看看";
-		}
 		mNegfunc = new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
@@ -69,7 +63,7 @@ public class ListDetail extends Activity {
 			}
 		};
 		
-		if ( mApp.getRequestID() > 0 ) {
+		if ( tip_pos!=null && mApp.getRequestID()>0 ) {
 			mBtnPos.setText(tip_pos);
 			mBtnPos.setOnClickListener(mPosfunc);
 		} else {

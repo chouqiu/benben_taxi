@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/waitingDialog"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/pop_corner"
+    android:gravity="center"
+    android:orientation="vertical" >
+
+
+    <LinearLayout
+	    android:layout_width="match_parent"
+	    android:layout_height="wrap_content"
+	    android:layout_marginTop="20dp"
+	    android:layout_marginBottom="10dp"
+	    android:orientation="vertical" >
+	    
+    	<TextView
+	        android:id="@+id/tvWaitingTitle"
+	        android:layout_width="match_parent"
+	        android:layout_height="wrap_content"
+	        android:layout_gravity="center"
+	        android:gravity="center"
+	        android:text="@string/app_name"
+	        android:textAppearance="?android:attr/textAppearanceLarge"
+	        android:textColor="#fff" />
+	            
+	    <ProgressBar
+	        android:id="@+id/waitingProgress"
+	        style="?android:attr/progressBarStyleLarge"
+	        android:layout_gravity="center"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content" />
+	
+	    <Chronometer
+	        android:id="@+id/waitingMeter"
+	        android:layout_width="wrap_content"
+	        android:layout_height="wrap_content"
+	        android:layout_gravity="center"
+	        android:text="Chronometer" />
+	    
+
+    </LinearLayout>
+    
+    <LinearLayout
+	    android:layout_width="match_parent"
+	    android:layout_height="wrap_content"
+	    android:layout_marginTop="10dp"
+	    android:orientation="horizontal" >
+
+        <Button
+            android:id="@+id/btnWaitingCancel"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            style="@style/confirmButton"
+            android:text="@string/confirm_cancel" />
+	    
+	</LinearLayout>
+
+
+</LinearLayout>

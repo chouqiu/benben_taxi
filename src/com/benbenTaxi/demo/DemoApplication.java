@@ -23,6 +23,12 @@ public class DemoApplication extends Application {
     private String[] mCurrentInfo = new String[5];
 	private JSONObject mCurrentObj = new JSONObject();
 	private int mReqId = -1; // 乘客发起的请求id
+	private String mCurrentStat = new String("");
+	private int mStatVal = -1; // 代替字符串比较，提高性能
+	
+	public static final int STATVAL_SUCCESS = 1;
+	public static final int STATVAL_CANCEL = 0;
+	public static final int STATVAL_TIMEOUT = 2;
 	
 	public String[] getCurrentInfo() {
 		return mCurrentInfo;
@@ -36,6 +42,18 @@ public class DemoApplication extends Application {
 		return mReqId;
 	}
 	
+	public String getCurrentStat() {
+		return mCurrentStat;
+	}
+	
+	public int getCurrentStatVal() {
+		return mStatVal;
+	}
+	
+	public void resetStatVal() {
+		mStatVal = -1;
+	}
+	
 	public void setCurrentInfo(String[] info) {
 		mCurrentInfo = info;
 	}
@@ -46,6 +64,14 @@ public class DemoApplication extends Application {
 	
 	public void setRequestID(int id) {
 		mReqId = id;
+	}
+	
+	public void setCurrentStat( String stat ) {
+		mCurrentStat = stat;
+	}
+	
+	public void setCurrentStatVal( int stat ) {
+		mStatVal = stat;
 	}
 	
 	@Override
