@@ -9,7 +9,6 @@ import android.widget.Button;
 import android.widget.LinearLayout.LayoutParams;
 import android.widget.ListView;
 import android.widget.PopupWindow;
-import android.widget.TextView;
 
 public class ListShow 
 {

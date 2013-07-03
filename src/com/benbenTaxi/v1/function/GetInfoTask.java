@@ -26,9 +26,8 @@ import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.util.EntityUtils;
 
+import android.annotation.SuppressLint;
 import android.os.AsyncTask;
-import android.webkit.CookieManager;
-import android.webkit.CookieSyncManager;
 
 public class GetInfoTask extends AsyncTask<String, Integer, Boolean> {
 	public final static String TYPE_GET = "get";
@@ -59,6 +58,7 @@ public class GetInfoTask extends AsyncTask<String, Integer, Boolean> {
 		//sess_params.add(new BasicNameValuePair("session[name]",mEmail));
 	}
 	
+	@SuppressLint("SimpleDateFormat")
 	protected void initCookies(String key, String val, String domain) {
 		BasicClientCookie bc1 = new BasicClientCookie(key, val);
 		bc1.setVersion(0);
@@ -71,7 +71,6 @@ public class GetInfoTask extends AsyncTask<String, Integer, Boolean> {
 	        bc1.setExpiryDate(ed);
 	        cs.addCookie(bc1);
 		} catch (ParseException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}

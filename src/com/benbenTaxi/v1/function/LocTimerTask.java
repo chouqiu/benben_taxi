@@ -262,17 +262,16 @@ public class LocTimerTask extends TimerTask {
 				msg = mHandler.obtainMessage(LocTimerTask.EVENT_LOCATION_OK);			
 				
 				//_info.append("result: "+this.getHttpCode()+"\n"+this.toString());
-				JSONTokener jsParser = new JSONTokener(this.toString());
-				JSONObject ret = null;
+				//JSONTokener jsParser = new JSONTokener(this.toString());
+				//JSONObject ret = null;
 
 				try {
-					String info = this.toString();
-					ret = (JSONObject)jsParser.nextValue();
-				} catch (JSONException e) {
-					// TODO Auto-generated catch block
+					//String info = this.toString();
+					//ret = (JSONObject)jsParser.nextValue();
+				//} catch (JSONException e) {
 					//e.printStackTrace();
 					try {
-						JSONObject err = ret.getJSONObject("errors");
+						//JSONObject err = ret.getJSONObject("errors");
 						//_info.append("errmsg \""+err.getJSONArray("base").getString(0)+"\"");
 					} catch (Exception ee) {
 						//_info.append("json error: "+ee.toString()+"\n");

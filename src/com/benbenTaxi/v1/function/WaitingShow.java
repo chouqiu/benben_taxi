@@ -1,8 +1,7 @@
 package com.benbenTaxi.v1.function;
 
 import com.benbenTaxi.R;
-import com.benbenTaxi.demo.DemoApplication;
-import com.benbenTaxi.demo.LocationOverlayDemo;
+import com.benbenTaxi.v1.BenbenLocationMain;
 
 import android.os.Handler;
 import android.os.SystemClock;
@@ -100,7 +99,7 @@ public class WaitingShow
 					//Toast.makeText(mAct, "乘客超时未响应，请重新选择请求", Toast.LENGTH_SHORT).show();
 					//doClean();
 					if ( mH != null ) {
-						mH.dispatchMessage(mH.obtainMessage(LocationOverlayDemo.MSG_HANDLE_REQ_TIMEOUT));
+						mH.dispatchMessage(mH.obtainMessage(BenbenLocationMain.MSG_HANDLE_REQ_TIMEOUT));
 					}
 				} else {
 					// 更新进度条

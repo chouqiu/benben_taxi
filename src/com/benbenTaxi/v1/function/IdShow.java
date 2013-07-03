@@ -14,7 +14,6 @@ public class IdShow
 	
 	protected Context 			mA 				= null;
 	protected Activity			mAct			= null;
-	private EquipmentId mEquipmentId			= null;
 	private AlertDialog mIdDialog				= null;
 	private String mTitle;
 	private String mContent;

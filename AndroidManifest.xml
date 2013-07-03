@@ -68,7 +68,7 @@
     
     <application
         android:allowBackup="false"
-        android:name="com.benbenTaxi.demo.DemoApplication"
+        android:name="com.benbenTaxi.v1.BenbenApplication"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
         android:screenOrientation="portrait" >
@@ -87,88 +87,23 @@
         </activity>
         
         <activity
-            android:name="com.benbenTaxi.demo.BMapApiDemoMain"
-            android:label="BaiduMapSDKDemo" >
-        </activity>
-        <activity
-            android:name="com.benbenTaxi.demo.BaseMapDemo"
-            android:configChanges="orientation|keyboardHidden"
-            android:screenOrientation="sensor" >
-        </activity>
-        <activity
-            android:name="com.benbenTaxi.demo.GeometryDemo"
-            android:configChanges="orientation|keyboardHidden"
-            android:screenOrientation="sensor" >
-        </activity>
-        <activity
-            android:name="com.benbenTaxi.demo.ItemizedOverlayDemo"
-            android:configChanges="orientation|keyboardHidden"
-            android:screenOrientation="sensor" >
-        </activity>
-        <activity
-            android:name="com.benbenTaxi.demo.PoiSearchDemo"
-            android:configChanges="orientation|keyboardHidden"
-            android:screenOrientation="sensor" >
-        </activity>
-        <activity
-            android:name="com.benbenTaxi.demo.LocationOverlayDemo"
+            android:name="com.benbenTaxi.v1.BenbenLocationMain"
             android:configChanges="orientation|keyboardHidden"
             android:screenOrientation="portrait" >
         </activity>
-        <activity
-            android:name="com.benbenTaxi.demo.OfflineDemo"
-            android:configChanges="orientation|keyboardHidden"
-            android:screenOrientation="sensor" >
-        </activity>
-        <activity
-            android:name="com.benbenTaxi.demo.RoutePlanDemo"
-            android:configChanges="orientation|keyboardHidden"
-            android:screenOrientation="sensor" >
-        </activity>
-        <activity
-            android:name="com.benbenTaxi.demo.GeoCoderDemo"
-            android:configChanges="orientation|keyboardHidden"
-            android:screenOrientation="sensor" >
-        </activity>
-        <activity
-            android:name="com.benbenTaxi.demo.BusLineSearchDemo"
-            android:configChanges="orientation|keyboardHidden"
-            android:screenOrientation="sensor" >
-        </activity>
-        <activity
-            android:name="com.benbenTaxi.demo.CloudSearchDemo"
-            android:configChanges="orientation|keyboardHidden"
-            android:screenOrientation="sensor" >
-        </activity>
-        <activity
-            android:name="com.baidu.mapapi.search.PlaceCaterActivity"
-            android:configChanges="orientation|keyboardHidden"
-            android:theme="@android:style/Theme.NoTitleBar" >
-        </activity>
 
-        <!--
-            activity android:name=".TestActivity" 
-            android:configChanges="orientation|keyboardHidden"
-            android:theme="@android:style/Theme.NoTitleBar"> </activity
-        -->
+        
         <service
             android:name="com.baidu.location.f"
             android:enabled="true"
             android:process=":remote" >
         </service>
 
-        <activity
-            android:name="com.benbenTaxi.demo.NaviDemo"
-            android:label="@string/title_activity_navi_demo" >
-        </activity>
         
         <activity android:name="com.benbenTaxi.v1.ListDetail"
             android:label="@string/detail_title">
         </activity>
         
-        <activity android:name="com.benbenTaxi.v1.WaitingActivity"
-            android:label="@string/detail_title">
-        </activity>
     </application>
 
 </manifest>

@@ -1,12 +1,10 @@
 package com.benbenTaxi.v1;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
 import com.benbenTaxi.R;
-import com.benbenTaxi.demo.LocationOverlayDemo;
 import com.benbenTaxi.v1.function.DataPreference;
 import com.benbenTaxi.v1.function.EquipmentId;
 import com.benbenTaxi.v1.function.GetInfoTask;
@@ -15,9 +13,7 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -27,9 +23,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
-import android.widget.CheckBox;
 import android.widget.EditText;
-import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -324,10 +318,10 @@ public class LoginActivity extends Activity {
 		
 		private String _useragent;
 		private JSONObject _json_data;
-		private int _type;
+		//private int _type;
 		
 		public void doLogin(String name, String pass, String host, String ua, String type) {
-			_type = LOGINTYPE_LOGIN;
+			//_type = LOGINTYPE_LOGIN;
 			_useragent = ua;
 			
 			initHeaders("Content-Type", "application/json");
@@ -347,7 +341,7 @@ public class LoginActivity extends Activity {
 		}
 		
 		public void doCreate(String name, String pass, String host, String ua, String type) {
-			_type = LOGINTYPE_CREATE;
+			//_type = LOGINTYPE_CREATE;
 			_useragent = ua;
 			
 			initHeaders("Content-Type", "application/json");
@@ -395,13 +389,13 @@ public class LoginActivity extends Activity {
 					}
 				} catch (JSONException e) {
 					//e.printStackTrace();
-					try {
-						JSONObject err = ret.getJSONObject("errors");
+					//try {
+						//JSONObject err = ret.getJSONObject("errors");
 						//_info.append("errmsg \""+err.getJSONArray("base").getString(0)+"\"");
 						//_info.append("\ncookies: "+_sess_key.getName()+" "+_sess_key.getValue()+"\n");
-					} catch (JSONException ee) {
+					//} catch (JSONException ee) {
 						//_info.append("json error: "+ee.toString()+"\n"+"ret: "+data);
-					}
+					//}
 				}
 			} else {
 				//_info.append("get errmsg: \n"+_errmsg);
@@ -431,7 +425,7 @@ public class LoginActivity extends Activity {
 					//Bundle sess_data = new Bundle();
 					//sess_data.putString("token_key", ret.getString("token_key"));
 					//sess_data.putString("token_value", ret.getString("token_value"));
-					Intent yunjianIntent = new Intent(LoginActivity.this,LocationOverlayDemo.class);
+					Intent yunjianIntent = new Intent(LoginActivity.this,BenbenLocationMain.class);
 					//yunjianIntent.putExtras(sess_data);
 					
 					startActivity(yunjianIntent);
