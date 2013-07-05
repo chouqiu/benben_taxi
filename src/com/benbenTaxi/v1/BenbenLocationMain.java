@@ -53,6 +53,7 @@ import com.baidu.mapapi.map.MapPoi;
 import com.baidu.mapapi.map.MapView;
 import com.baidu.mapapi.map.MyLocationOverlay;
 import com.baidu.mapapi.map.OverlayItem;
+import com.baidu.mapapi.utils.DistanceUtil;
 import com.baidu.platform.comapi.basestruct.GeoPoint;
 import com.benbenTaxi.R;
 import com.benbenTaxi.v1.function.BenbenOverlay;
@@ -156,7 +157,6 @@ public class BenbenLocationMain extends Activity {
 	private String mStatus;
 	private boolean mIsDriver = false; // 是否是司机
 	//private boolean mDrvConfirm = false; // 司机是否确认了请求
-	private double mDistance = 0.0; // 乘客/司机间距离
 	private BenbenApplication mApp;
 	
 	private AudioRecord mAudioRecord; //  乘客声音
@@ -187,6 +187,8 @@ public class BenbenLocationMain extends Activity {
 	public final static int MSG_HANDLE_POS_REFRESH = 2;
 	public final static int MSG_HANDLE_REQ_TIMEOUT = 3;
 	public final static int MSG_HANDLE_ITEM_TOUCH = 10000;
+	
+	private final static DecimalFormat mDF = new DecimalFormat("#.##");
 	
 	private static int mShowDialogStat = 0;
 	
@@ -436,8 +438,21 @@ public class BenbenLocationMain extends Activity {
         // 确认司机请求，本次打车行为结束
         	if ( mShowDialogStat == 0 ) {
 	        	mShowDialogStat = 1;
+	        		
+	        	GeoPoint gp1 = new GeoPoint((int)(locData.latitude* 1e6), (int)(locData.longitude *  1e6));
+	        	GeoPoint gp2 = null;
+	        	try {
+	        		double lat = this.mConfirmObj.getDouble("passenger_lat");
+	        		double lng = this.mConfirmObj.getDouble("passenger_lng");
+	        		gp2 = new GeoPoint((int)(lat*1e6), (int)(lng*1e6));
+	        		
+	        	} catch(JSONException e) {
+	        		gp2 = new GeoPoint((int)(locData.latitude* 1e6), (int)(locData.longitude *  1e6));
+	        	}
 	        	
-				ConfirmShow confirm = new ConfirmShow("有司机响应，距离您约", mDistance+"公里", this);
+	        	String dist = mDF.format(DistanceUtil.getDistance(gp1, gp2)/1000.0);
+	        	
+				ConfirmShow confirm = new ConfirmShow("有司机响应，距离您约", dist+"公里", this);
 	        	View.OnClickListener doOK = new View.OnClickListener() {
 					@Override
 					public void onClick(View v) {
@@ -584,11 +599,11 @@ public class BenbenLocationMain extends Activity {
     
     private void showPassengerRequestInfo(int idx, final JSONObject obj) throws JSONException {
     	String[] voiceUrl = new String[5];
-    	final DecimalFormat df = new DecimalFormat("#.##");
+    	
 		try {
 			voiceUrl[0] = "ID"+obj.getInt("id");
 			voiceUrl[1] = obj.getString("passenger_mobile");
-			voiceUrl[2] = df.format(obj.getDouble("passenger_lat"))+"/"+df.format(obj.getDouble("passenger_lng"));
+			voiceUrl[2] = mDF.format(obj.getDouble("passenger_lat"))+"/"+mDF.format(obj.getDouble("passenger_lng"));
 			voiceUrl[3] = "大连西路120号";
 			voiceUrl[4] = "2013-06-25 00:44:22";
 			//voiceUrl[3] = obj.getString("passenger_voice_url");
@@ -627,12 +642,6 @@ public class BenbenLocationMain extends Activity {
 	    		drvcon.driverConfirm(locData.longitude, locData.latitude, mApp.getRequestID());
 	    		
 	    		// 显示延迟进度条，等待30s
-	    		/*
-	    		Intent it = new Intent(this, WaitingActivity.class);
-	    		it.putExtra("timeout", 30);
-	    		it.putExtra("title", "等待乘客响应");
-	    		this.startActivityForResult(it, 4);
-	    		*/
 	    		// 问题已解决，可以使用popwin，注意不要在回调函数中dismiss当前的popwin
 	    		mWs.show();
 
