@@ -1,6 +1,7 @@
 ﻿package com.benbenTaxi.v1;
 
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import android.app.Application;
@@ -9,6 +10,7 @@ import android.widget.Toast;
 
 import com.baidu.mapapi.BMapManager;
 import com.baidu.mapapi.MKGeneralListener;
+import com.baidu.mapapi.map.LocationData;
 import com.baidu.mapapi.map.MKEvent;
 
 
@@ -20,11 +22,13 @@ public class BenbenApplication extends Application {
 
     public static final String strKey = "1BE33CC3A1DEBDC8FF3A8A3F23A5E208C27E5C83";
 	
+    private JSONArray mReqList; // 保存乘客请求列表，供列表模式引用
     private String[] mCurrentInfo = new String[5];
 	private JSONObject mCurrentObj = new JSONObject();
 	private int mReqId = -1; // 乘客发起的请求id
 	private String mCurrentStat = new String("");
 	private int mStatVal = -1; // 代替字符串比较，提高性能
+	private LocationData mCurrentLocData = new LocationData();
 	
 	public static final int STATVAL_SUCCESS = 1;
 	public static final int STATVAL_CANCEL = 0;
@@ -36,6 +40,10 @@ public class BenbenApplication extends Application {
 	
 	public JSONObject getCurrentObject() {
 		return mCurrentObj;
+	}
+	
+	public JSONArray getCurrentRequestList() {
+		return mReqList;
 	}
 	
 	public int getRequestID() {
@@ -50,6 +58,10 @@ public class BenbenApplication extends Application {
 		return mStatVal;
 	}
 	
+	public LocationData getCurrentLocData() {
+		return mCurrentLocData;
+	}
+	
 	public void resetStatVal() {
 		mStatVal = -1;
 	}
@@ -62,6 +74,10 @@ public class BenbenApplication extends Application {
 		mCurrentObj = obj;
 	}
 	
+	public void setCurrentRequestList(JSONArray arr) {
+		mReqList = arr;
+	}
+	
 	public void setRequestID(int id) {
 		mReqId = id;
 	}
@@ -72,6 +88,13 @@ public class BenbenApplication extends Application {
 	
 	public void setCurrentStatVal( int stat ) {
 		mStatVal = stat;
+	}
+	
+	public void setCurrentLocData(LocationData data) {
+		mCurrentLocData.latitude = data.latitude;
+        mCurrentLocData.longitude = data.longitude;
+        mCurrentLocData.accuracy = data.accuracy;
+        mCurrentLocData.direction = data.direction;
 	}
 	
 	@Override

@@ -20,5 +20,7 @@
     <string name="menu_about">关于</string>
     <string name="menu_setup">设置</string>
     <string name="menu_info">查看</string>
+    <string name="menu_list_mode">列表模式</string>
+    <string name="menu_map_mode">地图模式</string>
 
 </resources>

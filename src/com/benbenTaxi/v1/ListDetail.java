@@ -11,12 +11,12 @@ import android.widget.Button;
 import android.widget.ListView;
 
 public class ListDetail extends Activity {
-	private ListView mLv;
-	private Button mBtnPos, mBtnNeg;
+	protected ListView mLv;
+	protected Button mBtnPos, mBtnNeg;
+	protected View.OnClickListener mPosfunc, mNegfunc;
+	protected String[] mContents;
+	protected BenbenApplication mApp;
 	private String tip_pos, tip_neg;
-	private View.OnClickListener mPosfunc, mNegfunc;
-	private String[] mContents;
-	private BenbenApplication mApp;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -24,7 +24,6 @@ public class ListDetail extends Activity {
 		setContentView(R.layout.list_dialog);
 		
 		mApp = (BenbenApplication) this.getApplicationContext();
-		mContents = mApp.getCurrentInfo();
 		Bundle tips = getIntent().getExtras();
 		if ( tips != null ) {
 			tip_pos = tips.getString("pos");
@@ -39,7 +38,25 @@ public class ListDetail extends Activity {
     	mBtnPos = (Button)findViewById(R.id.btnListOk);
     	mBtnNeg = (Button)findViewById(R.id.btnListCancel);
     	
-    	mLv.setAdapter(new CallAdapter(mContents, this));  
+    	do_init_functions();
+    	
+    	if ( tip_pos!=null && mApp.getRequestID()>0 ) {
+			mBtnPos.setText(tip_pos);
+			mBtnPos.setOnClickListener(mPosfunc);
+		} else {
+			mBtnPos.setVisibility(View.GONE);
+		}
+		if ( tip_neg != null ) {
+			mBtnNeg.setText(tip_neg);
+			mBtnNeg.setOnClickListener(mNegfunc);
+		} else {
+			mBtnNeg.setVisibility(View.GONE);
+		}
+	}
+	
+	protected void do_init_functions() {
+		mContents = mApp.getCurrentInfo();
+    	mLv.setAdapter(new CallAdapter(mContents, this));
     	
 		mPosfunc = new View.OnClickListener() {		
 			@Override
@@ -58,18 +75,5 @@ public class ListDetail extends Activity {
 				finish();
 			}
 		};
-		
-		if ( tip_pos!=null && mApp.getRequestID()>0 ) {
-			mBtnPos.setText(tip_pos);
-			mBtnPos.setOnClickListener(mPosfunc);
-		} else {
-			mBtnPos.setVisibility(View.GONE);
-		}
-		if ( tip_neg != null ) {
-			mBtnNeg.setText(tip_neg);
-			mBtnNeg.setOnClickListener(mNegfunc);
-		} else {
-			mBtnNeg.setVisibility(View.GONE);
-		}
 	}
 }

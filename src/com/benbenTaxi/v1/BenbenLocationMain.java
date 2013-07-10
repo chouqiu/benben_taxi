@@ -59,6 +59,7 @@ import com.benbenTaxi.R;
 import com.benbenTaxi.v1.function.BenbenOverlay;
 import com.benbenTaxi.v1.function.ConfirmShow;
 import com.benbenTaxi.v1.function.DataPreference;
+import com.benbenTaxi.v1.function.Distance;
 import com.benbenTaxi.v1.function.GetInfoTask;
 import com.benbenTaxi.v1.function.IdShow;
 import com.benbenTaxi.v1.function.ListShow;
@@ -407,6 +408,12 @@ public class BenbenLocationMain extends Activity {
 			}
 			this.startActivityForResult(detail, 3);
 			break;
+		case R.id.menu_mode:
+			// 模式切换
+			Intent lstmode = new Intent(this, ListMode.class);
+			lstmode.putExtra("pos", "换一批");
+			this.startActivityForResult(lstmode, 4);
+			break;
 		default:
 			break;
 		}
@@ -438,21 +445,19 @@ public class BenbenLocationMain extends Activity {
         // 确认司机请求，本次打车行为结束
         	if ( mShowDialogStat == 0 ) {
 	        	mShowDialogStat = 1;
-	        		
-	        	GeoPoint gp1 = new GeoPoint((int)(locData.latitude* 1e6), (int)(locData.longitude *  1e6));
-	        	GeoPoint gp2 = null;
+	        	
+	        	double tolat = 0.0, tolng = 0.0;
 	        	try {
-	        		double lat = this.mConfirmObj.getDouble("passenger_lat");
-	        		double lng = this.mConfirmObj.getDouble("passenger_lng");
-	        		gp2 = new GeoPoint((int)(lat*1e6), (int)(lng*1e6));
+	        		tolat = this.mConfirmObj.getDouble("passenger_lat");
+	        		tolng = this.mConfirmObj.getDouble("passenger_lng");
 	        		
 	        	} catch(JSONException e) {
-	        		gp2 = new GeoPoint((int)(locData.latitude* 1e6), (int)(locData.longitude *  1e6));
+	        		tolat = locData.latitude;
+	        		tolng = locData.longitude;
 	        	}
 	        	
-	        	String dist = mDF.format(DistanceUtil.getDistance(gp1, gp2)/1000.0);
-	        	
-				ConfirmShow confirm = new ConfirmShow("有司机响应，距离您约", dist+"公里", this);
+				ConfirmShow confirm = new ConfirmShow("有司机响应，距离您约", 
+						Distance.getDistanceFormat(locData.latitude, locData.longitude, tolat, tolng)+"公里", this);
 	        	View.OnClickListener doOK = new View.OnClickListener() {
 					@Override
 					public void onClick(View v) {
@@ -1028,7 +1033,8 @@ public class BenbenLocationMain extends Activity {
 		
 		private void doGetList(String data) throws JSONException {
 			mReqInfo = new JSONArray(data);
-				
+			mApp.setCurrentRequestList(mReqInfo);
+			
 			//清除所有添加的Overlay
 	        mGeoList.clear();
 	        
