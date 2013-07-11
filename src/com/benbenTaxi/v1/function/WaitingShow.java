@@ -15,6 +15,8 @@ import android.widget.TextView;
 
 public class WaitingShow 
 {
+	public static final int MSG_HANDLE_REQ_TIMEOUT = 0x101;
+	
 	private View mView;
 	private PopupWindow mPop;
 	private TextView mTitle;

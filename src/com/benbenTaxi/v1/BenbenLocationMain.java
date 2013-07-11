@@ -688,6 +688,8 @@ public class BenbenLocationMain extends Activity {
             
             mIsGetLocation = true;
             MsgHandler.dispatchMessage(MsgHandler.obtainMessage(MSG_HANDLE_POS_REFRESH));
+            
+            mApp.setCurrentLocData(locData);
         }
         
         public void onReceivePoi(BDLocation poiLocation) {

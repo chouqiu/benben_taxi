@@ -68,10 +68,12 @@ public class StatusMachine extends GetInfoTask {
 		
 		mCurrentObj = curObj;
 		
-		try {
-			mReqId = mCurrentObj.getInt("id");
-		} catch (JSONException e) {
-			mReqId = -1;
+		if ( mCurrentObj != null ) {
+			try {
+				mReqId = mCurrentObj.getInt("id");
+			} catch (JSONException e) {
+				mReqId = -1;
+			}
 		}
 	}
 	

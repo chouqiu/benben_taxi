@@ -5,6 +5,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import com.benbenTaxi.R;
+import com.benbenTaxi.v1.BenbenApplication;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -22,9 +23,11 @@ public class RequestAdapter extends BaseAdapter {
 	private static final int mMaxSize = 7;
 	private int mFromIdx = 0;
 	private boolean mIsLast = false;
+	private BenbenApplication mApp;
 	
-	public RequestAdapter(JSONArray objs, Context con) {
+	public RequestAdapter(JSONArray objs, Context con, BenbenApplication app) {
 		mInflater = LayoutInflater.from(con);
+		mApp = app;
 			
     	mImgIdLst = new int[5];
     	mImgIdLst[0] = R.drawable.user;
