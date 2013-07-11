@@ -1,5 +1,9 @@
 package com.benbenTaxi.v1.function;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import com.benbenTaxi.R;
 
 import android.content.Context;
@@ -12,15 +16,15 @@ import android.widget.TextView;
 
 public class RequestAdapter extends BaseAdapter {
 	private LayoutInflater mInflater;
-	private String[] mContent, mTitle;
+	private String[] mContent, mTitle, mUrl;
 	private int[] mImgIdLst;
+	private JSONArray mReqList;
 	private static final int mMaxSize = 7;
 	private int mFromIdx = 0;
 	private boolean mIsLast = false;
 	
-	public RequestAdapter(String[] title, String[] contents, Context con) {
+	public RequestAdapter(JSONArray objs, Context con) {
 		mInflater = LayoutInflater.from(con);
-		mContent = contents;
 			
     	mImgIdLst = new int[5];
     	mImgIdLst[0] = R.drawable.user;
@@ -29,7 +33,27 @@ public class RequestAdapter extends BaseAdapter {
     	mImgIdLst[3] = R.drawable.location2;
     	mImgIdLst[4] = R.drawable.time_07;
     	
-    	mTitle = title;
+    	mReqList = objs;
+    	int size = mReqList.length();
+    	mContent = new String[size];
+    	mTitle = new String[size];
+    	mUrl = new String[size];
+		
+		for( int i=0; i<size; ++i ) {
+        	try {
+				JSONObject pos = mReqList.getJSONObject(i);
+				mTitle[i] = "电话: "+pos.getString("passenger_mobile");
+				double lat = pos.getDouble("passenger_lat");
+				double lng = pos.getDouble("passenger_lng");				
+				mContent[i] = "距离: "+Distance.getDistanceFormat(lat, lng, mApp.getCurrentLocData().latitude, mApp.getCurrentLocData().longitude)+"公里";
+				
+				mUrl[i] = pos.getString("passenger_voice_url");
+			} catch (JSONException e) {
+				mTitle[i] = "电话: 解析错误";
+				mContent[i] = "距离: 解析错误";
+				mUrl[i] = "";
+			}
+		}
 	}
 	
 	@Override
@@ -47,7 +71,11 @@ public class RequestAdapter extends BaseAdapter {
 	@Override
 	public Object getItem(int position) {
 		if ( getCount() > 0 ) {
-			return mContent[position+mFromIdx];
+			try {
+				return mReqList.get(position+mFromIdx);
+			} catch (JSONException e) {
+				return null;
+			}
 		}
 		return null;
 	}

@@ -53,7 +53,6 @@ import com.baidu.mapapi.map.MapPoi;
 import com.baidu.mapapi.map.MapView;
 import com.baidu.mapapi.map.MyLocationOverlay;
 import com.baidu.mapapi.map.OverlayItem;
-import com.baidu.mapapi.utils.DistanceUtil;
 import com.baidu.platform.comapi.basestruct.GeoPoint;
 import com.benbenTaxi.R;
 import com.benbenTaxi.v1.function.BenbenOverlay;
@@ -63,6 +62,7 @@ import com.benbenTaxi.v1.function.Distance;
 import com.benbenTaxi.v1.function.GetInfoTask;
 import com.benbenTaxi.v1.function.IdShow;
 import com.benbenTaxi.v1.function.ListShow;
+import com.benbenTaxi.v1.function.ShowDetail;
 import com.benbenTaxi.v1.function.WaitingShow;
 public class BenbenLocationMain extends Activity {
 	
@@ -114,7 +114,7 @@ public class BenbenLocationMain extends Activity {
 							if (mReqId < 0) {
 								mConfirmObj = mReqInfo.getJSONObject(mReqIdx);
 								mReqId = mConfirmObj.getInt("id");
-								showPassengerRequestInfo(mReqId, mConfirmObj);
+								ShowDetail.showPassengerRequestInfo(mApp, BenbenLocationMain.this, mReqId, mConfirmObj);
 							} else {
 								// 当前已有请求在处理，不能响应
 								Toast.makeText(BenbenLocationMain.this, "当前已有请求在处理，请点击查看了解详情", Toast.LENGTH_LONG).show();
@@ -214,6 +214,7 @@ public class BenbenLocationMain extends Activity {
         mMapController = mMapView.getController();
         
         mData = new DataPreference(this.getApplicationContext());
+        mData.SaveData("host", mTestHost);
         mTokenKey = mData.LoadString("token_key");
         mTokenVal = mData.LoadString("token_value");
         mUserMobile = mData.LoadString("user");
@@ -602,37 +603,6 @@ public class BenbenLocationMain extends Activity {
     	confirm.getIdDialog().show();
     }
     
-    private void showPassengerRequestInfo(int idx, final JSONObject obj) throws JSONException {
-    	String[] voiceUrl = new String[5];
-    	
-		try {
-			voiceUrl[0] = "ID"+obj.getInt("id");
-			voiceUrl[1] = obj.getString("passenger_mobile");
-			voiceUrl[2] = mDF.format(obj.getDouble("passenger_lat"))+"/"+mDF.format(obj.getDouble("passenger_lng"));
-			voiceUrl[3] = "大连西路120号";
-			voiceUrl[4] = "2013-06-25 00:44:22";
-			//voiceUrl[3] = obj.getString("passenger_voice_url");
-		} catch (JSONException e) {
-			voiceUrl[0] = "未知";
-			voiceUrl[1] = "未知";
-			voiceUrl[2] = "未知";
-			voiceUrl[3] = "未知";
-			voiceUrl[4] = "未知";
-			//voiceUrl[3] = "乘客信息获取错误: "+e.toString();
-		}
-				
-		mApp.setCurrentInfo(voiceUrl);
-		mApp.setCurrentObject(mConfirmObj);
-		mApp.setRequestID(mReqId);
-		
-		Bundle tips = new Bundle();
-		tips.putString("pos", "确认乘客");
-		tips.putString("neg", "再看看");
-		Intent detail = new Intent(this, ListDetail.class);
-		detail.putExtras(tips);
-		this.startActivityForResult(detail, 1);
-    }
-	
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		super.onActivityResult(requestCode, resultCode, data);

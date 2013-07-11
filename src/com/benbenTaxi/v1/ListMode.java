@@ -7,15 +7,17 @@ import org.json.JSONObject;
 import com.benbenTaxi.R;
 import com.benbenTaxi.v1.function.Distance;
 import com.benbenTaxi.v1.function.RequestAdapter;
+import com.benbenTaxi.v1.function.ShowDetail;
 
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.Toast;
 
 public class ListMode extends ListDetail {
-	private String[] mTitle, mUrl;
 	private RequestAdapter mReqAdapter;
 	
 	@Override
@@ -27,29 +29,18 @@ public class ListMode extends ListDetail {
 	protected void do_init_functions() {
 		// 解析请求数据
 		JSONArray req = super.mApp.getCurrentRequestList();
-		int size = req.length();
-		super.mContents = new String[size];
-		mTitle = new String[size];
-		mUrl = new String[size];
-				
-		for( int i=0; i<size; ++i ) {
-        	try {
-				JSONObject pos = req.getJSONObject(i);
-				mTitle[i] = "电话: "+pos.getString("passenger_mobile");
-				double lat = pos.getDouble("passenger_lat");
-				double lng = pos.getDouble("passenger_lng");				
-				super.mContents[i] = "距离: "+Distance.getDistanceFormat(lat, lng, mApp.getCurrentLocData().latitude, mApp.getCurrentLocData().longitude)+"公里";
-				
-				mUrl[i] = pos.getString("passenger_voice_url");
-			} catch (JSONException e) {
-				mTitle[i] = "电话: 解析错误";
-				super.mContents[i] = "距离: 解析错误";
-				mUrl[i] = "";
-			}
-		}
 		
-		mReqAdapter = new RequestAdapter(mTitle, super.mContents, this);
+		mReqAdapter = new RequestAdapter(req, this);
 		super.mLv.setAdapter(mReqAdapter);
+		
+		super.mLv.setOnItemClickListener(new OnItemClickListener() {
+			@Override
+			public void onItemClick(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
+				
+				ShowDetail.showPassengerRequestInfo(mApp, BenbenLocationMain.this, mReqId, mConfirmObj);
+				
+			}
+		});
 		
 		mPosfunc = new View.OnClickListener() {		
 			@Override
