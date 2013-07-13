@@ -8,26 +8,35 @@ import com.benbenTaxi.R;
 import com.benbenTaxi.v1.BenbenApplication;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.TextView;
 
 public class RequestAdapter extends BaseAdapter {
+	public final static int ITEM_STAT_ORG = 0;
+	public final static int ITEM_STAT_WAIT = 1;
+	public final static int ITEM_STAT_OK = 2;
+	
 	private LayoutInflater mInflater;
-	private String[] mContent, mTitle, mUrl;
+	private String[] mContent, mTitle, mUrl, mStat;
 	private int[] mImgIdLst;
-	private JSONArray mReqList;
 	private static final int mMaxSize = 7;
-	private int mFromIdx = 0;
+	private int mFromIdx = 0, mSelect = -1;
 	private boolean mIsLast = false;
 	private BenbenApplication mApp;
+	private JSONArray mReqList;
+	private ListView mLV;
+	private int mColorWait = Color.rgb(255, 0, 0), mColorOK = Color.rgb(0, 255, 0), mColor = Color.rgb(60, 145, 170); // 保存原来的颜色
 	
-	public RequestAdapter(JSONArray objs, Context con, BenbenApplication app) {
+	public RequestAdapter(Context con, ListView vv, BenbenApplication app) {
 		mInflater = LayoutInflater.from(con);
 		mApp = app;
+		mLV = vv;
 			
     	mImgIdLst = new int[5];
     	mImgIdLst[0] = R.drawable.user;
@@ -36,27 +45,7 @@ public class RequestAdapter extends BaseAdapter {
     	mImgIdLst[3] = R.drawable.location2;
     	mImgIdLst[4] = R.drawable.time_07;
     	
-    	mReqList = objs;
-    	int size = mReqList.length();
-    	mContent = new String[size];
-    	mTitle = new String[size];
-    	mUrl = new String[size];
-		
-		for( int i=0; i<size; ++i ) {
-        	try {
-				JSONObject pos = mReqList.getJSONObject(i);
-				mTitle[i] = "电话: "+pos.getString("passenger_mobile");
-				double lat = pos.getDouble("passenger_lat");
-				double lng = pos.getDouble("passenger_lng");				
-				mContent[i] = "距离: "+Distance.getDistanceFormat(lat, lng, mApp.getCurrentLocData().latitude, mApp.getCurrentLocData().longitude)+"公里";
-				
-				mUrl[i] = pos.getString("passenger_voice_url");
-			} catch (JSONException e) {
-				mTitle[i] = "电话: 解析错误";
-				mContent[i] = "距离: 解析错误";
-				mUrl[i] = "";
-			}
-		}
+    	updateList();
 	}
 	
 	@Override
@@ -108,6 +97,20 @@ public class RequestAdapter extends BaseAdapter {
 		lh.title.setText(mTitle[position+mFromIdx]);
 		
 		return convertView;
+	}	
+	
+	public void setItemSelected(int itemid) {
+		mSelect = itemid;
+		updateView(mSelect, ITEM_STAT_WAIT);
+	}
+	
+	public void setItemConfirm() {
+		updateView(mSelect, ITEM_STAT_OK);
+	}
+	
+	public void resetItemSelected() {
+		updateView(mSelect, ITEM_STAT_ORG);		
+		mSelect = -1;
 	}
 	
 	public void refreshIdx() {
@@ -121,9 +124,69 @@ public class RequestAdapter extends BaseAdapter {
 		return mIsLast;
 	}
 	
+	public void updateList() {
+		JSONArray reqList = mApp.getCurrentRequestList();
+		
+		int size = reqList.length();
+    	mContent = new String[size];
+    	mTitle = new String[size];
+    	mUrl = new String[size];
+    	mStat = new String[size];
+		
+    	/*
+    	 * [{"id":13587,"state":"Waiting_Driver_Response","passenger_mobile":"15910676326","driver_mobile":null,
+    	 * "passenger_lat":8.0,"passenger_lng":8.0,
+    	 * "passenger_voice_url":"/uploads/taxi_request/voice/2013-06-15/a021331949144ec138de2c3857ec2538.m4a",
+    	 * "driver_lat":null,"driver_lng":null}] 
+    	 */
+		for( int i=0; i<size; ++i ) {
+        	try {
+				JSONObject pos = reqList.getJSONObject(i);
+				mTitle[i] = "电话: "+pos.getString("passenger_mobile");
+				double lat = pos.getDouble("passenger_lat");
+				double lng = pos.getDouble("passenger_lng");				
+				mContent[i] = "距离: "+Distance.getDistanceFormat(lat, lng, mApp.getCurrentLocData().latitude, mApp.getCurrentLocData().longitude)+"公里";
+				
+				mUrl[i] = pos.getString("passenger_voice_url");
+				mStat[i] = pos.getString("state");
+			} catch (JSONException e) {
+				mTitle[i] = "电话: 解析错误";
+				mContent[i] = "距离: 解析错误";
+				mUrl[i] = "";
+			}
+		}
+		
+		mReqList = reqList;
+		mSelect = -1;
+	}
+	
 	public final class ListHolder {
 		public ImageView img;
 		public TextView content;
 		public TextView title;
+	}
+	
+	private void updateView( int id, int stat ) {
+		int vpos = mLV.getFirstVisiblePosition();
+		View v = mLV.getChildAt(id-vpos);
+		
+		if ( v != null ) {
+			ListHolder lh = (ListHolder) v.getTag();
+			
+			switch (stat) {
+			case ITEM_STAT_ORG:
+				lh.title.setTextColor(mColor);
+				break;
+			case ITEM_STAT_WAIT:
+				lh.title.setTextColor(mColorWait);
+				break;
+			case ITEM_STAT_OK:
+				lh.title.setTextColor(mColorOK);
+				break;
+			default:
+				break;
+			}
+			
+		}
 	}
 }

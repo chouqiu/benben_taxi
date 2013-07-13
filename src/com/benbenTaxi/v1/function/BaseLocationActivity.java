@@ -4,11 +4,11 @@ import org.json.JSONObject;
 
 import com.baidu.location.BDLocation;
 import com.baidu.location.BDLocationListener;
+import com.baidu.location.BDNotifyListener;
 import com.baidu.location.LocationClient;
+import com.baidu.location.LocationClientOption;
 import com.baidu.mapapi.map.LocationData;
-import com.baidu.platform.comapi.basestruct.GeoPoint;
 import com.benbenTaxi.v1.BenbenApplication;
-import com.benbenTaxi.v1.BenbenLocationMain.MyLocationListenner;
 import com.benbenTaxi.v1.BenbenLocationMain.NotifyLister;
 
 import android.app.Activity;
@@ -16,19 +16,21 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 
-public class BaseLocationActivity extends Activity {
+public abstract class BaseLocationActivity extends Activity {
 	// 定位相关
-	LocationClient mLocClient;
-	public MyLocationListenner myListener = new MyLocationListenner();
-    public NotifyLister mNotifyer=null;
+	private LocationClient mLocClient;
+	private MyLocationListenner myListener = new MyLocationListenner();
+    private NotifyLister mNotifyer=null;
     
     protected LocationData locData = null;
     protected MsgHandler mH = null;
     protected BenbenApplication mApp = null;
     protected DataPreference mData;
     
-    protected int mReqId = -1;
-    protected JSONObject mConfirmObj;
+	//protected String mStatus;
+    
+    protected boolean mIsDriver = true;
+    protected AudioProcessor mAp = null;
     
 	public final static int MSG_HANDLE_POS_REFRESH = 2;
 	public final static int MSG_HANDLE_REQ_TIMEOUT = 3;
@@ -38,25 +40,65 @@ public class BaseLocationActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		locData = new LocationData();
-		mH = new MsgHandler();
 		mApp = (BenbenApplication) this.getApplicationContext();
 		mData = new DataPreference(this.getApplicationContext());
+		
+		mH = new MsgHandler();
+		
+		mLocClient = new LocationClient( this );
+        mLocClient.registerLocationListener( myListener );
+        
+        // 初始化声音组件
+	    mAp = new AudioProcessor(mIsDriver);
 	}
+    
+    @Override
+	protected void onDestroy() {
+    	if (mLocClient != null)
+    		mLocClient.stop();
+		super.onDestroy();
+	}
+
+	protected void setLocationStart() {
+    	LocationClientOption option = new LocationClientOption();
+        option.setOpenGps(true);//打开gps
+        option.setCoorType("bd09ll");     //设置坐标类型
+        option.setScanSpan(5000);
+        mLocClient.setLocOption(option);
+        mLocClient.start();
+    }
+    
+    protected void setLocationStop() {
+    	if ( mLocClient != null ) {
+    		mLocClient.stop();
+    	}
+    }
+    
+    protected void setLocationRequest() {
+    	mLocClient.requestLocation();
+    }
     
     protected void refreshProcess() {
     	// 上报司机位置
-    	StatusMachine dtt = new StatusMachine(this, mH, mData, null);
+    	StatusMachine dtt = new StatusMachine(mH, mData, null);
     	dtt.driverReport(locData.longitude, locData.latitude, locData.accuracy, "gsm");
     	
     	// 获取taxirequest
-    	if ( mReqId < 0 ) {
-    		StatusMachine drvreq = new StatusMachine(this, mH, mData, null);
+    	if ( mApp.getRequestID() < 0 ) {
+    		StatusMachine drvreq = new StatusMachine(mH, mData, null);
     		drvreq.driverGetRequest(locData.longitude, locData.latitude, locData.accuracy);       	
     	} else {
     	// 轮询request
-    		StatusMachine drvask = new StatusMachine(this, mH, mData, mConfirmObj);
-    		drvask.driverAskRequest(mReqId);
+    		StatusMachine drvask = new StatusMachine(mH, mData, mApp.getCurrentObject());
+    		drvask.driverAskRequest(mApp.getRequestID());
     	}
+    }
+    
+    protected abstract void doProcessMsg(Message msg);
+    
+    protected void resetStatus() {
+    	mApp.setRequestID(-1);
+    	mApp.setCurrentReqIdx(-1);
     }
 
 	/**
@@ -75,8 +117,8 @@ public class BaseLocationActivity extends Activity {
             locData.accuracy = location.getRadius();
             locData.direction = location.getDerect();
             
-            refreshProcess();
             mApp.setCurrentLocData(locData);
+            refreshProcess();
         }
         
         public void onReceivePoi(BDLocation poiLocation) {
@@ -86,11 +128,18 @@ public class BaseLocationActivity extends Activity {
         }
     }
     
+    public class NotifyLister extends BDNotifyListener{
+        public void onNotify(BDLocation mlocation, float distance) {
+        }
+    }
+    
     public class MsgHandler extends Handler {
 		@Override
 		public void handleMessage(Message msg) {
 			super.handleMessage(msg);
+			doProcessMsg(msg);
 		}
-    	
     }
+    
+    
 }

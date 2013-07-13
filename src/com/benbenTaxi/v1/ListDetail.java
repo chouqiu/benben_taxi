@@ -40,7 +40,7 @@ public class ListDetail extends Activity {
     	
     	do_init_functions();
     	
-    	if ( tip_pos!=null && mApp.getRequestID()>0 ) {
+    	if ( tip_pos!=null ) {
 			mBtnPos.setText(tip_pos);
 			mBtnPos.setOnClickListener(mPosfunc);
 		} else {

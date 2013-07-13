@@ -22,12 +22,12 @@ public class BenbenApplication extends Application {
 
     public static final String strKey = "1BE33CC3A1DEBDC8FF3A8A3F23A5E208C27E5C83";
 	
-    private JSONArray mReqList; // 保存乘客请求列表，供列表模式引用
+    private JSONArray mReqList = new JSONArray(); // 保存乘客请求列表，供列表模式引用
     private String[] mCurrentInfo = new String[5];
 	private JSONObject mCurrentObj = new JSONObject();
-	private int mReqId = -1; // 乘客发起的请求id
+	private int mReqId = -1, mReqIdx = -1; // 乘客发起的请求id
 	private String mCurrentStat = new String("");
-	private int mStatVal = -1; // 代替字符串比较，提高性能
+	//private int mStatVal = -1; // 代替字符串比较，提高性能
 	private LocationData mCurrentLocData = new LocationData();
 	
 	public static final int STATVAL_SUCCESS = 1;
@@ -54,16 +54,12 @@ public class BenbenApplication extends Application {
 		return mCurrentStat;
 	}
 	
-	public int getCurrentStatVal() {
-		return mStatVal;
+	public int getCurrentReqIdx() {
+		return mReqIdx;
 	}
 	
 	public LocationData getCurrentLocData() {
 		return mCurrentLocData;
-	}
-	
-	public void resetStatVal() {
-		mStatVal = -1;
 	}
 	
 	public void setCurrentInfo(String[] info) {
@@ -86,8 +82,8 @@ public class BenbenApplication extends Application {
 		mCurrentStat = stat;
 	}
 	
-	public void setCurrentStatVal( int stat ) {
-		mStatVal = stat;
+	public void setCurrentReqIdx( int idx ) {
+		mReqIdx = idx;
 	}
 	
 	public void setCurrentLocData(LocationData data) {

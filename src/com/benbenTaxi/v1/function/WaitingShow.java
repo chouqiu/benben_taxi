@@ -16,6 +16,7 @@ import android.widget.TextView;
 public class WaitingShow 
 {
 	public static final int MSG_HANDLE_REQ_TIMEOUT = 0x101;
+	public static final int MSG_HANDLE_REQ_CANCEL = 0x102;
 	
 	private View mView;
 	private PopupWindow mPop;
@@ -39,15 +40,18 @@ public class WaitingShow
 		tip_neg = tip;
 		final View.OnClickListener mf = func;
 		
-		if ( func != null ) {
-			mNegfunc = new View.OnClickListener() {		
-				@Override
-				public void onClick(View v) {
+		mNegfunc = new View.OnClickListener() {		
+			@Override
+			public void onClick(View v) {
+				if ( mf != null )
 					mf.onClick(v);
+				if ( mH != null ) {
+					mH.dispatchMessage(mH.obtainMessage(MSG_HANDLE_REQ_CANCEL));
+				} else {
 					doClean();
 				}
-			};
-		}
+			}
+		};
 	}
 	
 	public void setHandler( Handler h ) {
@@ -56,6 +60,9 @@ public class WaitingShow
 	
 	public void show()
 	{
+		mBtnNeg.setText(tip_neg);
+		mBtnNeg.setOnClickListener(mNegfunc);
+		
     	mPop.showAtLocation(mView, Gravity.CENTER, 0, 0);
     	mMeter.setBase(SystemClock.elapsedRealtime());
     	mMeter.start();
@@ -76,12 +83,13 @@ public class WaitingShow
 		mNegfunc = new View.OnClickListener() {		
 			@Override
 			public void onClick(View v) {
-				doClean();		
+				if ( mH != null ) {
+					mH.dispatchMessage(mH.obtainMessage(MSG_HANDLE_REQ_CANCEL));
+				} else {
+					doClean();
+				}	
 			}
 		};
-		
-		mBtnNeg.setText(tip_neg);
-		mBtnNeg.setOnClickListener(mNegfunc);
 		
 		mTitle.setText(title);
     	mBar.setProgress(0);
@@ -101,7 +109,7 @@ public class WaitingShow
 					//Toast.makeText(mAct, "乘客超时未响应，请重新选择请求", Toast.LENGTH_SHORT).show();
 					//doClean();
 					if ( mH != null ) {
-						mH.dispatchMessage(mH.obtainMessage(BenbenLocationMain.MSG_HANDLE_REQ_TIMEOUT));
+						mH.dispatchMessage(mH.obtainMessage(MSG_HANDLE_REQ_TIMEOUT));
 					}
 				} else {
 					// 更新进度条

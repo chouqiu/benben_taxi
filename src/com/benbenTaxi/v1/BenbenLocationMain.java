@@ -86,6 +86,8 @@ public class BenbenLocationMain extends Activity {
 	LocationData locData = null;
 	
 	//private long exitTime = 0;
+	private final static int CODE_SHOW_DETAIL = 0x101;
+	private static final int CODE_CHANGE_MODE = 0x102;
 	
 	
 	Handler MsgHandler = new Handler() {
@@ -101,8 +103,13 @@ public class BenbenLocationMain extends Activity {
                 	doPassenger();
                 }
         		break;
-        	case MSG_HANDLE_REQ_TIMEOUT:
+        	case WaitingShow.MSG_HANDLE_REQ_TIMEOUT:
         		Toast.makeText(BenbenLocationMain.this, "请求超时，请重新选择", Toast.LENGTH_SHORT).show();
+        		requestAbandon();
+        		resetStatus();
+        		break;
+        	case WaitingShow.MSG_HANDLE_REQ_CANCEL:
+        		Toast.makeText(BenbenLocationMain.this, "请求取消，请重新选择", Toast.LENGTH_SHORT).show();
         		requestAbandon();
         		resetStatus();
         		break;
@@ -114,7 +121,7 @@ public class BenbenLocationMain extends Activity {
 							if (mReqId < 0) {
 								mConfirmObj = mReqInfo.getJSONObject(mReqIdx);
 								mReqId = mConfirmObj.getInt("id");
-								ShowDetail.showPassengerRequestInfo(mApp, BenbenLocationMain.this, mReqId, mConfirmObj);
+								ShowDetail.showPassengerRequestInfo(mApp, BenbenLocationMain.this, mConfirmObj, CODE_SHOW_DETAIL);
 							} else {
 								// 当前已有请求在处理，不能响应
 								Toast.makeText(BenbenLocationMain.this, "当前已有请求在处理，请点击查看了解详情", Toast.LENGTH_LONG).show();
@@ -188,8 +195,6 @@ public class BenbenLocationMain extends Activity {
 	public final static int MSG_HANDLE_POS_REFRESH = 2;
 	public final static int MSG_HANDLE_REQ_TIMEOUT = 3;
 	public final static int MSG_HANDLE_ITEM_TOUCH = 10000;
-	
-	private final static DecimalFormat mDF = new DecimalFormat("#.##");
 	
 	private static int mShowDialogStat = 0;
 	
@@ -379,18 +384,6 @@ public class BenbenLocationMain extends Activity {
     	mAudioBuffer = new byte[mAudioBufSize];
     }
     
-    private void doRecordAudio() {
-    	mAudioRecord.startRecording();
-    	mAudioRecord.read(mAudioBuffer, 0, mAudioBufSize);
-    	mAudioRecord.stop();
-    }
-
-    private void doPlayAudio() {
-    	mAudioTrack.play();
-    	mAudioTrack.write(mAudioBuffer, 0, mAudioBufSize);
-    	mAudioTrack.stop();
-    }
-    
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.activity_main, menu);
@@ -411,9 +404,10 @@ public class BenbenLocationMain extends Activity {
 			break;
 		case R.id.menu_mode:
 			// 模式切换
+			this.mLocClient.stop();
 			Intent lstmode = new Intent(this, ListMode.class);
 			lstmode.putExtra("pos", "换一批");
-			this.startActivityForResult(lstmode, 4);
+			this.startActivityForResult(lstmode, CODE_CHANGE_MODE);
 			break;
 		default:
 			break;
@@ -608,7 +602,7 @@ public class BenbenLocationMain extends Activity {
 		super.onActivityResult(requestCode, resultCode, data);
 		
 		switch(requestCode) {
-		case 1:
+		case CODE_SHOW_DETAIL:
 			// 来自点击用户请求图标，司机处理用户请求
 			if ( resultCode > 0 ) {
 				mStatus = STAT_DRV_TRY_GET_REQUEST;
@@ -643,22 +637,10 @@ public class BenbenLocationMain extends Activity {
 			    BenbenLocationMain.this.startActivity(incall);
 			}
 			break;
-		case 4:
-			// 来自WaitingActivity，司机等待乘客响应
-			switch (resultCode) {
-			case BenbenApplication.STATVAL_CANCEL:
-				Toast.makeText(this, "本次请求已被取消，请重新选择其他请求", Toast.LENGTH_SHORT).show();
-				resetStatus();
-				break;
-			case BenbenApplication.STATVAL_SUCCESS:
-				Toast.makeText(this, "乘客已确认，请前往指定地点", Toast.LENGTH_SHORT).show();
-				resetStatus();
-				break;
-			case BenbenApplication.STATVAL_TIMEOUT:
-				Toast.makeText(this, "本次请求已超时，请重新选择其他请求", Toast.LENGTH_SHORT).show();
-				resetStatus();
-				break;
-			}
+		case CODE_CHANGE_MODE:
+			mLocClient.requestLocation();
+			mLocClient.start();
+			break;
 		default:
 			break;
 		}
@@ -1100,9 +1082,7 @@ public class BenbenLocationMain extends Activity {
 				}
 				BenbenLocationMain.this.resetStatus();
 				
-			} else if ( mStatus.equals(STAT_CANCEL) ) {
-				mApp.setCurrentStatVal(BenbenApplication.STATVAL_CANCEL);
-				
+			} else if ( mStatus.equals(STAT_CANCEL) ) {				
 				// 用户取消，更新乘客/司机图标
 				if ( _type == TYPE_ASK_REQ ) {
 					// 乘客态
@@ -1115,7 +1095,6 @@ public class BenbenLocationMain extends Activity {
 				BenbenLocationMain.this.resetStatus();
 				
 			} else if ( mStatus.equals("Success") ) {
-				mApp.setCurrentStatVal(BenbenApplication.STATVAL_SUCCESS);
 				mWs.Dismiss();
 				
 				// 用户确认，本次打车成功

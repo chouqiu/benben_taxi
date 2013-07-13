@@ -30,33 +30,20 @@ public class ListMode extends BaseLocationActivity {
 	protected ListView mLv;
 	protected Button mBtnPos, mBtnNeg;
 	private RequestAdapter mReqAdapter;
-	private int mReqId = -1;
-	private JSONObject mConfirmObj;
 	private WaitingShow mWs; // 等待响应popwin
-	private DataPreference mData;
+	private Handler waitingHandler;
 	
 	private String tip_pos, tip_neg;
+	protected View.OnClickListener mPosfunc, mNegfunc;
 	
-	private Handler MsgHandler = new Handler() {
-		@Override
-		public void handleMessage(Message msg) {
-			switch (msg.what) {
-			case WaitingShow.MSG_HANDLE_REQ_TIMEOUT:
-				Toast.makeText(ListMode.this, "请求超时，请重新选择", Toast.LENGTH_SHORT).show();
-				break;
-			default:
-				break;
-			}
-			super.handleMessage(msg);
-		}
-	};
+	private final static int CODE_SHOW_DETAIL = 0x101;
+	private final static int CODE_SHOW_INFO = 0x102;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.list_dialog);
 		
-		mApp = (BenbenApplication) this.getApplicationContext();
 		Bundle tips = getIntent().getExtras();
 		if ( tips != null ) {
 			tip_pos = tips.getString("pos");
@@ -65,10 +52,34 @@ public class ListMode extends BaseLocationActivity {
 		
 		init();
 		
-		mData = new DataPreference(this.getApplicationContext());
+		waitingHandler = new Handler() {
+			@Override
+			public void handleMessage(Message msg) {
+				switch(msg.what) {
+				case WaitingShow.MSG_HANDLE_REQ_TIMEOUT:
+					Toast.makeText(ListMode.this, "请求已超时，请重新选取！", Toast.LENGTH_SHORT).show();
+					mReqAdapter.resetItemSelected();
+					mWs.Dismiss();
+					resetStatus();
+					break;
+				case WaitingShow.MSG_HANDLE_REQ_CANCEL:
+					Toast.makeText(ListMode.this, "请求已取消，请重新选取！", Toast.LENGTH_SHORT).show();
+					mReqAdapter.resetItemSelected();
+					mWs.Dismiss();
+					resetStatus();
+					break;
+				default:
+					mWs.Dismiss();
+					break;
+				}
+			}
+		};
 		mWs = new WaitingShow("等待乘客响应", 30, getLayoutInflater().inflate(R.layout.waiting_dialog, null));
     	mWs.SetNegativeOnclick("取消请求", null);
-    	mWs.setHandler(MsgHandler);
+    	mWs.setHandler(waitingHandler);
+    	
+    	super.setLocationRequest();
+    	super.setLocationStart();
 	}
 	
 	private void init() {
@@ -78,7 +89,7 @@ public class ListMode extends BaseLocationActivity {
     	
     	do_init_functions();
     	
-    	if ( tip_pos!=null && mApp.getRequestID()>0 ) {
+    	if ( tip_pos!=null ) {
 			mBtnPos.setText(tip_pos);
 			mBtnPos.setOnClickListener(mPosfunc);
 		} else {
@@ -93,30 +104,24 @@ public class ListMode extends BaseLocationActivity {
 	}
 
 	protected void do_init_functions() {
-		// 解析请求数据
-		JSONArray req = super.mApp.getCurrentRequestList();
-		
-		mReqAdapter = new RequestAdapter(req, this, mApp);
+		// 解析请求数据	
+		mReqAdapter = new RequestAdapter(this, mLv, mApp);
 		mLv.setAdapter(mReqAdapter);
 		
 		mLv.setOnItemClickListener(new OnItemClickListener() {
 			@Override
 			public void onItemClick(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
-				if ( mReqId >= 0 ) {
+				int reqid = mApp.getRequestID();
+				
+				if ( reqid >= 0 ) {
 					Toast.makeText(ListMode.this, "已有请求在处理中", Toast.LENGTH_SHORT).show();
 					return;
 				}
 				
+				mReqAdapter.setItemSelected(arg2);
 				JSONObject obj = (JSONObject) mReqAdapter.getItem(arg2);
 				if ( obj != null ) {
-					mConfirmObj = obj;
-					try {
-						mReqId = mConfirmObj.getInt("id");
-						ShowDetail.showPassengerRequestInfo(mApp, ListMode.this, mReqId, mConfirmObj);
-					} catch (JSONException e) {
-						mReqId = -1;
-						Toast.makeText(ListMode.this, "选取的请求信息解析错误！", Toast.LENGTH_SHORT).show();
-					}
+					ShowDetail.showPassengerRequestInfo(mApp, ListMode.this, obj, CODE_SHOW_DETAIL);
 				} else {
 					Toast.makeText(ListMode.this, "无效的请求信息，请重新选取！", Toast.LENGTH_SHORT).show();
 				}
@@ -144,23 +149,29 @@ public class ListMode extends BaseLocationActivity {
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		super.onActivityResult(requestCode, resultCode, data);
+		int reqid = mApp.getRequestID();
+		JSONObject reqobj = mApp.getCurrentObject();
 		
 		switch(requestCode) {
-		case 1:
+		case CODE_SHOW_DETAIL:
 			// 来自点击用户请求图标，司机处理用户请求
-			if ( resultCode > 0 && mReqId >= 0 ) {
+			if ( resultCode > 0 ) {
 				LocationData locData = mApp.getCurrentLocData();
-				StatusMachine sm = new StatusMachine(this, MsgHandler, mData, mConfirmObj);
+				StatusMachine sm = new StatusMachine(mH, mData, reqobj);
 	    		// 这里是用保存的reqid，防止被更新为无效值
-	    		sm.driverConfirm(locData.longitude, locData.latitude, mReqId);
+	    		sm.driverConfirm(locData.longitude, locData.latitude, reqid);
 	    		
 	    		// 显示延迟进度条，等待30s
 	    		// 问题已解决，可以使用popwin，注意不要在回调函数中dismiss当前的popwin
 	    		mWs.show();
-
-			} else if ( resultCode > 0 ) {
-				Toast.makeText(this, "该请求已无效，请选取其他请求", Toast.LENGTH_SHORT).show();
 			} else {
+				mReqAdapter.resetItemSelected();
+				resetStatus();
+			}
+			break;
+		case CODE_SHOW_INFO:
+			if ( resultCode > 0 ) {
+				ShowDetail.showCall(this, reqobj);
 			}
 			break;
 		default:
@@ -177,8 +188,18 @@ public class ListMode extends BaseLocationActivity {
     @Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch(item.getItemId()) {
+		case R.id.menu_list_info:
+			Intent detail = new Intent(this, ListDetail.class);
+			detail.putExtra("neg", "再看看");
+			if ( mApp.getCurrentStat().equals(StatusMachine.STAT_SUCCESS) ) {
+				// 显示电话乘客按钮
+				detail.putExtra("pos", "电话乘客");
+			}
+			this.startActivityForResult(detail, CODE_SHOW_INFO);
+			break;
 		case R.id.menu_map_mode:
 			// 返回地图模式
+			super.setLocationStop();
 			this.setResult(0);
 			finish();
 			break;
@@ -186,5 +207,55 @@ public class ListMode extends BaseLocationActivity {
 			break;
 		}
 		return super.onOptionsItemSelected(item);
+	}
+    
+	@Override
+	protected void doProcessMsg(Message msg) {
+		int reqid = mApp.getRequestID();
+		
+		switch(msg.what) {
+		case StatusMachine.MSG_STAT_CANCEL:
+			Toast.makeText(this, "乘客请求["+reqid+"]已被取消, 附近有"+mApp.getCurrentRequestList().length()+"个乘客", 
+					Toast.LENGTH_SHORT).show();
+			mApp.setCurrentStat((String) msg.obj);
+			mWs.Dismiss();
+			resetStatus();
+			break;
+		case StatusMachine.MSG_STAT_SUCCESS:
+			Toast.makeText(this, "乘客请求["+reqid+"]已确认，请前往乘客所在地！", Toast.LENGTH_SHORT).show();
+			mApp.setCurrentStat((String) msg.obj);
+			mReqAdapter.setItemConfirm();
+			mWs.Dismiss();
+			resetStatus();
+			break;
+		case StatusMachine.MSG_STAT_TIMEOUT:
+			Toast.makeText(this, "乘客请求["+reqid+"]已超时, 附近有"+mApp.getCurrentRequestList().length()+"个乘客",
+					Toast.LENGTH_SHORT).show();
+			mApp.setCurrentStat((String) msg.obj);
+			mWs.Dismiss();
+			resetStatus();
+			break;
+		case StatusMachine.MSG_STAT_WAITING_PASS:
+			Toast.makeText(this, "等待乘客确认请求["+reqid+"], 附近有"+mApp.getCurrentRequestList().length()+"个乘客",
+					Toast.LENGTH_SHORT).show();
+			mApp.setCurrentStat((String) msg.obj);
+			break;
+		case StatusMachine.MSG_STAT_WAITING_DRV:
+			Toast.makeText(this, "乘客请求["+reqid+"]等待您接受, 附近有"+mApp.getCurrentRequestList().length()+"个乘客",
+					Toast.LENGTH_SHORT).show();
+			mApp.setCurrentStat((String) msg.obj);
+			break;
+		case StatusMachine.MSG_DATA_GETLIST:
+			// 存入app中
+			JSONArray obj = (JSONArray) msg.obj;
+			mApp.setCurrentRequestList(obj);
+			mReqAdapter.updateList();
+			mReqAdapter.notifyDataSetChanged();
+			Toast.makeText(this, "附近有"+obj.length()+"个乘客请求", Toast.LENGTH_SHORT).show();
+			break;
+		default:
+			break;
+		}
+		
 	}
 }
