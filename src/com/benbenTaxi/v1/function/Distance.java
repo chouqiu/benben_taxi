@@ -12,7 +12,7 @@ public class Distance {
 		GeoPoint gp1 = new GeoPoint((int)(lat0* 1e6), (int)(lng0 *  1e6));
     	GeoPoint gp2 = new GeoPoint((int)(lat1* 1e6), (int)(lng1 *  1e6));
     	
-    	return DistanceUtil.getDistance(gp1, gp2);
+    	return DistanceUtil.getDistance(gp1, gp2)/1000.0;
 	}
 	
 	public static String getDistanceFormat(double lat0, double lng0, double lat1, double lng1) {

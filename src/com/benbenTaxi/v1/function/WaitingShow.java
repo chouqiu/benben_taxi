@@ -62,10 +62,16 @@ public class WaitingShow
 	{
 		mBtnNeg.setText(tip_neg);
 		mBtnNeg.setOnClickListener(mNegfunc);
+		// 不显示取消按钮
+		mBtnNeg.setVisibility(View.GONE);
 		
     	mPop.showAtLocation(mView, Gravity.CENTER, 0, 0);
     	mMeter.setBase(SystemClock.elapsedRealtime());
     	mMeter.start();
+	}
+	
+	public boolean isShow() {
+		return mPop.isShowing();
 	}
 	
 	public void Dismiss() {

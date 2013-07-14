@@ -14,7 +14,8 @@
     <string name="error_invalid_email">用户名不合法</string>
     <string name="error_invalid_password">密码长度太短</string>
     <string name="error_incorrect_password">密码不正确</string>
-    <string name="error_field_required">必填</string>
+    <string name="error_field_required">请输入11位手机号码</string>
+    <string name="error_field_licence_required">请填写正确的车牌号</string>
     <string name="save_password">保存密码</string>
     <string name="driver_login">我是司机</string>
     <string name="menu_about">关于</string>

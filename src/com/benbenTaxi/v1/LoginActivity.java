@@ -105,7 +105,9 @@ public class LoginActivity extends Activity {
 		mCreateBtn.setOnClickListener(
 				new View.OnClickListener() {
 					public void onClick(View view) {
-						attemptLogin(mIsSave, mIsDriver, UserLoginTask.LOGINTYPE_CREATE);
+						//attemptLogin(mIsSave, mIsDriver, UserLoginTask.LOGINTYPE_CREATE);
+						Intent registerIntent = new Intent(LoginActivity.this, RegisterActivity.class);
+						startActivity(registerIntent);
 					}
 				});
 		
@@ -137,6 +139,7 @@ public class LoginActivity extends Activity {
 		
 		mData = new DataPreference(this.getApplicationContext());
 		mData.SaveData("host", mTestHost);
+		mData.SaveData("loop", 15); // 配置定位服务定时轮训的时长
 		//Toast.makeText(this, "点击菜单键进行参数配置", Toast.LENGTH_SHORT).show();
 	}
 
@@ -307,7 +310,7 @@ public class LoginActivity extends Activity {
 	 * Represents an asynchronous login/registration task used to authenticate
 	 * the user.
 	 */
-	private class UserLoginTask extends GetInfoTask {
+	public class UserLoginTask extends GetInfoTask {
 		public static final int LOGINTYPE_LOGIN = 0;
 		public static final int LOGINTYPE_CREATE = 1;
 		//private final static String _url = "http://peterwolf.cn.mu/zone_supervisor/sessions.json";

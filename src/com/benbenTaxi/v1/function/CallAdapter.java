@@ -18,20 +18,22 @@ public class CallAdapter extends BaseAdapter {
 	public CallAdapter(String[] contents, Context con) {
 		mInflater = LayoutInflater.from(con);
 		mContent = contents;
+		if ( mContent == null ) {
+			mContent = new String[4];
+		}
 			
-    	mImgIdLst = new int[5];
+    	mImgIdLst = new int[4];
     	mImgIdLst[0] = R.drawable.user;
     	mImgIdLst[1] = R.drawable.phone_13;
     	mImgIdLst[2] = R.drawable.location;
-    	mImgIdLst[3] = R.drawable.location2;
-    	mImgIdLst[4] = R.drawable.time_07;
+    	//mImgIdLst[3] = R.drawable.location2;
+    	mImgIdLst[3] = R.drawable.time_07;
     	
-    	mTitle = new String[5];
-    	mTitle[0] = "乘客姓名";
+    	mTitle = new String[4];
+    	mTitle[0] = "打车ID";
     	mTitle[1] = "乘客电话";
     	mTitle[2] = "当前位置";
-    	mTitle[3] = "目的位置";
-    	mTitle[4] = "乘客确认";
+    	mTitle[3] = "乘客确认";
 	}
 	
 	@Override

@@ -93,7 +93,7 @@ public class StatusMachine extends GetInfoTask {
 	public void driverGetRequest(double lng, double lat, double radius) {
 		// /api/v1/taxi_requests?lat=8&lng=8&radius=10
 		_type = TYPE_DRV_REQ;
-		String url =  "http://"+mHost+"/api/v1/taxi_requests/nearby?lat="+lat+"&lng="+lng+"&radius=5000";
+		String url =  "http://"+mHost+"/api/v1/taxi_requests/nearby?lat="+lat+"&lng="+lng+"&radius=20000";
 		super.initCookies(mTokenKey, mTokenVal, "42.121.55.211");
 		execute(url, _useragent, GetInfoTask.TYPE_GET);
 	}

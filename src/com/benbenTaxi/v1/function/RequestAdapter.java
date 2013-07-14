@@ -21,6 +21,7 @@ public class RequestAdapter extends BaseAdapter {
 	public final static int ITEM_STAT_ORG = 0;
 	public final static int ITEM_STAT_WAIT = 1;
 	public final static int ITEM_STAT_OK = 2;
+	public final static int ITEM_STAT_PLAY = 3;
 	
 	private LayoutInflater mInflater;
 	private String[] mContent, mTitle, mUrl, mStat;
@@ -31,12 +32,17 @@ public class RequestAdapter extends BaseAdapter {
 	private BenbenApplication mApp;
 	private JSONArray mReqList;
 	private ListView mLV;
-	private int mColorWait = Color.rgb(255, 0, 0), mColorOK = Color.rgb(0, 255, 0), mColor = Color.rgb(60, 145, 170); // 保存原来的颜色
+	private int mColorWait = Color.rgb(255, 0, 0), mColorOK = Color.rgb(0, 255, 0);
+	private int mColorPlay = Color.rgb(255, 201, 14), mColor = Color.rgb(60, 145, 170); // 保存原来的颜色
+	private AudioProcessor mAp = null;
+	private String mHost;
 	
-	public RequestAdapter(Context con, ListView vv, BenbenApplication app) {
+	public RequestAdapter(Context con, ListView vv, BenbenApplication app, AudioProcessor ap) {
 		mInflater = LayoutInflater.from(con);
 		mApp = app;
 		mLV = vv;
+		
+		setAudioProcessor(ap);
 			
     	mImgIdLst = new int[5];
     	mImgIdLst[0] = R.drawable.user;
@@ -45,7 +51,14 @@ public class RequestAdapter extends BaseAdapter {
     	mImgIdLst[3] = R.drawable.location2;
     	mImgIdLst[4] = R.drawable.time_07;
     	
+    	DataPreference data = new DataPreference(mApp);
+    	mHost = data.LoadString("host");
+    	
     	updateList();
+	}
+	
+	public void setAudioProcessor( AudioProcessor mp ) {
+		mAp = mp;
 	}
 	
 	@Override
@@ -96,6 +109,10 @@ public class RequestAdapter extends BaseAdapter {
 		lh.content.setText(mContent[position+mFromIdx]);
 		lh.title.setText(mTitle[position+mFromIdx]);
 		
+		if ( mAp != null ) {
+	    	mAp.addAudioList(position, "http://"+mHost+mUrl[position+mFromIdx]);
+	    }
+		
 		return convertView;
 	}	
 	
@@ -111,6 +128,14 @@ public class RequestAdapter extends BaseAdapter {
 	public void resetItemSelected() {
 		updateView(mSelect, ITEM_STAT_ORG);		
 		mSelect = -1;
+	}
+	
+	public void setItemPlay(int pos) {
+		updateView(pos, ITEM_STAT_PLAY);
+	}
+	
+	public void setItemOrg(int pos) {
+		updateView(pos, ITEM_STAT_ORG);
 	}
 	
 	public void refreshIdx() {
@@ -132,7 +157,9 @@ public class RequestAdapter extends BaseAdapter {
     	mTitle = new String[size];
     	mUrl = new String[size];
     	mStat = new String[size];
-		
+    	
+    	mFromIdx = 0;
+    	
     	/*
     	 * [{"id":13587,"state":"Waiting_Driver_Response","passenger_mobile":"15910676326","driver_mobile":null,
     	 * "passenger_lat":8.0,"passenger_lng":8.0,
@@ -149,6 +176,7 @@ public class RequestAdapter extends BaseAdapter {
 				
 				mUrl[i] = pos.getString("passenger_voice_url");
 				mStat[i] = pos.getString("state");
+				
 			} catch (JSONException e) {
 				mTitle[i] = "电话: 解析错误";
 				mContent[i] = "距离: 解析错误";
@@ -182,6 +210,9 @@ public class RequestAdapter extends BaseAdapter {
 				break;
 			case ITEM_STAT_OK:
 				lh.title.setTextColor(mColorOK);
+				break;
+			case ITEM_STAT_PLAY:
+				lh.title.setTextColor(mColorPlay);
 				break;
 			default:
 				break;

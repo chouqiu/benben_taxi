@@ -30,7 +30,7 @@ public abstract class BaseLocationActivity extends Activity {
 	//protected String mStatus;
     
     protected boolean mIsDriver = true;
-    protected AudioProcessor mAp = null;
+    protected int mLoopSpan = -1;
     
 	public final static int MSG_HANDLE_POS_REFRESH = 2;
 	public final static int MSG_HANDLE_REQ_TIMEOUT = 3;
@@ -48,8 +48,10 @@ public abstract class BaseLocationActivity extends Activity {
 		mLocClient = new LocationClient( this );
         mLocClient.registerLocationListener( myListener );
         
-        // 初始化声音组件
-	    mAp = new AudioProcessor(mIsDriver);
+        mLoopSpan = mData.LoadInt("loop");
+        if ( mLoopSpan <= 0 ) {
+        	mLoopSpan = 3; // 默认轮训时间3s
+        }
 	}
     
     @Override
@@ -63,7 +65,7 @@ public abstract class BaseLocationActivity extends Activity {
     	LocationClientOption option = new LocationClientOption();
         option.setOpenGps(true);//打开gps
         option.setCoorType("bd09ll");     //设置坐标类型
-        option.setScanSpan(5000);
+        option.setScanSpan(mLoopSpan*1000);
         mLocClient.setLocOption(option);
         mLocClient.start();
     }

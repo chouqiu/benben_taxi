@@ -1,6 +1,8 @@
 package com.benbenTaxi.v1.function;
 
 import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -11,7 +13,6 @@ import android.net.Uri;
 import android.os.Bundle;
 
 import com.benbenTaxi.v1.BenbenApplication;
-import com.benbenTaxi.v1.BenbenLocationTest;
 import com.benbenTaxi.v1.ListDetail;
 
 public class ShowDetail {
@@ -21,20 +22,25 @@ public class ShowDetail {
     	String[] voiceUrl = new String[5];
     	int id = 0;
     	
+    	SimpleDateFormat dateformat1=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    	String now = dateformat1.format(new Date());
+    	
 		try {
 			id = obj.getInt("id");
-			voiceUrl[0] = "ID"+id;
+			voiceUrl[0] = ""+id;
 			voiceUrl[1] = obj.getString("passenger_mobile");
-			voiceUrl[2] = mDF.format(obj.getDouble("passenger_lat"))+"/"+mDF.format(obj.getDouble("passenger_lng"));
-			voiceUrl[3] = "大连西路120号";
-			voiceUrl[4] = "2013-06-25 00:44:22";
+			//voiceUrl[2] = "lat: "+mDF.format(obj.getDouble("passenger_lat"))+"/lng: "+mDF.format(obj.getDouble("passenger_lng"));
+			voiceUrl[2] = obj.getString("source");
+			//voiceUrl[3] = "大连西路120号";
+			voiceUrl[3] = now;
+			voiceUrl[4] = obj.getString("passenger_voice_url");
 			//voiceUrl[3] = obj.getString("passenger_voice_url");
 		} catch (JSONException e) {
 			voiceUrl[0] = "未知";
 			voiceUrl[1] = "未知";
 			voiceUrl[2] = "未知";
 			voiceUrl[3] = "未知";
-			voiceUrl[4] = "未知";
+			voiceUrl[4] = "";
 			//voiceUrl[3] = "乘客信息获取错误: "+e.toString();
 		}
 				
@@ -49,6 +55,15 @@ public class ShowDetail {
 		detail.putExtras(tips);
 		con.startActivityForResult(detail, code);
     }
+	
+	static public void showPassengerConfirmInfo(Activity con, int code) {
+		Bundle tips = new Bundle();
+		tips.putString("pos", "电话乘客");
+		tips.putString("neg", "直接前往");
+		Intent detail = new Intent(con, ListDetail.class);
+		detail.putExtras(tips);
+		con.startActivityForResult(detail, code);
+	}
 	
     static public void showDriverInfo(Activity con, int idx, JSONObject obj) {
     	int drvid = 0;

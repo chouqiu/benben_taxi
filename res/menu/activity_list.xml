@@ -1,10 +1,10 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:id="@+id/menu_map_mode"
-        android:title="@string/menu_map_mode"
-        android:orderInCategory="100"
-        android:showAsAction="always|withText" />
     <item android:id="@+id/menu_list_info"
         android:title="@string/menu_info"
+        android:orderInCategory="100"
+        android:showAsAction="always|withText" />
+    <item android:id="@+id/menu_map_mode"
+        android:title="@string/menu_map_mode"
         android:orderInCategory="100"
         android:showAsAction="always|withText" />
 </menu>

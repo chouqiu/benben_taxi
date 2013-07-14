@@ -392,6 +392,11 @@ public class BenbenLocationMain extends Activity {
     
     @Override
 	public boolean onOptionsItemSelected(MenuItem item) {
+    	if ( mWs.isShow() ) {
+    		Toast.makeText(this, "正在等待中，请稍后再试", Toast.LENGTH_SHORT).show();
+    		return super.onOptionsItemSelected(item);
+    	}
+    	
 		switch(item.getItemId()) {
 		case R.id.menu_info:
 			Intent detail = new Intent(this, ListDetail.class);

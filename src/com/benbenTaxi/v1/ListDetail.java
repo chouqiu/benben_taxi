@@ -1,14 +1,20 @@
 package com.benbenTaxi.v1;
 
 import com.benbenTaxi.R;
+import com.benbenTaxi.v1.function.AudioProcessor;
 import com.benbenTaxi.v1.function.CallAdapter;
+import com.benbenTaxi.v1.function.DataPreference;
 
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
+import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ListView;
+import android.widget.Toast;
 
 public class ListDetail extends Activity {
 	protected ListView mLv;
@@ -17,6 +23,35 @@ public class ListDetail extends Activity {
 	protected String[] mContents;
 	protected BenbenApplication mApp;
 	private String tip_pos, tip_neg;
+    private AudioProcessor mAp = null;
+    
+    private Handler mediaHandler = new Handler() {
+		@Override
+		public void handleMessage(Message msg) {
+			switch(msg.what) {
+			case AudioProcessor.MSG_ERROR_ARG:
+				Toast.makeText(ListDetail.this, "播放声音参数错误: "+(String)msg.obj, Toast.LENGTH_SHORT).show();
+				break;
+			case AudioProcessor.MSG_ERROR_IO:
+				Toast.makeText(ListDetail.this, "播放声音IO错误: "+(String)msg.obj, Toast.LENGTH_SHORT).show();
+				break;
+			case AudioProcessor.MSG_ERROR_SEC:
+				Toast.makeText(ListDetail.this, "播放声音权限错误: "+(String)msg.obj, Toast.LENGTH_SHORT).show();
+				break;
+			case AudioProcessor.MSG_ERROR_STAT:
+				Toast.makeText(ListDetail.this, "播放声音状态错误: "+(String)msg.obj, Toast.LENGTH_SHORT).show();
+				break;
+			case AudioProcessor.MSG_ERROR_PRE_IO:
+				Toast.makeText(ListDetail.this, "准备音频IO错误: "+(String)msg.obj, Toast.LENGTH_SHORT).show();
+				break;
+			case AudioProcessor.MSG_ERROR_PRE_STAT:
+				Toast.makeText(ListDetail.this, "准备音频状态错误: "+(String)msg.obj, Toast.LENGTH_SHORT).show();
+				break;
+			default:
+				break;
+			}
+		}
+    };
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -31,6 +66,19 @@ public class ListDetail extends Activity {
 		}
 		
 		init();
+		
+		DataPreference data = new DataPreference(this);
+		String host = data.LoadString("host");
+		
+		// 初始化声音组件, 声音url是最后一个
+		if ( mContents!=null ) {
+			int idx = mContents.length - 1;
+			if ( mContents[idx]!=null && mContents[idx].length()>0 ) {
+			    mAp = new AudioProcessor(true);
+			    mAp.playAudioUri("http://"+host+mContents[idx]);
+			}
+			//Toast.makeText(this, "播放声音["+idx+"]: "+host+mContents[idx], Toast.LENGTH_SHORT).show();
+		}
 	}
 	
 	private void init() {
@@ -75,5 +123,15 @@ public class ListDetail extends Activity {
 				finish();
 			}
 		};
+	}
+	
+	@Override
+	public boolean onKeyDown( int keyCode, KeyEvent event ) {
+		if(keyCode == KeyEvent.KEYCODE_BACK && 
+				event.getAction() == KeyEvent.ACTION_DOWN) {
+			// 这里不需要按返回键退出
+	        return true;   
+	    }
+	    return super.onKeyDown(keyCode, event);
 	}
 }

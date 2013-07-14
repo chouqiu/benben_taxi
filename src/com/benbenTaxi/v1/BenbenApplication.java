@@ -23,7 +23,7 @@ public class BenbenApplication extends Application {
     public static final String strKey = "1BE33CC3A1DEBDC8FF3A8A3F23A5E208C27E5C83";
 	
     private JSONArray mReqList = new JSONArray(); // 保存乘客请求列表，供列表模式引用
-    private String[] mCurrentInfo = new String[5];
+    private String[] mCurrentInfo = null;// 包括声音url
 	private JSONObject mCurrentObj = new JSONObject();
 	private int mReqId = -1, mReqIdx = -1; // 乘客发起的请求id
 	private String mCurrentStat = new String("");

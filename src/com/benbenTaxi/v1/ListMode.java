@@ -6,14 +6,16 @@ import org.json.JSONObject;
 
 import com.baidu.mapapi.map.LocationData;
 import com.benbenTaxi.R;
+import com.benbenTaxi.v1.function.AudioProcessor;
 import com.benbenTaxi.v1.function.BaseLocationActivity;
-import com.benbenTaxi.v1.function.DataPreference;
+import com.benbenTaxi.v1.function.DelayTask;
 import com.benbenTaxi.v1.function.RequestAdapter;
 import com.benbenTaxi.v1.function.ShowDetail;
 import com.benbenTaxi.v1.function.StatusMachine;
 import com.benbenTaxi.v1.function.WaitingShow;
 
 import android.content.Intent;
+import android.database.DataSetObserver;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -31,13 +33,17 @@ public class ListMode extends BaseLocationActivity {
 	protected Button mBtnPos, mBtnNeg;
 	private RequestAdapter mReqAdapter;
 	private WaitingShow mWs; // 等待响应popwin
-	private Handler waitingHandler;
+	private Handler waitingHandler, playHandler, delayHandler;
 	
 	private String tip_pos, tip_neg;
 	protected View.OnClickListener mPosfunc, mNegfunc;
 	
 	private final static int CODE_SHOW_DETAIL = 0x101;
 	private final static int CODE_SHOW_INFO = 0x102;
+	private final static int CODE_SHOW_CONFIRM_INFO = 0x103;
+	private final static int CODE_DELAY = 0x104;
+	
+	private AudioProcessor mAp = null;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -50,6 +56,30 @@ public class ListMode extends BaseLocationActivity {
 			tip_neg = tips.getString("neg");
 		}
 		
+    	mAp = new AudioProcessor(true);
+    	playHandler = new Handler() {
+			@Override
+			public void handleMessage(Message msg) {
+				switch(msg.what) {
+				case AudioProcessor.MSG_PLAY_READY:
+					if ( msg.arg1 >=0 ) {
+						mReqAdapter.setItemPlay(msg.arg1);
+					}
+					break;
+				case AudioProcessor.MSG_PLAY_COMPLETE:
+				case AudioProcessor.MSG_PLAY_ERROR:
+					if ( msg.arg1 >=0 ) {
+						mReqAdapter.setItemOrg(msg.arg1);
+					}
+					break;
+				default:
+					Toast.makeText(ListMode.this, "播放信息错误["+msg.what+"]: "+(String)msg.obj, Toast.LENGTH_SHORT).show();
+					break;
+				}
+			}
+    	};
+    	mAp.setHandler(playHandler);
+    	
 		init();
 		
 		waitingHandler = new Handler() {
@@ -80,6 +110,32 @@ public class ListMode extends BaseLocationActivity {
     	
     	super.setLocationRequest();
     	super.setLocationStart();
+    	
+    	mReqAdapter.registerDataSetObserver(new DataSetObserver(){  
+    		
+            public void onChanged() {  
+            	//Toast.makeText(ListMode.this, "播放列表: "+mAp.getPlayListSize(), Toast.LENGTH_SHORT).show();
+				//mAp.resetPlay();
+				//mAp.batchPlay();
+            }  
+        });
+    	//mAp.batchPlay();
+    	
+    	delayHandler = new Handler() {
+			@Override
+			public void handleMessage(Message msg) {
+				switch(msg.what) {
+				case DelayTask.MSG_DELAY_OK:
+					if ( msg.arg1 == CODE_DELAY ) {
+						Toast.makeText(ListMode.this, "播放列表: "+mAp.getPlayListSize(), Toast.LENGTH_SHORT).show();
+						mAp.batchPlay();
+					}
+					break;
+				default:
+					break;
+				}
+			}
+    	};
 	}
 	
 	private void init() {
@@ -103,28 +159,61 @@ public class ListMode extends BaseLocationActivity {
 		}
 	}
 
+	@Override
+	protected void resetStatus() {
+		resetAudioProcessor();
+		super.resetStatus();
+	}
+	
+	private void resetAudioProcessor() {
+		mAp.resetPlay();
+		mAp.resetPlayList();
+	}
+
 	protected void do_init_functions() {
 		// 解析请求数据	
-		mReqAdapter = new RequestAdapter(this, mLv, mApp);
+		mReqAdapter = new RequestAdapter(this, mLv, mApp, mAp);
 		mLv.setAdapter(mReqAdapter);
 		
 		mLv.setOnItemClickListener(new OnItemClickListener() {
 			@Override
 			public void onItemClick(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
 				int reqid = mApp.getRequestID();
+				JSONObject lastobj = mApp.getCurrentObject();
+				int lastid = -1, newid = -1;
 				
-				if ( reqid >= 0 ) {
-					Toast.makeText(ListMode.this, "已有请求在处理中", Toast.LENGTH_SHORT).show();
+				if ( lastobj != null ) {
+					try {
+						lastid = lastobj.getInt("id");
+					} catch (JSONException e) {
+						lastid = -1;
+					}
+				}
+				
+				JSONObject obj = (JSONObject) mReqAdapter.getItem(arg2);
+				if ( obj != null ) {
+					try {
+						newid = obj.getInt("id");
+					} catch (JSONException e) {
+						newid = -1;
+					}
+				} else {
+					Toast.makeText(ListMode.this, "无效的请求信息，请重试", Toast.LENGTH_SHORT).show();
 					return;
 				}
 				
-				mReqAdapter.setItemSelected(arg2);
-				JSONObject obj = (JSONObject) mReqAdapter.getItem(arg2);
-				if ( obj != null ) {
-					ShowDetail.showPassengerRequestInfo(mApp, ListMode.this, obj, CODE_SHOW_DETAIL);
-				} else {
-					Toast.makeText(ListMode.this, "无效的请求信息，请重新选取！", Toast.LENGTH_SHORT).show();
+				if ( reqid >= 0 || (lastid>=0 && lastid==newid && (mApp.getCurrentStat().equals(StatusMachine.STAT_SUCCESS) ||
+						mApp.getCurrentStat().equals(StatusMachine.STAT_CANCEL) ||
+						mApp.getCurrentStat().equals(StatusMachine.STAT_TIMEOUT))) )
+				{
+					Toast.makeText(ListMode.this, "已有请求["+reqid+"]在处理中, 或请求["+lastid+"]已被处理过", 
+							Toast.LENGTH_SHORT).show();
+					return;
 				}
+				
+				resetAudioProcessor();
+				mReqAdapter.setItemSelected(arg2);
+				ShowDetail.showPassengerRequestInfo(mApp, ListMode.this, obj, CODE_SHOW_DETAIL);
 			}
 		});
 		
@@ -136,6 +225,7 @@ public class ListMode extends BaseLocationActivity {
 				} else {
 					mReqAdapter.refreshIdx();
 				}
+				resetAudioProcessor();
 			}
 		};
 	}
@@ -144,6 +234,13 @@ public class ListMode extends BaseLocationActivity {
 	@Override
 	protected void onResume() {
 		super.onResume();
+	}
+	
+
+	@Override
+	protected void onDestroy() {
+		mAp.release();
+		super.onDestroy();
 	}
 
 	@Override
@@ -174,6 +271,15 @@ public class ListMode extends BaseLocationActivity {
 				ShowDetail.showCall(this, reqobj);
 			}
 			break;
+		case CODE_SHOW_CONFIRM_INFO:
+			if ( resultCode > 0 ) {
+				ShowDetail.showCall(this, mApp.getCurrentObject());
+			}
+			Toast.makeText(this, "乘客请求["+mApp.getRequestID()+"]已确认，请前往乘客所在地！", Toast.LENGTH_SHORT).show();
+			resetStatus();
+			super.setLocationRequest();
+			super.setLocationStart();
+			break;
 		default:
 			break;
 		}
@@ -187,6 +293,11 @@ public class ListMode extends BaseLocationActivity {
     
     @Override
 	public boolean onOptionsItemSelected(MenuItem item) {
+    	if ( mWs.isShow() ) {
+    		Toast.makeText(this, "正在等待中，请稍后再试", Toast.LENGTH_SHORT).show();
+    		return super.onOptionsItemSelected(item);
+    	}
+    	
 		switch(item.getItemId()) {
 		case R.id.menu_list_info:
 			Intent detail = new Intent(this, ListDetail.class);
@@ -222,11 +333,13 @@ public class ListMode extends BaseLocationActivity {
 			resetStatus();
 			break;
 		case StatusMachine.MSG_STAT_SUCCESS:
-			Toast.makeText(this, "乘客请求["+reqid+"]已确认，请前往乘客所在地！", Toast.LENGTH_SHORT).show();
+			// 司机态，显示详情
 			mApp.setCurrentStat((String) msg.obj);
 			mReqAdapter.setItemConfirm();
 			mWs.Dismiss();
-			resetStatus();
+			// 先暂停轮训，防止反复调用ListDetail
+			super.setLocationStop();
+			ShowDetail.showPassengerConfirmInfo(this, CODE_SHOW_CONFIRM_INFO);
 			break;
 		case StatusMachine.MSG_STAT_TIMEOUT:
 			Toast.makeText(this, "乘客请求["+reqid+"]已超时, 附近有"+mApp.getCurrentRequestList().length()+"个乘客",
@@ -248,10 +361,17 @@ public class ListMode extends BaseLocationActivity {
 		case StatusMachine.MSG_DATA_GETLIST:
 			// 存入app中
 			JSONArray obj = (JSONArray) msg.obj;
+			resetAudioProcessor();
 			mApp.setCurrentRequestList(obj);
 			mReqAdapter.updateList();
 			mReqAdapter.notifyDataSetChanged();
 			Toast.makeText(this, "附近有"+obj.length()+"个乘客请求", Toast.LENGTH_SHORT).show();
+			//mAp.resetPlay();
+			//mAp.batchPlay();
+			
+			// 延迟，方便reqadapter刷新
+			DelayTask dt = new DelayTask(CODE_DELAY, delayHandler);
+			dt.execute(500);
 			break;
 		default:
 			break;
