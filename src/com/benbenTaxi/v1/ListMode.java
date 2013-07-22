@@ -288,7 +288,7 @@ public class ListMode extends BaseLocationActivity {
 	@Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.activity_list, menu);
-        return true;
+        return super.onCreateOptionsMenu(menu);
     }  
     
     @Override

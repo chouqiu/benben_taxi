@@ -11,11 +11,11 @@ import com.benbenTaxi.v1.function.GetInfoTask;
 
 import android.os.Build;
 import android.os.Bundle;
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
+
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Intent;
+import android.support.v4.app.FragmentActivity;
 import android.text.TextUtils;
 import android.view.Menu;
 import android.view.View;
@@ -171,12 +171,15 @@ public class RegisterActivity extends Activity {
 	/**
 	 * Shows the progress UI and hides the login form.
 	 */
-	@TargetApi(Build.VERSION_CODES.HONEYCOMB_MR2)
+	//@TargetApi(Build.VERSION_CODES.HONEYCOMB_MR2)
 	private void showProgress(final boolean show) {
 		// On Honeycomb MR2 we have the ViewPropertyAnimator APIs, which allow
 		// for very easy animations. If available, use these APIs to fade-in
 		// the progress spinner.
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR2) {
+		if (Build.VERSION.SDK_INT > Build.VERSION_CODES.FROYO) {
+			/*
+			import android.animation.Animator;
+			import android.animation.AnimatorListenerAdapter;
 			int shortAnimTime = getResources().getInteger(
 					android.R.integer.config_shortAnimTime);
 
@@ -201,6 +204,7 @@ public class RegisterActivity extends Activity {
 									: View.VISIBLE);
 						}
 					});
+					*/
 		} else {
 			// The ViewPropertyAnimator APIs are not available, so simply show
 			// and hide the relevant UI components.

@@ -24,6 +24,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.SystemClock;
+import android.support.v4.app.FragmentActivity;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.Menu;
@@ -64,6 +65,7 @@ import com.benbenTaxi.v1.function.IdShow;
 import com.benbenTaxi.v1.function.ListShow;
 import com.benbenTaxi.v1.function.ShowDetail;
 import com.benbenTaxi.v1.function.WaitingShow;
+
 public class BenbenLocationMain extends Activity {
 	
 	static MapView mMapView = null;

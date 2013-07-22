@@ -10,13 +10,16 @@ import com.baidu.location.LocationClientOption;
 import com.baidu.mapapi.map.LocationData;
 import com.benbenTaxi.v1.BenbenApplication;
 import com.benbenTaxi.v1.BenbenLocationMain.NotifyLister;
+import com.benbenTaxi.v1.function.actionbar.ActionBarActivity;
 
 import android.app.Activity;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.support.v4.app.FragmentActivity;
+import android.view.Menu;
 
-public abstract class BaseLocationActivity extends Activity {
+public abstract class BaseLocationActivity extends ActionBarActivity {
 	// 定位相关
 	private LocationClient mLocClient;
 	private MyLocationListenner myListener = new MyLocationListenner();
@@ -142,6 +145,5 @@ public abstract class BaseLocationActivity extends Activity {
 			doProcessMsg(msg);
 		}
     }
-    
-    
+
 }
