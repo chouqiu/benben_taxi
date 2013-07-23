@@ -65,8 +65,9 @@ import com.benbenTaxi.v1.function.IdShow;
 import com.benbenTaxi.v1.function.ListShow;
 import com.benbenTaxi.v1.function.ShowDetail;
 import com.benbenTaxi.v1.function.WaitingShow;
+import com.benbenTaxi.v1.function.actionbar.ActionBarActivity;
 
-public class BenbenLocationMain extends Activity {
+public class BenbenLocationMain extends ActionBarActivity {
 	
 	static MapView mMapView = null;
 	

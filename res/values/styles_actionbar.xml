@@ -29,7 +29,7 @@
     </style>
 
     <style name="ActionBarCompat">
-        <item name="android:background">#eee</item>
+        <item name="android:background">#000</item>
     </style>
 
     <style name="ActionBarCompatItemBase">
@@ -55,6 +55,11 @@
 
     <style name="ActionBarCompatTitle" parent="style/ActionBarCompatTitleBase">
         <item name="android:textColor">@color/actionbar_title_color</item>
+    </style>
+    
+    <style name="ActionBarCompatButton" >
+        <item name="android:textColor">@color/actionbar_title_color</item>
+        
     </style>
 
     <style name="ActionBarCompatItem" parent="style/ActionBarCompatItemBase">

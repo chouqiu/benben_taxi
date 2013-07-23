@@ -24,7 +24,9 @@ import com.benbenTaxi.R;
 import android.app.Activity;
 import android.content.Context;
 import android.content.res.XmlResourceParser;
+import android.graphics.Color;
 import android.os.Bundle;
+import android.view.Gravity;
 import android.view.InflateException;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -32,9 +34,11 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.LinearLayout.LayoutParams;
 import android.widget.TextView;
 
 import java.io.IOException;
@@ -74,7 +78,7 @@ public class ActionBarHelperBase extends ActionBarHelper {
         for (int i = 0; i < menu.size(); i++) {
             MenuItem item = menu.getItem(i);
             if (mActionItemIds.contains(item.getItemId())) {
-                addActionItemCompatFromMenuItem(item);
+            	addActionTextCompatFromMenuItem(item);
             }
         }
     }
@@ -181,12 +185,18 @@ public class ActionBarHelperBase extends ActionBarHelper {
                 itemId == android.R.id.button1
                         ? R.attr.actionbarCompatItemHomeStyle
                         : R.attr.actionbarCompatItemStyle);
-        actionButton.setLayoutParams(new ViewGroup.LayoutParams(
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
                 (int) mActivity.getResources().getDimension(
                         itemId == android.R.id.button1
                                 ? R.dimen.actionbar_compat_button_home_width
                                 : R.dimen.actionbar_compat_button_width),
-                ViewGroup.LayoutParams.FILL_PARENT));
+                ViewGroup.LayoutParams.FILL_PARENT);
+        
+        if ( itemId == android.R.id.button1 ) {
+        	// home button
+        	lp.setMargins(10, 0, 0, 0);
+        }
+        actionButton.setLayoutParams(lp);
         
         /*
         if (itemId == R.id.menu_refresh) {
@@ -230,6 +240,40 @@ public class ActionBarHelperBase extends ActionBarHelper {
             actionBar.addView(indicator);
         }*/
 
+        return actionButton;
+    }
+    
+    private View addActionTextCompatFromMenuItem(final MenuItem item) {
+        final int itemId = item.getItemId();
+
+        final ViewGroup actionBar = getActionBarCompat();
+        if (actionBar == null) {
+            return null;
+        }
+
+        // Create the button
+        Button actionButton = new Button(mActivity, null, R.attr.actionbarCompatItemStyle);
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                (int) mActivity.getResources().getDimension(R.dimen.actionbar_compat_button_width),
+                ViewGroup.LayoutParams.FILL_PARENT);
+        actionButton.setLayoutParams(lp);
+        
+        /*
+        if (itemId == R.id.menu_refresh) {
+            actionButton.setId(R.id.actionbar_compat_item_refresh);
+        }
+        */
+        actionButton.setText(item.getTitle());
+        actionButton.setTextColor(Color.rgb(255, 255, 255));
+        actionButton.setTextSize(10.0f);
+        actionButton.setGravity(Gravity.CENTER);
+        actionButton.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View view) {
+                mActivity.onMenuItemSelected(Window.FEATURE_OPTIONS_PANEL, item);
+            }
+        });
+
+        actionBar.addView(actionButton);
         return actionButton;
     }
 

@@ -14,15 +14,16 @@
         android:title="@string/menu_list_mode"
         android:orderInCategory="100"
         android:showAsAction="always|withText" />
-     -->
-     <item android:id="@+id/menu_info"
-        android:title="@string/menu_info"
-        android:orderInCategory="100" />
+
     <item android:id="@+id/menu_settings"
         android:title="@string/menu_setup"
-        android:orderInCategory="100" />
+        android:orderInCategory="100" /> 
     <item android:id="@+id/menu_about"
         android:title="@string/menu_about"
+        android:orderInCategory="100" />
+        -->
+   	<item android:id="@+id/menu_info"
+        android:title="@string/menu_info"
         android:orderInCategory="100" />
     <item android:id="@+id/menu_mode"
         android:title="@string/menu_list_mode"
