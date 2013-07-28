@@ -53,7 +53,7 @@ public abstract class BaseLocationActivity extends ActionBarActivity {
         
         mLoopSpan = mData.LoadInt("loop");
         if ( mLoopSpan <= 0 ) {
-        	mLoopSpan = 3; // 默认轮训时间3s
+        	mLoopSpan = 5; // 默认轮训时间3s
         }
 	}
     
@@ -115,7 +115,9 @@ public abstract class BaseLocationActivity extends ActionBarActivity {
         
     	@Override
         public void onReceiveLocation(BDLocation location) {
-            if (location == null)
+    		if (location == null || location.getLocType()==62 ||
+            		location.getLocType()==63 || location.getLocType()==67 || 
+            		(location.getLocType()>=162 && location.getLocType()<=167) )
                 return ;
             
             locData.latitude = location.getLatitude();
