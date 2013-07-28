@@ -38,7 +38,6 @@ import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.LinearLayout.LayoutParams;
 import android.widget.TextView;
 
 import java.io.IOException;
@@ -51,7 +50,7 @@ import java.util.Set;
 public class ActionBarHelperBase extends ActionBarHelper {
     private static final String MENU_RES_NAMESPACE = "http://schemas.android.com/apk/res/android";
     private static final String MENU_ATTR_ID = "id";
-    private static final String MENU_ATTR_SHOW_AS_ACTION = "showAsAction";
+    //private static final String MENU_ATTR_SHOW_AS_ACTION = "showAsAction";
 
     protected Set<Integer> mActionItemIds = new HashSet<Integer>();
 
@@ -100,7 +99,7 @@ public class ActionBarHelperBase extends ActionBarHelper {
         SimpleMenu tempMenu = new SimpleMenu(mActivity);
         SimpleMenuItem homeItem = new SimpleMenuItem(
                 tempMenu, android.R.id.button1, 0, mActivity.getString(R.string.app_name));
-        homeItem.setIcon(R.drawable.driver_icon);
+        homeItem.setIcon(R.drawable.driver_icon_small);
         addActionItemCompatFromMenuItem(homeItem);
 
         // Add title text
@@ -244,8 +243,6 @@ public class ActionBarHelperBase extends ActionBarHelper {
     }
     
     private View addActionTextCompatFromMenuItem(final MenuItem item) {
-        final int itemId = item.getItemId();
-
         final ViewGroup actionBar = getActionBarCompat();
         if (actionBar == null) {
             return null;
@@ -306,7 +303,7 @@ public class ActionBarHelperBase extends ActionBarHelper {
 
                 int eventType = parser.getEventType();
                 int itemId;
-                int showAsAction;
+                //int showAsAction;
 
                 boolean eof = false;
                 while (!eof) {
