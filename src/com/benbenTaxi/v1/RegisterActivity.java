@@ -12,10 +12,8 @@ import com.benbenTaxi.v1.function.GetInfoTask;
 import android.os.Build;
 import android.os.Bundle;
 
-import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Intent;
-import android.support.v4.app.FragmentActivity;
 import android.text.TextUtils;
 import android.view.Menu;
 import android.view.View;
@@ -28,9 +26,10 @@ import android.widget.Toast;
 
 public class RegisterActivity extends Activity {
 	//private String TAG = RegisterActivity.class.getName();
-	private EditText mEmailView, mPasswordView, mPasswordConfirmView, mLicenseView;
+	private EditText mEmailView, mPasswordView, mPasswordConfirmView, mLicenseView, mNameView;
 	private TextView mLoginStatusMessageView;
-	private String mPassword, mEmail, mHost, mLicense;
+	private Spinner mPlaceSpinner;
+	private String mPassword, mEmail, mHost, mLicense, mName, mPlace;
 	private DataPreference mData;
 	private EquipmentId mEquipmentId;
 	
@@ -53,7 +52,9 @@ public class RegisterActivity extends Activity {
 		mPasswordView = (EditText) findViewById(R.id.register_password);
 		mPasswordConfirmView = (EditText) findViewById(R.id.register_password_confirm);
 		mLicenseView = (EditText) findViewById(R.id.register_license);
-		
+		mNameView = (EditText) findViewById(R.id.register_name);
+		mPlaceSpinner = spinner;
+
 		mLoginStatusMessageView = (TextView) findViewById(R.id.register_status_message);
 		mLoginFormView = findViewById(R.id.register_form);
 		mLoginStatusView = findViewById(R.id.register_progress);
@@ -98,6 +99,8 @@ public class RegisterActivity extends Activity {
 		mPassword = mPasswordView.getText().toString();
 		String passConfirm  = mPasswordConfirmView.getText().toString();
 		mLicense = mLicenseView.getText().toString();
+		mName = mNameView.getText().toString();
+		mPlace = mPlaceSpinner.getSelectedItem().toString();
 
 		boolean cancel = false;
 		View focusView = null;
@@ -232,6 +235,9 @@ public class RegisterActivity extends Activity {
 				sess.put("mobile", name);
 				sess.put("password", pass);
 				sess.put("password_confirmation", pass);
+				sess.put("plate", mLicense);
+				sess.put("tenant_name", mPlace);
+				sess.put("name", mName);
 				_json_data.put("user", sess);
 			} catch (JSONException e) {
 				//_info.append("form json error: "+e.toString());

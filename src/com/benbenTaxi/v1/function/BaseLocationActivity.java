@@ -68,6 +68,7 @@ public abstract class BaseLocationActivity extends ActionBarActivity {
     	LocationClientOption option = new LocationClientOption();
         option.setOpenGps(true);//打开gps
         option.setCoorType("bd09ll");     //设置坐标类型
+        option.setAddrType("all");
         option.setScanSpan(mLoopSpan*1000);
         mLocClient.setLocOption(option);
         mLocClient.start();

@@ -48,7 +48,7 @@ public class ListMode extends BaseLocationActivity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.list_dialog);
+		setContentView(R.layout.activity_listmode);
 		
 		Bundle tips = getIntent().getExtras();
 		if ( tips != null ) {
@@ -139,9 +139,9 @@ public class ListMode extends BaseLocationActivity {
 	}
 	
 	private void init() {
-    	mLv = (ListView)findViewById(R.id.listView);
-    	mBtnPos = (Button)findViewById(R.id.btnListOk);
-    	mBtnNeg = (Button)findViewById(R.id.btnListCancel);
+    	mLv = (ListView)findViewById(R.id.listView_listmode);
+    	mBtnPos = (Button)findViewById(R.id.btnListOk_listmode);
+    	mBtnNeg = (Button)findViewById(R.id.btnListCancel_listmode);
     	
     	do_init_functions();
     	

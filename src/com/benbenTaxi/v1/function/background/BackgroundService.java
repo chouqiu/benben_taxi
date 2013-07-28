@@ -1,5 +1,6 @@
 package com.benbenTaxi.v1.function.background;
 
+import com.benbenTaxi.v1.function.DataPreference;
 import com.benbenTaxi.v1.function.ad.TextAdTask;
 import com.benbenTaxi.v1.function.ad.TextAds;
 
@@ -14,10 +15,11 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 public class BackgroundService extends Service{
-	private static final int	MSG_NEAR_BY_DRIVERS							= 0;
-	private static final int	MSG_TEXT_AD									= 1;
-	private static final long	REFRESH_NEARBY_DRIVER_INTERVAL   			= 60000;
-	private static final long	REFRESH_TEXT_AD_INTERVAL					= 10000;
+	public static final int	MSG_NEAR_BY_DRIVERS								= 0;
+	public static final int	MSG_TEXT_AD										= 1;
+	public static final int	MSG_TEXT_AD_ERROR								= 2;
+	public static final int MSG_TEXT_AD_RECV								= 3;
+	private static final long	REFRESH_TEXT_AD_INTERVAL					= 180000;
 	public  static final String	NEARYBY_DRIVER_ACTION						= "nearbydrvier_action";
 	public  static final String TEXT_AD_ACTION								= "text_ad_action";
 	private static final String TAG 										= BackgroundService.class.getName();
@@ -48,11 +50,6 @@ public class BackgroundService extends Service{
 		this.mHandler.removeMessages(MSG_NEAR_BY_DRIVERS);
 		this.mHandler.removeMessages(MSG_TEXT_AD);
     }
-	public void startRefreshNearByDriver()
-	{
-		
-		this.mHandler.sendMessage(this.mHandler.obtainMessage(MSG_NEAR_BY_DRIVERS));
-	}
 	
 	public void startTextAd()
 	{
@@ -66,7 +63,6 @@ public class BackgroundService extends Service{
 	
 	private final class ServiceHandler extends Handler
 	{
-		private Intent mNearbyDriverIntent = new Intent(NEARYBY_DRIVER_ACTION);
 		private Intent mTextAdIntent	   = new Intent(TEXT_AD_ACTION);
 		 public ServiceHandler(Looper looper) {
 	          super(looper);
@@ -75,12 +71,18 @@ public class BackgroundService extends Service{
 				switch (msg.what)
 				{
 					case MSG_TEXT_AD:
-						TextAdTask	textAdTask			= new TextAdTask((DemoApplication) BackgroundService.this.getApplication());
-						mTextAds						=  textAdTask.send();
+						TextAdTask	textAdTask	= new TextAdTask(new DataPreference(BackgroundService.this.getApplication()), mHandler);
+						textAdTask.send();
+						break;
+					case MSG_TEXT_AD_RECV:
+						mTextAds = (TextAds) msg.obj;
 						LocalBroadcastManager.getInstance(BackgroundService.this).sendBroadcast(mTextAdIntent);
 					 	if (mHandler.getLooper().getThread().getState() != Thread.State.TERMINATED){
 					 		mHandler.sendMessageDelayed(mHandler.obtainMessage(MSG_TEXT_AD), REFRESH_TEXT_AD_INTERVAL);
 					 	}
+						break;
+					case MSG_TEXT_AD_ERROR:
+						Log.e(TAG, "TextAdsTask failed!");
 						break;
 					default:
 						break;

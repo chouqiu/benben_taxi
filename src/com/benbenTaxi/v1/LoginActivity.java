@@ -9,12 +9,9 @@ import com.benbenTaxi.v1.function.DataPreference;
 import com.benbenTaxi.v1.function.EquipmentId;
 import com.benbenTaxi.v1.function.GetInfoTask;
 
-import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Intent;
-import android.os.Build;
 import android.os.Bundle;
-import android.support.v4.app.FragmentActivity;
 import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.Menu;

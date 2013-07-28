@@ -231,15 +231,7 @@ public class BenbenLocationMain extends ActionBarActivity {
         
         initMapView();
         
-        mLocClient = new LocationClient( this );
-        mLocClient.registerLocationListener( myListener );
-        
-        LocationClientOption option = new LocationClientOption();
-        option.setOpenGps(true);//打开gps
-        option.setCoorType("bd09ll");     //设置坐标类型
-        option.setScanSpan(5000);
-        mLocClient.setLocOption(option);
-        mLocClient.start();
+        setLocationStart();
         mMapView.getController().setZoom(14);
         mMapView.getController().enableClick(true);
         
@@ -306,7 +298,7 @@ public class BenbenLocationMain extends ActionBarActivity {
 	    testUpdateButton.setOnClickListener(mCallTaxiListener);
 	    
 	    // 初始化声音组件
-	    initAudio();
+	    //initAudio();
 	    
 	    if ( mIsDriver ) {
 	    	testUpdateButton.setVisibility(View.GONE);
@@ -387,6 +379,30 @@ public class BenbenLocationMain extends ActionBarActivity {
     	mAudioBuffer = new byte[mAudioBufSize];
     }
     
+    private void setLocationStop() {
+    	if ( mLocClient != null )
+			this.mLocClient.stop();
+    }
+    
+    private void setLocationStart() {
+    	int loop = mData.LoadInt("loop");
+    	if ( loop < 0 ) {
+    		loop = 10; // 默认10s轮询时间
+    	}
+    	
+    	if ( mLocClient == null ) {
+    		mLocClient = new LocationClient( this );
+            mLocClient.registerLocationListener( myListener );
+    	}
+    	LocationClientOption option = new LocationClientOption();
+        option.setOpenGps(true);//打开gps
+        option.setCoorType("bd09ll");     //设置坐标类型
+        option.setAddrType("all");
+        option.setScanSpan(loop*1000);
+        mLocClient.setLocOption(option);
+        mLocClient.start();
+    }
+    
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.activity_main, menu);
@@ -412,7 +428,7 @@ public class BenbenLocationMain extends ActionBarActivity {
 			break;
 		case R.id.menu_mode:
 			// 模式切换
-			this.mLocClient.stop();
+			setLocationStop();
 			Intent lstmode = new Intent(this, ListMode.class);
 			lstmode.putExtra("pos", "换一批");
 			this.startActivityForResult(lstmode, CODE_CHANGE_MODE);
@@ -664,7 +680,9 @@ public class BenbenLocationMain extends ActionBarActivity {
         
     	@Override
         public void onReceiveLocation(BDLocation location) {
-            if (location == null)
+            if (location == null || location.getLocType()==62 ||
+            		location.getLocType()==63 || location.getLocType()==67 || 
+            		(location.getLocType()>=162 && location.getLocType()<=167) )
                 return ;
             
             locData.latitude = location.getLatitude();

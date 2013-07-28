@@ -11,9 +11,13 @@ import android.util.Log;
 public class TextAds extends  Response{
 	private final static String TAG			=	TextAds.class.getName();
 	private JSONArray mRes 					= null;
+	public boolean isOK						= false;
 
 	public TextAds(String r) {
 		super(r);
+		if ( ! super.hasError() ) {
+			isOK = true;
+		}
 	}
 	public String getContent(int index)
 	{

@@ -5,6 +5,13 @@
     android:layout_height="fill_parent"
     >
 
+    <fragment
+        android:id="@+id/TextAds_fragment"
+        android:name="com.benbenTaxi.v1.function.ad.TextAdFragment"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+   	/>
+    
     <com.baidu.mapapi.map.MapView android:id="@+id/bmapView"
 	    android:layout_width="fill_parent"
 		android:layout_height="wrap_content" 

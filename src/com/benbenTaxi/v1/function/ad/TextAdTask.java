@@ -1,54 +1,45 @@
 package com.benbenTaxi.v1.function.ad;
 
-import android.util.Log;
+import com.benbenTaxi.v1.function.DataPreference;
+import com.benbenTaxi.v1.function.GetInfoTask;
+import com.benbenTaxi.v1.function.background.BackgroundService;
 
-import com.benbentaxi.Configure;
-import com.benbentaxi.Session;
-import com.benbentaxi.api.JsonHttpRequest;
-import com.benbentaxi.passenger.location.DemoApplication;
+import android.os.Handler;
 
-public class TextAdTask {
+
+
+public class TextAdTask extends GetInfoTask {
 	private final static String	TAG					= TextAdTask.class.getName();
 	public String mApiUrl							= "/api/v1/advertisements";
-	public Configure  mConfigure					= null;
-	private DemoApplication mApp 					= null;
-	private Session			mSession 				= null;
+	private DataPreference mData					= null;
+	private final static String mUA					= "ning@benbentaxi";
+	private Handler	mH								= null;
 	
-	private JsonHttpRequest mJsonHttpRequest		= null;
-	
-	public TextAdTask(DemoApplication app)
+	public TextAdTask(DataPreference data, Handler h)
 	{
-		mApp				=	app;
-		mSession 	  		= 	mApp.getCurrentSession();
-		mConfigure 			= new Configure();
+		mData				= data;
+		mH					= h;
 	}
 	
-	public TextAds send() {
-		mJsonHttpRequest 	= new JsonHttpRequest();
-		setCookie();
-		boolean succ 	 	= mJsonHttpRequest.get(getApiUrl());
-		TextAds textAds 	= new TextAds(mJsonHttpRequest.getResult());
-		if (!succ){
-			textAds.setSysErrorMessage(mJsonHttpRequest.getErrorMsg());
-		}
-		if (!textAds.hasError()){
-				Log.d(TAG,mJsonHttpRequest.getResult());
-				return textAds;
-		}else{
-				//閿欒宸茬粡鍦╤asError涓鐞嗚繃浜嗭紝鎵�互杩欓噷涓嶅啀澶勭悊
-		}
-		return null;
+	public void send() {
+		String url =  "http://"+mData.LoadString("host")+mApiUrl;
+		super.initCookies(mData.LoadString("token_key"), mData.LoadString("token_value"), "42.121.55.211");
+		execute(url, mUA, GetInfoTask.TYPE_GET);
 	}
-	private void setCookie()
-	{
-		if (this.mSession != null){
-			mJsonHttpRequest.setCookie(mSession.getTokenKey(), mSession.getTokenVal(),mConfigure.getHost());
-		}else{
-			Log.e(TAG,"Session 鑾峰彇鍑洪敊!");
+	
+	@Override
+	protected void onPostExecGet(Boolean succ) {
+		/*
+		 * [{"content":"测试维幄通达，阳泉交通集团，加油！！！！！"},{"content":"北京维幄通达网络科技有限公司"}]
+		 */
+		String data = this.toString();
+		if ( succ ) {			
+			TextAds ads = new TextAds(data);
+			mH.dispatchMessage(mH.obtainMessage(BackgroundService.MSG_TEXT_AD_RECV, ads));
+			
+		} else if ( mH != null ) {
+			mH.dispatchMessage(mH.obtainMessage(BackgroundService.MSG_TEXT_AD_ERROR, _errmsg));
 		}
-	}
-	protected String getApiUrl() {
-		return "http://"+mConfigure.getService()+mApiUrl;
 	}
 
 }

@@ -1,6 +1,7 @@
 package com.benbenTaxi.v1.function.ad;
 
 
+import com.benbenTaxi.R;
 import com.benbenTaxi.v1.function.background.BackgroundService;
 
 import android.content.Context;
@@ -9,6 +10,7 @@ import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.LocalBroadcastManager;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,7 +19,7 @@ import android.widget.TextView;
 
 public class TextAdFragment extends Fragment{
 	private static final String TAG								=  TextAdFragment.class.getName();
-	private static final String DEFAULT_AD_STR					=  "æ¬¢è¿Žä½¿ç”¨å¥”å¥”æ‰“è½¦!";
+	private static final String DEFAULT_AD_STR					=  "============»¶Ó­Ê¹ÓÃ±¼±¼´ò³µ============";
 	private AdServiceConnection	mAdServiceConnection 			=	null;
 	private TextAdReceiver		mTextAdReceiver					=   null;
 	private String	mCurrentTextAds								= 	null;
@@ -27,20 +29,32 @@ public class TextAdFragment extends Fragment{
 		View v =  inflater.inflate(R.layout.fragment_text_ad, container, false);
 		return v;
 	}
-	public void onResume()
+	
+	public void doInitService()
 	{
 		mAdInfoTextView = (TextView) getActivity().findViewById(R.id.ad_info_text);
 		refreshAdInfo(mCurrentTextAds);
         boundService();
         registerReceiver();
-        super.onResume();
 	}
-	public void onPause()
+	public void doPauseService()
 	{
 		unregisterReceiver();
 		unboundService();
+	}
+	
+	@Override
+	public void onPause() {
+		doPauseService();
 		super.onPause();
 	}
+
+	@Override
+	public void onResume() {
+		doInitService();
+		super.onResume();
+	}
+
 	public BackgroundService getBackgroundService()
 	{
 		if (mAdServiceConnection != null)
@@ -56,8 +70,19 @@ public class TextAdFragment extends Fragment{
 		}
 		
 		if (mAdInfoTextView != null){
-			mAdInfoTextView.setText(mCurrentTextAds);
+			//mAdInfoTextView.setText(mCurrentTextAds);
+			mAdInfoTextView.setText(DEFAULT_AD_STR+mCurrentTextAds);
 		}
+		
+		/*
+		mAdInfoTextView.setSingleLine();
+		mAdInfoTextView.setEllipsize(TextUtils.TruncateAt.MARQUEE);
+		mAdInfoTextView.setMarqueeRepeatLimit(-1);
+		mAdInfoTextView.setFocusable(true);
+		mAdInfoTextView.setFocusableInTouchMode(true);
+		mAdInfoTextView.setHorizontallyScrolling(true);
+		mAdInfoTextView.requestFocus();
+		*/
 	}
 	private void boundService()
 	{
@@ -71,7 +96,7 @@ public class TextAdFragment extends Fragment{
 	}
 	private void unboundService()
 	{
-		if (mAdServiceConnection != null && mAdServiceConnection.isBound()){
+		if (mAdServiceConnection != null ) { //&& mAdServiceConnection.isBound()){
             getActivity().unbindService(mAdServiceConnection);
             mAdServiceConnection.close();
 		}

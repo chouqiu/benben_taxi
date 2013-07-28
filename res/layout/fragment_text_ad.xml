@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:background="#fff"
+    android:id="@+id/ad_info_text"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:singleLine="true"
+    android:focusable="true"
+	android:focusableInTouchMode="true"
+	android:scrollHorizontally="true"
+    android:marqueeRepeatLimit="marquee_forever"
+	android:ellipsize="marquee"
+	android:text="ttt马tssssssssssssssssssssssssssssssssssssssssssssssstttt"
+    >
+</TextView>

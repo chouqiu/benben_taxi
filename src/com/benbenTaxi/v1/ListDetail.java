@@ -130,7 +130,7 @@ public class ListDetail extends Activity {
 		if(keyCode == KeyEvent.KEYCODE_BACK && 
 				event.getAction() == KeyEvent.ACTION_DOWN) {
 			// 这里不需要按返回键退出
-	        return true;   
+	        //return true;   
 	    }
 	    return super.onKeyDown(keyCode, event);
 	}

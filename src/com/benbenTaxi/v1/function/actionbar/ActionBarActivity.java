@@ -18,6 +18,7 @@ package com.benbenTaxi.v1.function.actionbar;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.support.v4.app.FragmentActivity;
 import android.view.Menu;
 import android.view.MenuInflater;
 
@@ -30,7 +31,7 @@ import android.view.MenuInflater;
  * NOTE: this may used with the Android Compatibility Package by extending
  * android.support.v4.app.FragmentActivity instead of {@link Activity}.
  */
-public abstract class ActionBarActivity extends Activity {
+public abstract class ActionBarActivity extends FragmentActivity {
     final ActionBarHelper mActionBarHelper = ActionBarHelper.createInstance(this);
 
     /**
