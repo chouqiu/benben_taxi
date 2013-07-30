@@ -29,7 +29,7 @@ import org.apache.http.util.EntityUtils;
 import android.annotation.SuppressLint;
 import android.os.AsyncTask;
 
-public class GetInfoTask extends AsyncTask<String, Integer, Boolean> {
+public abstract class GetInfoTask extends AsyncTask<String, Integer, Boolean> {
 	public final static String TYPE_GET = "get";
 	public final static String TYPE_POST = "post";
 	
@@ -143,8 +143,8 @@ public class GetInfoTask extends AsyncTask<String, Integer, Boolean> {
 	@Override
 	protected void onPostExecute(final Boolean succ) {
 		//showProgress(false);
-		
-		if ( _type.equals(TYPE_GET) ) {
+		// 只处理返回值200的情况
+		if ( _type.equals(TYPE_GET) && getHttpCode()==200 ) {
 			onPostExecGet(succ);
 			// TODO: get data
 			//Bundle sess_data = new Bundle();
@@ -153,9 +153,11 @@ public class GetInfoTask extends AsyncTask<String, Integer, Boolean> {
 			//yunjianIntent.putExtras(sess_data);
 			
 			//startActivity(yunjianIntent);
-		} else {
+		} else if ( getHttpCode()==200 ){
 			onPostExecPost(succ);
 			// TODO: get data faild
+		} else {
+			onPostExecError(_type, getHttpCode() );
 		}
 	}
 
@@ -164,8 +166,9 @@ public class GetInfoTask extends AsyncTask<String, Integer, Boolean> {
 		//showProgress(false);
 	}
 	
-	protected void onPostExecGet( Boolean succ ) {}
-	protected void onPostExecPost( Boolean succ ) {}
+	abstract protected void onPostExecGet( Boolean succ );
+	abstract protected void onPostExecPost( Boolean succ );
+	abstract protected void onPostExecError( String type, int code );
 	
 	public String toString() {
 		return new String(result);

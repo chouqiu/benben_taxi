@@ -4,8 +4,8 @@ import com.benbenTaxi.R;
 import com.benbenTaxi.v1.function.AudioProcessor;
 import com.benbenTaxi.v1.function.CallAdapter;
 import com.benbenTaxi.v1.function.DataPreference;
+import com.benbenTaxi.v1.function.actionbar.ActionBarActivity;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
@@ -16,7 +16,7 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Toast;
 
-public class ListDetail extends Activity {
+public class ListDetail extends ActionBarActivity {
 	protected ListView mLv;
 	protected Button mBtnPos, mBtnNeg;
 	protected View.OnClickListener mPosfunc, mNegfunc;

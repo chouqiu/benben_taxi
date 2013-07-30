@@ -63,6 +63,7 @@ import com.benbenTaxi.v1.function.Distance;
 import com.benbenTaxi.v1.function.GetInfoTask;
 import com.benbenTaxi.v1.function.IdShow;
 import com.benbenTaxi.v1.function.ListShow;
+import com.benbenTaxi.v1.function.PopupWindowSize;
 import com.benbenTaxi.v1.function.ShowDetail;
 import com.benbenTaxi.v1.function.WaitingShow;
 import com.benbenTaxi.v1.function.actionbar.ActionBarActivity;
@@ -308,7 +309,8 @@ public class BenbenLocationMain extends ActionBarActivity {
     	mPopCallTaxi = new PopupWindow(mDialogView, 600, 600);
     	
     	View vv = getLayoutInflater().inflate(R.layout.waiting_dialog, null);
-    	mWs = new WaitingShow("等待乘客响应", 30, vv);
+    	mWs = new WaitingShow("等待乘客响应", 30, PopupWindowSize.getPopupWindoWidth(this), 
+    			PopupWindowSize.getPopupWindowHeight(this), vv);
     	mWs.SetNegativeOnclick("取消请求", null);
     	mWs.setHandler(MsgHandler);
 	    
@@ -429,6 +431,10 @@ public class BenbenLocationMain extends ActionBarActivity {
 		case R.id.menu_mode:
 			// 模式切换
 			setLocationStop();
+			if ( mReqId < 0 ) {
+				// 保持ListMode状态正确
+				mApp.setRequestID(-1);
+			}
 			Intent lstmode = new Intent(this, ListMode.class);
 			lstmode.putExtra("pos", "换一批");
 			this.startActivityForResult(lstmode, CODE_CHANGE_MODE);
@@ -1175,6 +1181,12 @@ public class BenbenLocationMain extends ActionBarActivity {
 				Toast.makeText(BenbenLocationMain.this.getApplicationContext(), "司机上报失败: "+jsParser.toString(),
 						Toast.LENGTH_SHORT).show();
 			}
+		}
+
+		@Override
+		protected void onPostExecError(String type, int code) {
+			// TODO Auto-generated method stub
+			
 		}
 	}
 	

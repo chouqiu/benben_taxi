@@ -35,6 +35,7 @@ import com.benbenTaxi.R;
 import com.benbenTaxi.v1.function.BaseLocationActivity;
 import com.benbenTaxi.v1.function.BenbenOverlay;
 import com.benbenTaxi.v1.function.DataPreference;
+import com.benbenTaxi.v1.function.PopupWindowSize;
 import com.benbenTaxi.v1.function.ShowDetail;
 import com.benbenTaxi.v1.function.StatusMachine;
 import com.benbenTaxi.v1.function.WaitingShow;
@@ -216,7 +217,8 @@ public class BenbenLocationTest extends BaseLocationActivity {
     	new PopupWindow(mDialogView, 600, 600);
     	
     	View vv = getLayoutInflater().inflate(R.layout.waiting_dialog, null);
-    	mWs = new WaitingShow("等待乘客响应", 30, vv);
+    	mWs = new WaitingShow("等待乘客响应", 30, PopupWindowSize.getPopupWindoWidth(this), 
+    			PopupWindowSize.getPopupWindowHeight(this), vv);
     	mWs.SetNegativeOnclick("取消请求", null);
     	mWs.setHandler(mH);
 	    

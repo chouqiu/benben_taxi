@@ -1,8 +1,6 @@
 package com.benbenTaxi.v1.function;
 
 import com.benbenTaxi.R;
-import com.benbenTaxi.v1.BenbenLocationMain;
-
 import android.os.Handler;
 import android.os.SystemClock;
 import android.view.Gravity;
@@ -26,10 +24,10 @@ public class WaitingShow
 	private Button mBtnNeg;
 	private String title, tip_neg;
 	private View.OnClickListener mNegfunc = null;
-	private int mSecs = 0;
+	private int mSecs = 0, width = 0, height = 0;
 	private Handler mH = null;
 	
-	public WaitingShow(String title, int secs, View vv) {
+	public WaitingShow(String title, int secs, int width, int height, View vv) {
 		mView = vv;
 		mSecs = secs;
 		this.title = title;
@@ -79,7 +77,7 @@ public class WaitingShow
 	}
 	
 	private void init() {
-    	mPop = new PopupWindow(mView, 640, 480);
+    	mPop = new PopupWindow(mView, width, height);
     	mTitle = (TextView)mView.findViewById(R.id.tvWaitingTitle);
     	mBar = (ProgressBar)mView.findViewById(R.id.waitingProgress);
     	mMeter = (Chronometer) mView.findViewById(R.id.waitingMeter);

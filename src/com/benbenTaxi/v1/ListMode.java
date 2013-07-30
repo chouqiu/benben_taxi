@@ -9,6 +9,7 @@ import com.benbenTaxi.R;
 import com.benbenTaxi.v1.function.AudioProcessor;
 import com.benbenTaxi.v1.function.BaseLocationActivity;
 import com.benbenTaxi.v1.function.DelayTask;
+import com.benbenTaxi.v1.function.PopupWindowSize;
 import com.benbenTaxi.v1.function.RequestAdapter;
 import com.benbenTaxi.v1.function.ShowDetail;
 import com.benbenTaxi.v1.function.StatusMachine;
@@ -104,7 +105,8 @@ public class ListMode extends BaseLocationActivity {
 				}
 			}
 		};
-		mWs = new WaitingShow("等待乘客响应", 30, getLayoutInflater().inflate(R.layout.waiting_dialog, null));
+		mWs = new WaitingShow("等待乘客响应", 30, PopupWindowSize.getPopupWindoWidth(this), 
+				PopupWindowSize.getPopupWindowHeight(this), getLayoutInflater().inflate(R.layout.waiting_dialog, null));
     	mWs.SetNegativeOnclick("取消请求", null);
     	mWs.setHandler(waitingHandler);
     	

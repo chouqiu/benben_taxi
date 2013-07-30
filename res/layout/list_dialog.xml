@@ -46,6 +46,7 @@
 	            android:layout_marginLeft="20dp"
 	            android:layout_marginRight="20dp"
 	            android:layout_marginBottom="30dp"
+	            android:textSize="@dimen/btnTextSize"
 	            android:layout_weight="5"
 	            android:text="@string/confirm_ok" />
 			
@@ -58,6 +59,7 @@
 	            android:layout_marginLeft="20dp"
 	            android:layout_marginRight="20dp"
 	            android:layout_marginBottom="30dp"
+	            android:textSize="@dimen/btnTextSize"
 	            android:layout_weight="5"
 	            android:text="@string/confirm_ok" />
 	    </LinearLayout>

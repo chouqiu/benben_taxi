@@ -318,5 +318,11 @@ public class StatusMachine extends GetInfoTask {
 			mH.dispatchMessage(mH.obtainMessage(MSG_ERR_DRV_REPORT, jsParser.toString()));
 		}
 	}
+
+	@Override
+	protected void onPostExecError(String type, int code) {
+		// TODO Auto-generated method stub
+		
+	}
 	
 }

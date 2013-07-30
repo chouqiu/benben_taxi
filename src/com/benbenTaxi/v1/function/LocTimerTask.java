@@ -293,5 +293,10 @@ public class LocTimerTask extends TimerTask {
 			}
 			msg.sendToTarget();
 		}
+
+		@Override
+		protected void onPostExecError(String type, int code) {
+			// TODO Auto-generated method stub
+		}
 	}
 }

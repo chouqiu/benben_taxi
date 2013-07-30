@@ -123,6 +123,7 @@
         <activity android:name="com.benbenTaxi.v1.ListDetail"
             android:configChanges="orientation|keyboardHidden"
             android:screenOrientation="portrait"
+            android:theme="@style/AppTheme"
             android:label="@string/detail_title">
         </activity>
         

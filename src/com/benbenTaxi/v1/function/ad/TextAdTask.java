@@ -42,4 +42,16 @@ public class TextAdTask extends GetInfoTask {
 		}
 	}
 
+	@Override
+	protected void onPostExecPost(Boolean succ) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	protected void onPostExecError(String type, int code) {
+		// TODO Auto-generated method stub
+		
+	}
+
 }
