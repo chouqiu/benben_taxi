@@ -141,7 +141,7 @@ public class LoginActivity extends Activity {
 		
 		mData = new DataPreference(this.getApplicationContext());
 		mData.SaveData("host", mTestHost);
-		mData.SaveData("loop", 15); // 配置定位服务定时轮训的时长
+		mData.SaveData("loop", 5); // 配置定位服务定时轮训的时长
 		//Toast.makeText(this, "点击菜单键进行参数配置", Toast.LENGTH_SHORT).show();
 	}
 

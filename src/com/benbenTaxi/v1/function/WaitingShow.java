@@ -24,12 +24,14 @@ public class WaitingShow
 	private Button mBtnNeg;
 	private String title, tip_neg;
 	private View.OnClickListener mNegfunc = null;
-	private int mSecs = 0, width = 0, height = 0;
+	private int mSecs = 0, mWidth = 0, mHeight = 0;
 	private Handler mH = null;
 	
 	public WaitingShow(String title, int secs, int width, int height, View vv) {
 		mView = vv;
 		mSecs = secs;
+		mWidth = width;
+		mHeight = height;
 		this.title = title;
 		this.init();
 	}
@@ -77,7 +79,7 @@ public class WaitingShow
 	}
 	
 	private void init() {
-    	mPop = new PopupWindow(mView, width, height);
+    	mPop = new PopupWindow(mView, mWidth, mHeight);
     	mTitle = (TextView)mView.findViewById(R.id.tvWaitingTitle);
     	mBar = (ProgressBar)mView.findViewById(R.id.waitingProgress);
     	mMeter = (Chronometer) mView.findViewById(R.id.waitingMeter);

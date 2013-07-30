@@ -49,8 +49,8 @@ public class ShowDetail {
 		app.setCurrentObject(obj);
 		
 		Bundle tips = new Bundle();
-		tips.putString("pos", "确认乘客");
-		tips.putString("neg", "换一个");
+		tips.putString("pos", "确认");
+		tips.putString("neg", "返回");
 		Intent detail = new Intent(con, ListDetail.class);
 		detail.putExtras(tips);
 		con.startActivityForResult(detail, code);
@@ -58,8 +58,8 @@ public class ShowDetail {
 	
 	static public void showPassengerConfirmInfo(Activity con, int code) {
 		Bundle tips = new Bundle();
-		tips.putString("pos", "电话乘客");
-		tips.putString("neg", "直接前往");
+		tips.putString("pos", "电话");
+		tips.putString("neg", "完成");
 		Intent detail = new Intent(con, ListDetail.class);
 		detail.putExtras(tips);
 		con.startActivityForResult(detail, code);

@@ -18,5 +18,5 @@
     <dimen name="actionbar_compat_height">48dp</dimen>
     <dimen name="actionbar_compat_button_width">48dp</dimen>
     <dimen name="actionbar_compat_button_home_width">56dp</dimen>
-    <dimen name="btnTextSize">10sp</dimen>
+    <dimen name="btnTextSize">8sp</dimen>
 </resources>
