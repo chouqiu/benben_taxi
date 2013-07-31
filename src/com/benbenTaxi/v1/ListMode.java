@@ -111,7 +111,6 @@ public class ListMode extends BaseLocationActivity {
     	mWs.SetNegativeOnclick("取消请求", null);
     	mWs.setHandler(waitingHandler);
     	
-    	super.setLocationRequest();
     	super.setLocationStart();
     	
     	mReqAdapter.registerDataSetObserver(new DataSetObserver(){  
@@ -248,9 +247,14 @@ public class ListMode extends BaseLocationActivity {
 
 	@Override
 	protected void onResume() {
+		super.setLocationRequest();
 		super.onResume();
 	}
 	
+	@Override
+	protected void onStop() {
+		super.onStop();
+	}
 
 	@Override
 	protected void onDestroy() {
@@ -284,6 +288,8 @@ public class ListMode extends BaseLocationActivity {
 		case CODE_SHOW_INFO:
 			if ( resultCode > 0 ) {
 				ShowDetail.showCall(this, reqobj);
+			} else {
+				super.setLocationRequest();
 			}
 			break;
 		case CODE_SHOW_CONFIRM_INFO:
@@ -292,8 +298,8 @@ public class ListMode extends BaseLocationActivity {
 			}
 			Toast.makeText(this, "乘客请求["+mApp.getRequestID()+"]已确认，请前往乘客所在地！", Toast.LENGTH_SHORT).show();
 			resetStatus();
-			super.setLocationRequest();
 			super.setLocationStart();
+			super.setLocationRequest();
 			break;
 		default:
 			break;
@@ -321,6 +327,7 @@ public class ListMode extends BaseLocationActivity {
 				// 显示电话乘客按钮
 				detail.putExtra("pos", "电话乘客");
 			}
+			mAp.resetPlay();
 			this.startActivityForResult(detail, CODE_SHOW_INFO);
 			break;
 		case R.id.menu_map_mode:
@@ -354,6 +361,7 @@ public class ListMode extends BaseLocationActivity {
 			mWs.Dismiss();
 			// 先暂停轮训，防止反复调用ListDetail
 			super.setLocationStop();
+			mAp.resetPlay();
 			ShowDetail.showPassengerConfirmInfo(this, CODE_SHOW_CONFIRM_INFO);
 			break;
 		case StatusMachine.MSG_STAT_TIMEOUT:
