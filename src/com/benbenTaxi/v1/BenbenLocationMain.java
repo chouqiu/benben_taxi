@@ -9,7 +9,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
-import android.app.Activity;
 import android.app.Application;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -24,7 +23,6 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.SystemClock;
-import android.support.v4.app.FragmentActivity;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.Menu;
@@ -71,6 +69,7 @@ import com.benbenTaxi.v1.function.actionbar.ActionBarActivity;
 public class BenbenLocationMain extends ActionBarActivity {
 	
 	static MapView mMapView = null;
+	static boolean mMapViewValid = false;
 	
 	private MapController mMapController = null;
 
@@ -294,6 +293,7 @@ public class BenbenLocationMain extends ActionBarActivity {
 		mMapView.getOverlays().add(myLocationOverlay);
 		myLocationOverlay.enableCompass();
 		mMapView.refresh();
+		mMapViewValid = true;
 		
 		testUpdateButton = (Button)findViewById(R.id.btn_callTaxi);
 	    testUpdateButton.setOnClickListener(mCallTaxiListener);
@@ -334,6 +334,8 @@ public class BenbenLocationMain extends ActionBarActivity {
     protected void onDestroy() {
         if (mLocClient != null)
             mLocClient.stop();
+        
+        mMapViewValid = false;
         mMapView.destroy();
         BenbenApplication app = (BenbenApplication)this.getApplication();
         if (app.mBMapManager != null) {
@@ -686,7 +688,7 @@ public class BenbenLocationMain extends ActionBarActivity {
         
     	@Override
         public void onReceiveLocation(BDLocation location) {
-            if (location == null || location.getLocType()==62 ||
+            if (mMapViewValid == false || location == null || location.getLocType()==62 ||
             		location.getLocType()==63 || location.getLocType()==67 || 
             		(location.getLocType()>=162 && location.getLocType()<=167) )
                 return ;
@@ -741,12 +743,14 @@ public class BenbenLocationMain extends ActionBarActivity {
     }
 
     private void updateMapView() {
-    	ov.removeAll();
-    	if ( ov.size() < mGeoList.size()){
-    		//ov.addItem(mGeoList.get(ov.size() ));
-    		ov.addItem(mGeoList);
+    	if ( mMapViewValid == true ) {
+	    	ov.removeAll();
+	    	if ( ov.size() < mGeoList.size()){
+	    		//ov.addItem(mGeoList.get(ov.size() ));
+	    		ov.addItem(mGeoList);
+	    	}
+		    mMapView.refresh();
     	}
-	    mMapView.refresh();
     }
     
 	private class GetTaxiTask extends GetInfoTask {

@@ -45,6 +45,7 @@ public class ListMode extends BaseLocationActivity {
 	private final static int CODE_DELAY = 0x104;
 	
 	private AudioProcessor mAp = null;
+	private int mDelayRetry = 0;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -128,9 +129,21 @@ public class ListMode extends BaseLocationActivity {
 			public void handleMessage(Message msg) {
 				switch(msg.what) {
 				case DelayTask.MSG_DELAY_OK:
-					if ( msg.arg1 == CODE_DELAY ) {
-						Toast.makeText(ListMode.this, "播放列表: "+mAp.getPlayListSize(), Toast.LENGTH_SHORT).show();
-						mAp.batchPlay();
+					int ss = mAp.getPlayListSize();
+					if ( msg.arg1 == CODE_DELAY && ss > 0 ) {
+						mDelayRetry = 0;
+						//Toast.makeText(ListMode.this, "播放列表: "+mAp.getPlayListSize()+":"+mAp.isPlayingList(), Toast.LENGTH_SHORT).show();
+						if ( ! mAp.isPlayingList() ) {
+							// 避免播放线程冲突
+							mAp.batchPlay();
+						}
+					} else if ( msg.arg1 == CODE_DELAY && ss <= 0 && mDelayRetry < 1 ) {
+						// 延迟，方便reqadapter刷新
+						++mDelayRetry;
+						DelayTask dt = new DelayTask(CODE_DELAY, delayHandler);
+						dt.execute(200);
+					} else if ( msg.arg1 == CODE_DELAY ) {
+						mDelayRetry = 0;
 					}
 					break;
 				default:
@@ -367,7 +380,7 @@ public class ListMode extends BaseLocationActivity {
 			mApp.setCurrentRequestList(obj);
 			mReqAdapter.updateList();
 			mReqAdapter.notifyDataSetChanged();
-			Toast.makeText(this, "附近有"+obj.length()+"个乘客请求", Toast.LENGTH_SHORT).show();
+			Toast.makeText(this, "已刷新，附近有"+obj.length()+"个乘客请求", Toast.LENGTH_SHORT).show();
 			//mAp.resetPlay();
 			//mAp.batchPlay();
 			

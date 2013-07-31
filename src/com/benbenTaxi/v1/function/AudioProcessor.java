@@ -34,7 +34,7 @@ public class AudioProcessor {
 	private byte[] mAudioBuffer;
 	private Handler mH = null;
 	
-	private boolean mIsPlay = true;
+	private boolean mIsPlay = true, mPlaying = false;
 	
 	private HashMap<Integer, String> mPlayList = null;
 	private Iterator mIt = null;
@@ -55,6 +55,9 @@ public class AudioProcessor {
 	}
 	
 	public void batchPlay() {
+		if ( getPlayListSize() <= 0 ) {
+			return;
+		}
 		mIt = mPlayList.keySet().iterator();
 		if ( mIt.hasNext() ) {
 			mCurrentKey = (Integer) mIt.next();
@@ -69,10 +72,14 @@ public class AudioProcessor {
 	public void resetPlay() {
 		if ( mMediaPlayer.isPlaying() ) {
 			mMediaPlayer.stop();
-			mMediaPlayer.reset();
 		}
+		if ( mH != null ) {
+			mH.dispatchMessage(mH.obtainMessage(MSG_PLAY_COMPLETE, mCurrentKey, 0));
+		}
+		mMediaPlayer.reset();
 		mIt = null;
 		mCurrentKey = -1;
+		mPlaying = false;
 	}
 	
 	public void resetPlayList() {
@@ -81,6 +88,10 @@ public class AudioProcessor {
 	
 	public void release() {
 		mMediaPlayer.release();
+	}
+	
+	public boolean isPlayingList() {
+		return mPlaying;
 	}
 	
 	public void playAudioUri(String uri) {
@@ -118,14 +129,10 @@ public class AudioProcessor {
 		
 		if ( msg > 0 && mH != null ) {
 			mH.dispatchMessage(mH.obtainMessage(msg, info));
-		} else if ( mH != null ) {
+		} else if ( msg <= 0 && mH != null ) {
+			mPlaying = true;
 			mH.dispatchMessage(mH.obtainMessage(MSG_PLAY_READY, mCurrentKey, 0));
 		}
-	}
-	
-	public void stopAudio() {
-		mMediaPlayer.stop();
-		mMediaPlayer.reset();
 	}
 	
 	private void initAudio() {
@@ -149,6 +156,7 @@ public class AudioProcessor {
 			public void onCompletion(MediaPlayer mp) {
 				mMediaPlayer.stop();
 				mMediaPlayer.reset();
+				mPlaying = false;
 				if ( mH != null ) {
 					mH.dispatchMessage(mH.obtainMessage(MSG_PLAY_COMPLETE, mCurrentKey, 0));
 				}
@@ -156,6 +164,10 @@ public class AudioProcessor {
 				if ( mIt != null && mIt.hasNext() ) {
 					mCurrentKey = (Integer) mIt.next();
 					playAudioUri( mPlayList.get(mCurrentKey) );
+				} else {
+					// Ñ­»·²¥·Å
+					resetPlay();
+					batchPlay();
 				}
 			}
 		});

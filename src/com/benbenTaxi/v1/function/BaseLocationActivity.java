@@ -51,7 +51,8 @@ public abstract class BaseLocationActivity extends ActionBarActivity {
 		mLocClient = new LocationClient( this );
         mLocClient.registerLocationListener( myListener );
         
-        mLoopSpan = mData.LoadInt("loop");
+        // 5ÃëÌ«¶Ì
+        mLoopSpan = 10; // mData.LoadInt("loop");
         if ( mLoopSpan <= 0 ) {
         	mLoopSpan = 5; // Ä¬ÈÏÂÖÑµÊ±¼ä3s
         }
