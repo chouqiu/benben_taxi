@@ -74,6 +74,13 @@ public class ListMode extends BaseLocationActivity {
 						mReqAdapter.setItemOrg(msg.arg1);
 					}
 					break;
+				case AudioProcessor.MSG_PLAY_STOP:
+					if ( ! mAp.isPlayingList() ) {
+						// 避免播放线程冲突
+						resetAudioProcessor();
+						mAp.batchPlay();
+					}
+					break;
 				default:
 					Toast.makeText(ListMode.this, "播放信息错误["+msg.what+"]: "+(String)msg.obj, Toast.LENGTH_SHORT).show();
 					break;
@@ -134,13 +141,14 @@ public class ListMode extends BaseLocationActivity {
 						//Toast.makeText(ListMode.this, "播放列表: "+mAp.getPlayListSize()+":"+mAp.isPlayingList(), Toast.LENGTH_SHORT).show();
 						if ( ! mAp.isPlayingList() ) {
 							// 避免播放线程冲突
+							resetAudioProcessor();
 							mAp.batchPlay();
 						}
 					} else if ( msg.arg1 == CODE_DELAY && ss <= 0 && mDelayRetry < 1 ) {
 						// 延迟，方便reqadapter刷新
 						++mDelayRetry;
 						DelayTask dt = new DelayTask(CODE_DELAY, delayHandler);
-						dt.execute(200);
+						dt.execute(500);
 					} else if ( msg.arg1 == CODE_DELAY ) {
 						mDelayRetry = 0;
 					}
@@ -296,10 +304,10 @@ public class ListMode extends BaseLocationActivity {
 			if ( resultCode > 0 ) {
 				ShowDetail.showCall(this, mApp.getCurrentObject());
 			}
-			Toast.makeText(this, "乘客请求["+mApp.getRequestID()+"]已确认，请前往乘客所在地！", Toast.LENGTH_SHORT).show();
-			resetStatus();
 			super.setLocationStart();
 			super.setLocationRequest();
+			Toast.makeText(this, "乘客请求["+mApp.getRequestID()+"]已确认，请前往乘客所在地！", Toast.LENGTH_SHORT).show();
+			resetStatus();
 			break;
 		default:
 			break;
@@ -384,7 +392,6 @@ public class ListMode extends BaseLocationActivity {
 		case StatusMachine.MSG_DATA_GETLIST:
 			// 存入app中
 			JSONArray obj = (JSONArray) msg.obj;
-			resetAudioProcessor();
 			mApp.setCurrentRequestList(obj);
 			mReqAdapter.updateList();
 			mReqAdapter.notifyDataSetChanged();
@@ -392,6 +399,7 @@ public class ListMode extends BaseLocationActivity {
 			//mAp.resetPlay();
 			//mAp.batchPlay();
 			
+			mAp.setStopPlay();
 			// 延迟，方便reqadapter刷新
 			DelayTask dt = new DelayTask(CODE_DELAY, delayHandler);
 			dt.execute(500);

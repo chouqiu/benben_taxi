@@ -26,6 +26,7 @@ public class AudioProcessor {
 	public final static int MSG_PLAY_COMPLETE = 0x601;
 	public final static int MSG_PLAY_ERROR = 0x602;
 	public final static int MSG_PLAY_READY = 0x603;
+	public final static int MSG_PLAY_STOP = 0x604;
 	
     private AudioRecord mAudioRecord; //  录制乘客声音
 	private AudioTrack mAudioTrack; // 播放乘客声音
@@ -39,6 +40,7 @@ public class AudioProcessor {
 	private HashMap<Integer, String> mPlayList = null;
 	private Iterator mIt = null;
 	private int mCurrentKey = -1;
+	private boolean mStop = false;
 	
 	public AudioProcessor(boolean play) {
 		mIsPlay = play;
@@ -55,6 +57,8 @@ public class AudioProcessor {
 	}
 	
 	public void batchPlay() {
+		mStop = false;
+		
 		if ( getPlayListSize() <= 0 ) {
 			return;
 		}
@@ -76,14 +80,14 @@ public class AudioProcessor {
 		if ( mH != null ) {
 			mH.dispatchMessage(mH.obtainMessage(MSG_PLAY_COMPLETE, mCurrentKey, 0));
 		}
-		mMediaPlayer.reset();
-		mIt = null;
-		mCurrentKey = -1;
 		mPlaying = false;
 	}
 	
 	public void resetPlayList() {
+		mIt = null;
+		mCurrentKey = -1;
 		mPlayList.clear();
+		
 	}
 	
 	public void release() {
@@ -92,6 +96,10 @@ public class AudioProcessor {
 	
 	public boolean isPlayingList() {
 		return mPlaying;
+	}
+	
+	public void setStopPlay() {
+		mStop = true;
 	}
 	
 	public void playAudioUri(String uri) {
@@ -164,10 +172,12 @@ public class AudioProcessor {
 				if ( mIt != null && mIt.hasNext() ) {
 					mCurrentKey = (Integer) mIt.next();
 					playAudioUri( mPlayList.get(mCurrentKey) );
-				} else {
+				} else if ( mStop == false ) {
 					// 循环播放
 					resetPlay();
 					batchPlay();
+				} else {
+					mH.dispatchMessage(mH.obtainMessage(MSG_PLAY_STOP, mCurrentKey, 0));
 				}
 			}
 		});
