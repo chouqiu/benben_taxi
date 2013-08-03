@@ -44,8 +44,7 @@ public class ShowDetail {
 			//voiceUrl[3] = "乘客信息获取错误: "+e.toString();
 		}
 				
-		app.setCurrentInfo(voiceUrl);
-		app.setRequestID(id);
+		app.setCurrentInfo(voiceUrl);;
 		app.setCurrentObject(obj);
 		
 		Bundle tips = new Bundle();

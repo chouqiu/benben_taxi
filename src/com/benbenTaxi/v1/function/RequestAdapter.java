@@ -35,7 +35,6 @@ public class RequestAdapter extends BaseAdapter {
 	private int mColorWait = Color.rgb(255, 0, 0), mColorOK = Color.rgb(0, 255, 0);
 	private int mColorPlay = Color.rgb(255, 201, 14), mColor = Color.rgb(60, 145, 170); // 保存原来的颜色
 	private AudioProcessor mAp = null;
-	private String mHost;
 	
 	public RequestAdapter(Context con, ListView vv, BenbenApplication app, AudioProcessor ap) {
 		mInflater = LayoutInflater.from(con);
@@ -50,9 +49,6 @@ public class RequestAdapter extends BaseAdapter {
     	mImgIdLst[2] = R.drawable.location;
     	mImgIdLst[3] = R.drawable.location2;
     	mImgIdLst[4] = R.drawable.time_07;
-    	
-    	DataPreference data = new DataPreference(mApp);
-    	mHost = data.LoadString("host");
     	
     	updateList();
 	}
@@ -110,7 +106,12 @@ public class RequestAdapter extends BaseAdapter {
 		lh.title.setText(mTitle[position+mFromIdx]);
 		
 		if ( mAp != null ) {
-	    	mAp.addAudioList(position, "http://"+mHost+mUrl[position+mFromIdx]);
+	    	//mAp.addAudioList(position, "http://"+mHost+mUrl[position+mFromIdx]);
+	    	try {
+				mAp.addAudioList(position, mReqList.getJSONObject(position+mFromIdx));
+			} catch (Exception e) {
+				//e.printStackTrace();
+			}
 	    }
 		
 		return convertView;

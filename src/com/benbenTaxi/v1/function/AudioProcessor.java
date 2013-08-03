@@ -1,8 +1,12 @@
 package com.benbenTaxi.v1.function;
 
 import java.io.IOException;
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import android.media.AudioFormat;
 import android.media.AudioManager;
@@ -27,6 +31,10 @@ public class AudioProcessor {
 	public final static int MSG_PLAY_ERROR = 0x602;
 	public final static int MSG_PLAY_READY = 0x603;
 	public final static int MSG_PLAY_STOP = 0x604;
+	public final static int MSG_PLAY_REPLAY = 0x605;
+	
+	public final static int FLAG_PLAY_STOP = 0xa01;
+	public final static int FLAG_PLAY_REPLAY = 0xa02;
 	
     private AudioRecord mAudioRecord; //  录制乘客声音
 	private AudioTrack mAudioTrack; // 播放乘客声音
@@ -37,14 +45,20 @@ public class AudioProcessor {
 	
 	private boolean mIsPlay = true, mPlaying = false;
 	
-	private HashMap<Integer, String> mPlayList = null;
-	private Iterator mIt = null;
-	private int mCurrentKey = -1;
-	private boolean mStop = false;
+	private ArrayList< LinkedHashMap<Integer, JSONObject> > mPlayListPingPang = null;
+	private int mPlayListIdx = 0;
+	private Iterator<Integer> mIt = null;
+	private int mCurrentKey = -1, mCurrentReqID = -1;
+	private int mPlayFlag = 0;
 	
-	public AudioProcessor(boolean play) {
+	private String mHost = null;
+	
+	public AudioProcessor(String host, boolean play) {
+		mHost = host;
 		mIsPlay = play;
-		mPlayList = new HashMap<Integer, String>();
+		mPlayListPingPang = new ArrayList< LinkedHashMap<Integer, JSONObject> >();
+		mPlayListPingPang.add( new LinkedHashMap<Integer, JSONObject>() );
+		mPlayListPingPang.add( new LinkedHashMap<Integer, JSONObject>() );
 		initAudio();
 	}
 	
@@ -52,54 +66,95 @@ public class AudioProcessor {
 		mH = h;
 	}
 	
-	public void addAudioList(int pos, String uri) {
-		mPlayList.put(pos, uri);
+	//public void addAudioList(int pos, String uri) {
+		//getBackupPlayList().put(pos, uri);
+	//}
+	
+	public void addAudioList(int pos, JSONObject obj) {
+		getBackupPlayList().put(pos, obj);
 	}
 	
-	public void batchPlay() {
-		mStop = false;
-		
-		if ( getPlayListSize() <= 0 ) {
+	public void batchPlay(boolean playCurrent) {	
+		if ( mPlaying ) {
 			return;
 		}
-		mIt = mPlayList.keySet().iterator();
-		if ( mIt.hasNext() ) {
+	
+		if ( ! playCurrent )
+			exchangePlayList();
+		
+		LinkedHashMap<Integer, JSONObject> pl = getCurrentPlayList();
+		
+		if ( pl.size() <= 0 ) {
+			return;
+		}
+		
+		// 排序，找到最后播放的下一个节点
+		mIt = pl.keySet().iterator();
+		
+		JSONObject obj = null;
+		int key = -1;
+		while ( mIt.hasNext() ) {
+			key = (Integer) mIt.next();
+			obj = pl.get(key);
+			if ( mCurrentReqID < 0 || mCurrentReqID > getReqID(obj) ) {
+				break;
+			}
+		}
+		if ( key != -1 && obj != null ) {
+			mCurrentKey = key;
+			mCurrentReqID = getReqID(obj);
+			playAudioUri( getUri(obj) );
+		} else {
+			// 上次播放结束已是最后一个，重头开始
+			mIt = pl.keySet().iterator();
 			mCurrentKey = (Integer) mIt.next();
-			playAudioUri( mPlayList.get(mCurrentKey) );
+			playAudioUri( getUri(pl.get(mCurrentKey)) );
 		}
 	}
 	
 	public int getPlayListSize() {
-		return mPlayList.size();
+		return getCurrentPlayList().size();
 	}
 	
-	public void resetPlay() {
+	private void resetPlayStatus() {
 		if ( mMediaPlayer.isPlaying() ) {
 			mMediaPlayer.stop();
 		}
-		if ( mH != null ) {
-			mH.dispatchMessage(mH.obtainMessage(MSG_PLAY_COMPLETE, mCurrentKey, 0));
-		}
+		mMediaPlayer.reset();
 		mPlaying = false;
+		mPlayFlag = 0;
+		//mPlayList.clear();
 	}
 	
-	public void resetPlayList() {
+	private void resetPlayList() {
 		mIt = null;
-		mCurrentKey = -1;
-		mPlayList.clear();
-		
+		//mCurrentKey = -1;
+	}
+	
+	public void resetBackupPlayList() {
+		getBackupPlayList().clear();
 	}
 	
 	public void release() {
+		resetPlayStatus();
 		mMediaPlayer.release();
 	}
 	
-	public boolean isPlayingList() {
-		return mPlaying;
+	public void setStopPlay() {
+		mPlayFlag = FLAG_PLAY_STOP;
+		resetPlayStatus();
+		resetPlayList();
+		if ( mPlaying ) { 
+			mH.dispatchMessage(mH.obtainMessage(MSG_PLAY_STOP, -1, 0));
+		}
 	}
 	
-	public void setStopPlay() {
-		mStop = true;
+	public void setRePlay() {
+		mPlayFlag = FLAG_PLAY_REPLAY;
+		if ( mIt == null && ! mPlaying ) {
+			resetPlayStatus();
+			mH.dispatchMessage(mH.obtainMessage(MSG_PLAY_REPLAY, -1, 0));
+		}
 	}
 	
 	public void playAudioUri(String uri) {
@@ -107,7 +162,7 @@ public class AudioProcessor {
 		String info = null;
 		
 		try {
-			mMediaPlayer.setDataSource(uri);
+			mMediaPlayer.setDataSource("http://"+mHost+uri);
 		} catch (IllegalArgumentException e) {
 			msg = MSG_ERROR_ARG;
 			info = e.toString();
@@ -162,22 +217,35 @@ public class AudioProcessor {
 		mMediaPlayer.setOnCompletionListener(new OnCompletionListener() {
 			@Override
 			public void onCompletion(MediaPlayer mp) {
-				mMediaPlayer.stop();
-				mMediaPlayer.reset();
-				mPlaying = false;
-				if ( mH != null ) {
-					mH.dispatchMessage(mH.obtainMessage(MSG_PLAY_COMPLETE, mCurrentKey, 0));
-				}
-				
-				if ( mIt != null && mIt.hasNext() ) {
-					mCurrentKey = (Integer) mIt.next();
-					playAudioUri( mPlayList.get(mCurrentKey) );
-				} else if ( mStop == false ) {
-					// 循环播放
-					resetPlay();
-					batchPlay();
-				} else {
-					mH.dispatchMessage(mH.obtainMessage(MSG_PLAY_STOP, mCurrentKey, 0));
+				switch ( mPlayFlag ) {
+				case FLAG_PLAY_STOP:
+					resetPlayStatus();
+					resetPlayList();
+					if ( mH != null )
+						mH.dispatchMessage(mH.obtainMessage(MSG_PLAY_STOP, mCurrentKey, 0));
+					break;
+				case FLAG_PLAY_REPLAY:
+					resetPlayStatus();
+					resetPlayList();
+					if ( mH != null )
+						mH.dispatchMessage(mH.obtainMessage(MSG_PLAY_REPLAY, mCurrentKey, 0));
+					break;
+				default:
+					resetPlayStatus();
+					if ( mH != null )
+						mH.dispatchMessage(mH.obtainMessage(MSG_PLAY_COMPLETE, mCurrentKey, 0));
+					
+					if ( mIt != null && mIt.hasNext() ) {
+						mCurrentKey = (Integer) mIt.next();
+						JSONObject obj = getCurrentPlayList().get(mCurrentKey);
+						mCurrentReqID = getReqID(obj);
+						playAudioUri( getUri(obj) );
+					} else {
+						resetPlayList();
+						mCurrentReqID = -1;
+						batchPlay(true);
+					}
+					break;
 				}
 			}
 		});
@@ -211,5 +279,34 @@ public class AudioProcessor {
     	mAudioTrack.play();
     	mAudioTrack.write(mAudioBuffer, 0, mAudioBufSize);
     	mAudioTrack.stop();
+    }
+    
+    private LinkedHashMap<Integer, JSONObject> getBackupPlayList() {
+    	return mPlayListPingPang.get((mPlayListIdx+1) % mPlayListPingPang.size());
+    }
+    
+    private LinkedHashMap<Integer, JSONObject> getCurrentPlayList() {
+    	return mPlayListPingPang.get(mPlayListIdx);
+    }
+    
+    private void exchangePlayList() {
+		mPlayListIdx = (mPlayListIdx+1) % mPlayListPingPang.size();
+		getBackupPlayList().clear();
+    }
+    
+    private String getUri(JSONObject obj) {
+    	try {
+    		return obj.getString("passenger_voice_url");
+    	} catch (JSONException e) {
+    		return null;
+    	}
+    }
+    
+    private int getReqID( JSONObject obj ) {
+    	try {
+    		return obj.getInt("id");
+    	} catch (JSONException e) {
+    		return -1;
+    	}
     }
 }
