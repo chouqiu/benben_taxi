@@ -11,6 +11,7 @@ import com.baidu.mapapi.map.LocationData;
 import com.benbenTaxi.v1.BenbenApplication;
 import com.benbenTaxi.v1.BenbenLocationMain.NotifyLister;
 import com.benbenTaxi.v1.function.actionbar.ActionBarActivity;
+import com.benbenTaxi.v1.function.remoteexception.RemoteExceptionHandler;
 
 import android.app.Activity;
 import android.os.Bundle;
@@ -41,6 +42,7 @@ public abstract class BaseLocationActivity extends ActionBarActivity {
     
     @Override
 	protected void onCreate(Bundle savedInstanceState) {
+		Thread.setDefaultUncaughtExceptionHandler(new RemoteExceptionHandler());
 		super.onCreate(savedInstanceState);
 		locData = new LocationData();
 		mApp = (BenbenApplication) this.getApplicationContext();

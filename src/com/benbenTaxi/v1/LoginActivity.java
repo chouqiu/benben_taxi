@@ -8,6 +8,7 @@ import com.benbenTaxi.R;
 import com.benbenTaxi.v1.function.DataPreference;
 import com.benbenTaxi.v1.function.EquipmentId;
 import com.benbenTaxi.v1.function.GetInfoTask;
+import com.benbenTaxi.v1.function.remoteexception.RemoteExceptionHandler;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -65,6 +66,8 @@ public class LoginActivity extends Activity {
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
+		Thread.setDefaultUncaughtExceptionHandler(new RemoteExceptionHandler());
+		
 		super.onCreate(savedInstanceState);
 
 		requestWindowFeature(Window.FEATURE_NO_TITLE);

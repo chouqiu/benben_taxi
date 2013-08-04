@@ -15,7 +15,6 @@ import com.benbenTaxi.v1.function.RequestAdapter;
 import com.benbenTaxi.v1.function.ShowDetail;
 import com.benbenTaxi.v1.function.StatusMachine;
 import com.benbenTaxi.v1.function.WaitingShow;
-
 import android.content.Intent;
 import android.database.DataSetObserver;
 import android.os.Bundle;
@@ -354,6 +353,7 @@ public class ListMode extends BaseLocationActivity {
 		int reqid = mApp.getRequestID();
 		
 		switch(msg.what) {
+		case StatusMachine.MSG_STAT_OTHER:
 		case StatusMachine.MSG_STAT_CANCEL:
 			Toast.makeText(this, "乘客请求["+reqid+"]已被取消, 附近有"+mApp.getCurrentRequestList().length()+"个乘客", 
 					Toast.LENGTH_SHORT).show();

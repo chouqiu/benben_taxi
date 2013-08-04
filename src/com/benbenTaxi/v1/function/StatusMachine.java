@@ -27,6 +27,7 @@ public class StatusMachine extends GetInfoTask {
 	public static final int MSG_STAT_WAITING_PASS = 0x2005;
 	public static final int MSG_STAT_CANCEL = 0x2006;
 	public static final int MSG_STAT_SUCCESS = 0x2007;
+	public static final int MSG_STAT_OTHER = 0x2008;
 	public static final int MSG_ERR_DRV_REPORT = 0x3001;
 	public static final int MSG_ERR_NETWORK = 0x3002;
 	
@@ -259,28 +260,34 @@ public class StatusMachine extends GetInfoTask {
 		// {"id":28,"state":"Waiting_Driver_Response","passenger_lat":8.0,"passenger_lng":8.0,"passenger_voice_url":"/uploads/taxi_request/voice/2013-05-31/03bd766e8ecc2e2429f1610c7bf6c3ec.m4a"}
 		// 用户只要处理state即可
 		String status = ((JSONObject)jsParser.nextValue()).getString("state");
-
 		int stat = -1;
-		if ( status.equals(STAT_WAITING_DRV_RESP) ) {
-			// 继续等待
-			stat = StatusMachine.MSG_STAT_WAITING_DRV;
-			
-		} else if ( status.equals(STAT_WAITING_PAS_CONF) ) {
-			// 司机已应答，等待用户确认
-			stat = StatusMachine.MSG_STAT_WAITING_PASS;
-			
-		} else if ( status.equals(STAT_TIMEOUT) ) {
-			// 超时		
-			stat = StatusMachine.MSG_STAT_TIMEOUT;
-			
-		} else if ( status.equals(STAT_CANCEL) ) {
-			// 用户取消，更新乘客/司机图标
-			stat = StatusMachine.MSG_STAT_CANCEL;
-			
-		} else if ( status.equals(STAT_SUCCESS) ) {	
-			// 用户确认，本次打车成功
-			stat = StatusMachine.MSG_STAT_SUCCESS;
-		}
+		
+		String drv_mobile = ((JSONObject)jsParser.nextValue()).getString("driver_mobile");
+		if ( drv_mobile.equals(mMobile) ) {
+			if ( status.equals(STAT_WAITING_DRV_RESP) ) {
+				// 继续等待
+				stat = StatusMachine.MSG_STAT_WAITING_DRV;
+				
+			} else if ( status.equals(STAT_WAITING_PAS_CONF) ) {
+				// 司机已应答，等待用户确认
+				stat = StatusMachine.MSG_STAT_WAITING_PASS;
+				
+			} else if ( status.equals(STAT_TIMEOUT) ) {
+				// 超时		
+				stat = StatusMachine.MSG_STAT_TIMEOUT;
+				
+			} else if ( status.equals(STAT_CANCEL) ) {
+				// 用户取消，更新乘客/司机图标
+				stat = StatusMachine.MSG_STAT_CANCEL;
+				
+			} else if ( status.equals(STAT_SUCCESS) ) {	
+				// 用户确认，本次打车成功
+				stat = StatusMachine.MSG_STAT_SUCCESS;
+			}
+		} else {
+			// 非司机本人确认
+			stat = StatusMachine.MSG_STAT_OTHER;
+		}	
 		
 		if ( mH != null && stat > 0 ) {
 			mH.dispatchMessage(mH.obtainMessage(stat, status));

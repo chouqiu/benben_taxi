@@ -65,6 +65,7 @@ import com.benbenTaxi.v1.function.PopupWindowSize;
 import com.benbenTaxi.v1.function.ShowDetail;
 import com.benbenTaxi.v1.function.WaitingShow;
 import com.benbenTaxi.v1.function.actionbar.ActionBarActivity;
+import com.benbenTaxi.v1.function.remoteexception.RemoteExceptionHandler;
 
 public class BenbenLocationMain extends ActionBarActivity {
 	
@@ -211,6 +212,8 @@ public class BenbenLocationMain extends ActionBarActivity {
     
     @Override
     public void onCreate(Bundle savedInstanceState) {
+		Thread.setDefaultUncaughtExceptionHandler(new RemoteExceptionHandler());
+		
         super.onCreate(savedInstanceState);
         BenbenApplication app = (BenbenApplication)this.getApplication();
         if (app.mBMapManager == null) {

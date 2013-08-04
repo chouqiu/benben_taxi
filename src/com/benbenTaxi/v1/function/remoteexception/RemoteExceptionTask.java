@@ -12,6 +12,7 @@ import com.benbenTaxi.v1.function.GetInfoTask;
  */
 public class RemoteExceptionTask extends GetInfoTask{
 	private final static String API						=	"/api/v1/client_exceptions";
+	private final static String UA						= "driver_remote_exception";
 	private final String TAG			     			= RemoteExceptionTask.class.getName();
 	private Configure       mConfigure					=  null;
 	private RemoteExceptionRequest	mExceptionRequest		= null;
@@ -30,15 +31,22 @@ public class RemoteExceptionTask extends GetInfoTask{
 	protected String getApiUrl() {
 		return "http://"+mConfigure.getService()+API;
 	}
+	
 	protected void onPostExecute(Boolean succ) 
 	{
 		
 		//Log.d(TAG,"the result is "+this.getResult() + "|"+succ);
 	}
 
+	@Override
+	protected void initPostValues() {
+		super.post_param = getPostParams();
+	}
+	
 	public void go() 
-	{
-		execute();
+	{	
+		initHeaders("Content-Type", "application/json");
+		execute(getApiUrl(), UA, GetInfoTask.TYPE_POST);
 		//boolean s = mJsonHttpRequest.post(getApiUrl(), getPostParams());
 		//Log.d(TAG,"============|"+s);
 		

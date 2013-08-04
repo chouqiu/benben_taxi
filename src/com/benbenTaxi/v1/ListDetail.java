@@ -6,6 +6,7 @@ import com.benbenTaxi.v1.function.CallAdapter;
 import com.benbenTaxi.v1.function.DataPreference;
 import com.benbenTaxi.v1.function.DelayTask;
 import com.benbenTaxi.v1.function.actionbar.ActionBarActivity;
+import com.benbenTaxi.v1.function.remoteexception.RemoteExceptionHandler;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -69,6 +70,7 @@ public class ListDetail extends ActionBarActivity {
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
+		Thread.setDefaultUncaughtExceptionHandler(new RemoteExceptionHandler());
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.list_dialog);
 		
