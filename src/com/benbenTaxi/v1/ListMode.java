@@ -54,7 +54,9 @@ public class ListMode extends BaseLocationActivity {
 		
 		Bundle tips = getIntent().getExtras();
 		if ( tips != null ) {
-			tip_pos = tips.getString("pos");
+			// TODO 换一批功能还有点问题，先屏蔽
+			//tip_pos = tips.getString("pos");
+			tip_pos = null;
 			tip_neg = tips.getString("neg");
 		}
 		
