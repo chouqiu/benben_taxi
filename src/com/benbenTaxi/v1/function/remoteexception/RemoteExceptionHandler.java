@@ -1,4 +1,4 @@
-package com.benbentaxi.remoteexception;
+package com.benbenTaxi.v1.function.remoteexception;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;

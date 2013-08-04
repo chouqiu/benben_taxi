@@ -1,9 +1,9 @@
-package com.benbentaxi.remoteexception;
+package com.benbenTaxi.v1.function.remoteexception;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.benbentaxi.Configure;
+import com.benbenTaxi.v1.function.Configure;
 
 public class RemoteExceptionRequest {
 

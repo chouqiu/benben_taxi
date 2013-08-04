@@ -1,12 +1,16 @@
-package com.benbentaxi.remoteexception;
+package com.benbenTaxi.v1.function.remoteexception;
 
 
 import android.util.Log;
 
-import com.benbentaxi.Configure;
-import com.benbentaxi.api.PostTask;
+import com.benbenTaxi.v1.function.Configure;
+import com.benbenTaxi.v1.function.GetInfoTask;
 
-public class RemoteExceptionTask extends PostTask{
+/*
+ * 一要是测试远程异常服务，可以通过 42.121.55.211:8081看一下
+ * 用户名 super_admin 密码是 8
+ */
+public class RemoteExceptionTask extends GetInfoTask{
 	private final static String API						=	"/api/v1/client_exceptions";
 	private final String TAG			     			= RemoteExceptionTask.class.getName();
 	private Configure       mConfigure					=  null;
@@ -37,6 +41,23 @@ public class RemoteExceptionTask extends PostTask{
 		execute();
 		//boolean s = mJsonHttpRequest.post(getApiUrl(), getPostParams());
 		//Log.d(TAG,"============|"+s);
+		
+	}
+	
+	
+	@Override
+	protected void onPostExecGet(Boolean succ) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	protected void onPostExecPost(Boolean succ) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	protected void onPostExecError(String type, int code) {
+		// TODO Auto-generated method stub
 		
 	}
 }
