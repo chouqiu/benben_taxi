@@ -8,16 +8,12 @@ import java.util.LinkedHashMap;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import android.media.AudioFormat;
-import android.media.AudioManager;
-import android.media.AudioRecord;
-import android.media.AudioTrack;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
 import android.media.MediaPlayer.OnErrorListener;
 import android.media.MediaPlayer.OnPreparedListener;
-import android.media.MediaRecorder;
 import android.os.Handler;
+import android.util.Log;
 
 public class AudioProcessor {
 	public final static int MSG_ERROR_ARG = 0x501;
@@ -33,29 +29,32 @@ public class AudioProcessor {
 	public final static int MSG_PLAY_STOP = 0x604;
 	public final static int MSG_PLAY_REPLAY = 0x605;
 	
-	public final static int FLAG_PLAY_STOP = 0xa01;
-	public final static int FLAG_PLAY_REPLAY = 0xa02;
+	private final static int FLAG_PLAY_STOP = 0xa01;
+	private final static int FLAG_PLAY_REPLAY = 0xa02;
+	public final static int FLAG_MODE_PLAY = 0xb01;
+	public final static int FLAG_MODE_RECORD = 0xb02;
 	
-    private AudioRecord mAudioRecord; //  录制乘客声音
-	private AudioTrack mAudioTrack; // 播放乘客声音
+	
+    //private AudioRecord mAudioRecord; //  录制乘客声音
+	//private AudioTrack mAudioTrack; // 播放乘客声音
 	private MediaPlayer mMediaPlayer; // 使用mediaplayer方案
-	private int mAudioBufSize = 0;
-	private byte[] mAudioBuffer;
+	//private int mAudioBufSize = 0;
+	//private byte[] mAudioBuffer;
 	private Handler mH = null;
 	
-	private boolean mIsPlay = true, mPlaying = false;
+	private boolean mPlaying = false;
 	
 	private ArrayList< LinkedHashMap<Integer, JSONObject> > mPlayListPingPang = null;
 	private int mPlayListIdx = 0;
 	private Iterator<Integer> mIt = null;
 	private int mCurrentKey = -1, mCurrentReqID = -1;
-	private int mPlayFlag = 0;
+	private int mPlayFlag = 0, mPlayMode = 0;
 	
 	private String mHost = null;
 	
-	public AudioProcessor(String host, boolean play) {
+	public AudioProcessor(String host, int play) {
 		mHost = host;
-		mIsPlay = play;
+		mPlayMode = play;
 		mPlayListPingPang = new ArrayList< LinkedHashMap<Integer, JSONObject> >();
 		mPlayListPingPang.add( new LinkedHashMap<Integer, JSONObject>() );
 		mPlayListPingPang.add( new LinkedHashMap<Integer, JSONObject>() );
@@ -92,24 +91,29 @@ public class AudioProcessor {
 		mIt = pl.keySet().iterator();
 		
 		JSONObject obj = null;
-		int key = -1;
+		int key = -1, rid = -1;
+		boolean got = false;
 		while ( mIt.hasNext() ) {
 			key = (Integer) mIt.next();
 			obj = pl.get(key);
-			if ( mCurrentReqID < 0 || mCurrentReqID > getReqID(obj) ) {
+			rid = getReqID(obj);
+			if ( mCurrentReqID < 0 || mCurrentReqID > rid ) {
+				got = true;
 				break;
 			}
 		}
-		if ( key != -1 && obj != null ) {
-			mCurrentKey = key;
-			mCurrentReqID = getReqID(obj);
+		if ( got == true ) {
+			setKeyAndReqID(key, rid);
 			playAudioUri( getUri(obj) );
 		} else {
 			// 上次播放结束已是最后一个，重头开始
 			mIt = pl.keySet().iterator();
-			mCurrentKey = (Integer) mIt.next();
-			playAudioUri( getUri(pl.get(mCurrentKey)) );
+			int nkey = (Integer)mIt.next();
+			JSONObject nobj = pl.get(nkey);
+			setKeyAndReqID( nkey, getReqID(nobj) );
+			playAudioUri( getUri(nobj) );
 		}
+		Log.d("AudioProc", "curreq: "+mCurrentReqID+" curkey: "+mCurrentKey);
 	}
 	
 	public int getPlayListSize() {
@@ -199,19 +203,7 @@ public class AudioProcessor {
 	}
 	
 	private void initAudio() {
-    	if ( mIsPlay ) {
-        	mAudioBufSize = AudioTrack.getMinBufferSize(44100, AudioFormat.CHANNEL_IN_STEREO, AudioFormat.ENCODING_PCM_16BIT);
-    	} else {
-        	mAudioBufSize = AudioRecord.getMinBufferSize(44100, AudioFormat.CHANNEL_IN_STEREO, AudioFormat.ENCODING_PCM_16BIT);
-    	}
-
-    	mAudioRecord = new AudioRecord(MediaRecorder.AudioSource.MIC, 44100, 
-    			AudioFormat.CHANNEL_IN_STEREO, AudioFormat.ENCODING_PCM_16BIT, mAudioBufSize);
-    	
-    	mAudioTrack = new AudioTrack(AudioManager.STREAM_MUSIC, 44100, 
-    			AudioFormat.CHANNEL_IN_STEREO, AudioFormat.ENCODING_PCM_16BIT, mAudioBufSize, AudioTrack.MODE_STREAM);    	
-    	
-    	mAudioBuffer = new byte[mAudioBufSize];
+		initAudioTrack(mPlayMode);
     	
     	mMediaPlayer = new MediaPlayer();
 		mMediaPlayer.setOnCompletionListener(new OnCompletionListener() {
@@ -236,10 +228,10 @@ public class AudioProcessor {
 						mH.dispatchMessage(mH.obtainMessage(MSG_PLAY_COMPLETE, mCurrentKey, 0));
 					
 					if ( mIt != null && mIt.hasNext() ) {
-						mCurrentKey = (Integer) mIt.next();
-						JSONObject obj = getCurrentPlayList().get(mCurrentKey);
-						mCurrentReqID = getReqID(obj);
-						playAudioUri( getUri(obj) );
+						int nkey = (Integer) mIt.next();
+						JSONObject nobj = getCurrentPlayList().get(nkey);
+						setKeyAndReqID(nkey, getReqID(nobj));
+						playAudioUri( getUri(nobj) );
 					} else {
 						resetPlayList();
 						mCurrentReqID = -1;
@@ -268,7 +260,31 @@ public class AudioProcessor {
 			}
 		});
     }
+	
+	private void initAudioTrack(int mode) {
+    	/*
+		switch ( mode ) {
+    	case FLAG_MODE_PLAY:
+        	mAudioBufSize = AudioTrack.getMinBufferSize(44100, AudioFormat.CHANNEL_IN_STEREO, AudioFormat.ENCODING_PCM_16BIT);
+        	break;
+    	case FLAG_MODE_RECORD:
+    		mAudioBufSize = AudioRecord.getMinBufferSize(44100, AudioFormat.CHANNEL_IN_STEREO, AudioFormat.ENCODING_PCM_16BIT);
+    		break;
+		default:
+			return;
+    	}
+
+    	mAudioRecord = new AudioRecord(MediaRecorder.AudioSource.MIC, 44100, 
+    			AudioFormat.CHANNEL_IN_STEREO, AudioFormat.ENCODING_PCM_16BIT, mAudioBufSize);
+    	
+    	mAudioTrack = new AudioTrack(AudioManager.STREAM_MUSIC, 44100, 
+    			AudioFormat.CHANNEL_IN_STEREO, AudioFormat.ENCODING_PCM_16BIT, mAudioBufSize, AudioTrack.MODE_STREAM);    	
+    	
+    	mAudioBuffer = new byte[mAudioBufSize];
+    	*/
+	}
     
+	/*
     private void doRecordAudio() {
     	mAudioRecord.startRecording();
     	mAudioRecord.read(mAudioBuffer, 0, mAudioBufSize);
@@ -280,6 +296,7 @@ public class AudioProcessor {
     	mAudioTrack.write(mAudioBuffer, 0, mAudioBufSize);
     	mAudioTrack.stop();
     }
+    */
     
     private LinkedHashMap<Integer, JSONObject> getBackupPlayList() {
     	return mPlayListPingPang.get((mPlayListIdx+1) % mPlayListPingPang.size());
@@ -308,5 +325,10 @@ public class AudioProcessor {
     	} catch (JSONException e) {
     		return -1;
     	}
+    }
+    
+    private void setKeyAndReqID(int key, int rid) {
+    	mCurrentKey = key;
+    	mCurrentReqID = rid;
     }
 }

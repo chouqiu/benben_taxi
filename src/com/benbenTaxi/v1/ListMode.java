@@ -61,7 +61,7 @@ public class ListMode extends BaseLocationActivity {
 		DataPreference data = new DataPreference(mApp);
     	String host = data.LoadString("host");
 		
-    	mAp = new AudioProcessor(host, true);
+    	mAp = new AudioProcessor(host, AudioProcessor.FLAG_MODE_PLAY);
     	playHandler = new Handler() {
 			@Override
 			public void handleMessage(Message msg) {
@@ -82,6 +82,10 @@ public class ListMode extends BaseLocationActivity {
 					if ( msg.arg1 >=0 ) {
 						mReqAdapter.setItemOrg(msg.arg1);
 					}
+					mAp.resetBackupPlayList();
+					mReqAdapter.updateList();
+					mReqAdapter.notifyDataSetChanged();
+					
 					// 延迟，方便reqadapter刷新
 					DelayTask dt = new DelayTask(CODE_DELAY, delayHandler);
 					dt.execute(500);
@@ -386,9 +390,6 @@ public class ListMode extends BaseLocationActivity {
 			// 存入app中
 			JSONArray obj = (JSONArray) msg.obj;
 			mApp.setCurrentRequestList(obj);
-			mAp.resetBackupPlayList();
-			mReqAdapter.updateList();
-			mReqAdapter.notifyDataSetChanged();
 			Toast.makeText(this, "已刷新，附近有"+obj.length()+"个乘客请求", Toast.LENGTH_SHORT).show();
 			//mAp.resetPlay();
 			//mAp.batchPlay();

@@ -84,7 +84,7 @@ public class ListDetail extends ActionBarActivity {
 		DataPreference data = new DataPreference(this);
 		String host = data.LoadString("host");
 		
-	    mAp = new AudioProcessor(host, true);
+	    mAp = new AudioProcessor(host, AudioProcessor.FLAG_MODE_PLAY);
 		
 		// 初始化声音组件, 声音url是最后一个
 		if ( mContents!=null ) {
