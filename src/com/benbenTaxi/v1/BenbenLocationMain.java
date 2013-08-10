@@ -55,6 +55,7 @@ import com.baidu.mapapi.map.OverlayItem;
 import com.baidu.platform.comapi.basestruct.GeoPoint;
 import com.benbenTaxi.R;
 import com.benbenTaxi.v1.function.BenbenOverlay;
+import com.benbenTaxi.v1.function.Configure;
 import com.benbenTaxi.v1.function.ConfirmShow;
 import com.benbenTaxi.v1.function.DataPreference;
 import com.benbenTaxi.v1.function.Distance;
@@ -65,6 +66,7 @@ import com.benbenTaxi.v1.function.PopupWindowSize;
 import com.benbenTaxi.v1.function.ShowDetail;
 import com.benbenTaxi.v1.function.WaitingShow;
 import com.benbenTaxi.v1.function.actionbar.ActionBarActivity;
+import com.benbenTaxi.v1.function.api.JsonHelper;
 import com.benbenTaxi.v1.function.remoteexception.RemoteExceptionHandler;
 
 public class BenbenLocationMain extends ActionBarActivity {
@@ -149,7 +151,6 @@ public class BenbenLocationMain extends ActionBarActivity {
     };
     
     private String mTokenKey, mTokenVal;
-	private static final String mTestHost = "42.121.55.211:8081";
 	
 	BenbenOverlay ov = null;
 	// 存放overlayitem 
@@ -225,7 +226,6 @@ public class BenbenLocationMain extends ActionBarActivity {
         mMapController = mMapView.getController();
         
         mData = new DataPreference(this.getApplicationContext());
-        mData.SaveData("host", mTestHost);
         mTokenKey = mData.LoadString("token_key");
         mTokenVal = mData.LoadString("token_value");
         mUserMobile = mData.LoadString("user");
@@ -642,6 +642,8 @@ public class BenbenLocationMain extends ActionBarActivity {
 			if ( resultCode > 0 ) {
 				mStatus = STAT_DRV_TRY_GET_REQUEST;
 	    		GetTaxiTask drvcon = new GetTaxiTask();
+	    		// 确认请求，保存reqid
+	    		mApp.setRequestID(JsonHelper.getInt(mApp.getCurrentObject(), "id"));
 	    		// 这里是用保存的reqid，防止被更新为无效值
 	    		drvcon.driverConfirm(locData.longitude, locData.latitude, mApp.getRequestID());
 	    		
@@ -777,29 +779,29 @@ public class BenbenLocationMain extends ActionBarActivity {
 		
 		public void getTaxi(double lng, double lat) {
 			_type = TYPE_GET_TAXI;
-			String url =  "http://"+mTestHost+"/api/v1/users/nearby_driver?lat="+lat+"&lng="+lng;
-			super.initCookies(mTokenKey, mTokenVal, "42.121.55.211");
+			String url =  "http://"+Configure.getService()+"/api/v1/users/nearby_driver?lat="+lat+"&lng="+lng;
+			super.initCookies(mTokenKey, mTokenVal, Configure.getHost());
 			execute(url, _useragent, GetInfoTask.TYPE_GET);
 		}
 		
 		public void CancelTaxi(int id) {
 			// 取消打车: /api/v1/taxi_requests/:id/cancel
 			_type = TYPE_CANCEL;
-			String url = "http://"+mTestHost+"/api/v1/taxi_requests/"+id+"/cancel";
+			String url = "http://"+Configure.getService()+"/api/v1/taxi_requests/"+id+"/cancel";
 			_json_data = new JSONObject();
 			doPOST(url);
 		}
 		
 		public void getRequest(int id) {
 			_type = TYPE_ASK_REQ;
-			String url = "http://"+mTestHost+"/api/v1/taxi_requests/"+id;
-			super.initCookies(mTokenKey, mTokenVal, "42.121.55.211");
+			String url = "http://"+Configure.getService()+"/api/v1/taxi_requests/"+id;
+			super.initCookies(mTokenKey, mTokenVal, Configure.getHost());
 			execute(url, _useragent, GetInfoTask.TYPE_GET);
 		}
 		
 		public void requireTaxi(double lng, double lat) {
 			_type = TYPE_REQ_TAXI;
-			String url = "http://"+mTestHost+"/api/v1/taxi_requests";
+			String url = "http://"+Configure.getService()+"/api/v1/taxi_requests";
 			
 			_json_data = new JSONObject();
 			try {
@@ -820,7 +822,7 @@ public class BenbenLocationMain extends ActionBarActivity {
 		}
 		
 		public void passengerResponse(int id, String type) {
-			String url = "http://"+mTestHost+"/api/v1/taxi_requests/"+id+"/"+type;
+			String url = "http://"+Configure.getService()+"/api/v1/taxi_requests/"+id+"/"+type;
 			if ( type.equals(PASS_CONFIRM) ) {
 				_type = TYPE_PAS_CON;
 			} else {
@@ -841,7 +843,7 @@ public class BenbenLocationMain extends ActionBarActivity {
 		}
 		
 		public void driverReport(double lng, double lat, double radius, String cootype) {
-			String url = "http://"+mTestHost+"/api/v1/driver_track_points";
+			String url = "http://"+Configure.getService()+"/api/v1/driver_track_points";
 			_type = TYPE_DRV_REP;
 			
 			_json_data = new JSONObject();
@@ -864,14 +866,14 @@ public class BenbenLocationMain extends ActionBarActivity {
 		public void driverGetRequest(double lng, double lat, double radius) {
 			// /api/v1/taxi_requests?lat=8&lng=8&radius=10
 			_type = TYPE_DRV_REQ;
-			String url =  "http://"+mTestHost+"/api/v1/taxi_requests/nearby?lat="+lat+"&lng="+lng+"&radius=5000";
-			super.initCookies(mTokenKey, mTokenVal, "42.121.55.211");
+			String url =  "http://"+Configure.getService()+"/api/v1/taxi_requests/nearby?lat="+lat+"&lng="+lng+"&radius=5000";
+			super.initCookies(mTokenKey, mTokenVal, Configure.getHost());
 			execute(url, _useragent, GetInfoTask.TYPE_GET);
 		}
 		
 		public void driverConfirm(double lng, double lat, int id) {
 			_type = TYPE_DRV_CON;
-			String url = "http://"+mTestHost+"/api/v1/taxi_requests/"+id+"/response";
+			String url = "http://"+Configure.getService()+"/api/v1/taxi_requests/"+id+"/response";
 			
 			_json_data = new JSONObject();
 			try {
@@ -890,14 +892,14 @@ public class BenbenLocationMain extends ActionBarActivity {
 		public void driverAskRequest(int id) {
 			_type = TYPE_DRV_ASK;
 			
-			String url = "http://"+mTestHost+"/api/v1/taxi_requests/"+id;
-			super.initCookies(mTokenKey, mTokenVal, "42.121.55.211");
+			String url = "http://"+Configure.getService()+"/api/v1/taxi_requests/"+id;
+			super.initCookies(mTokenKey, mTokenVal, Configure.getHost());
 			execute(url, _useragent, GetInfoTask.TYPE_GET);
 		}
 		
 		private void doPOST(String url) {
 			// 一定要初始化cookie和content-type!!!!!
-			super.initCookies(mTokenKey, mTokenVal, "42.121.55.211");
+			super.initCookies(mTokenKey, mTokenVal, Configure.getHost());
 			super.initHeaders("Content-Type", "application/json");
 			
 			execute(url, _useragent, GetInfoTask.TYPE_POST);

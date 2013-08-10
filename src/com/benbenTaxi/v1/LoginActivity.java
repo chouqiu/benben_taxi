@@ -5,6 +5,7 @@ import org.json.JSONObject;
 import org.json.JSONTokener;
 
 import com.benbenTaxi.R;
+import com.benbenTaxi.v1.function.Configure;
 import com.benbenTaxi.v1.function.DataPreference;
 import com.benbenTaxi.v1.function.EquipmentId;
 import com.benbenTaxi.v1.function.GetInfoTask;
@@ -35,7 +36,6 @@ public class LoginActivity extends Activity {
 	 * The default email to populate the email field with.
 	 */
 	public static final String EXTRA_EMAIL = "com.example.android.authenticatordemo.extra.EMAIL";
-	private static final String mTestHost = "42.121.55.211:8081";
 
 	/**
 	 * Keep track of the login task to ensure we can cancel it if requested.
@@ -143,7 +143,7 @@ public class LoginActivity extends Activity {
 		}
 		
 		mData = new DataPreference(this.getApplicationContext());
-		mData.SaveData("host", mTestHost);
+		mData.SaveData("host", Configure.getService());
 		mData.SaveData("loop", 5); // 配置定位服务定时轮训的时长
 		//Toast.makeText(this, "点击菜单键进行参数配置", Toast.LENGTH_SHORT).show();
 	}
@@ -260,12 +260,12 @@ public class LoginActivity extends Activity {
 				mLoginStatusMessageView.setText(R.string.login_progress_signing_in);
 				showProgress(true);
 				mAuthTask = new UserLoginTask();
-				mAuthTask.doLogin(mEmail, mPassword, mTestHost, mEquipmentId.getId(), usertype);
+				mAuthTask.doLogin(mEmail, mPassword, Configure.getService(), mEquipmentId.getId(), usertype);
 			} else if ( type == UserLoginTask.LOGINTYPE_CREATE ) {
 				mLoginStatusMessageView.setText(R.string.login_progress_signing_in);
 				showProgress(true);
 				mAuthTask = new UserLoginTask();
-				mAuthTask.doCreate(mEmail, mPassword, mTestHost, mEquipmentId.getId(), usertype);
+				mAuthTask.doCreate(mEmail, mPassword, Configure.getService(), mEquipmentId.getId(), usertype);
 			}
 		}
 	}

@@ -121,9 +121,9 @@ public class AudioProcessor {
 	}
 	
 	private void resetPlayStatus() {
-		if ( mMediaPlayer.isPlaying() ) {
-			mMediaPlayer.stop();
-		}
+		//if ( mMediaPlayer.isPlaying() ) {
+		mMediaPlayer.stop();
+		//}
 		mMediaPlayer.reset();
 		mPlaying = false;
 		mPlayFlag = 0;

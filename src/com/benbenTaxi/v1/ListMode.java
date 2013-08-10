@@ -1,7 +1,6 @@
 package com.benbenTaxi.v1;
 
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import com.baidu.mapapi.map.LocationData;
@@ -15,6 +14,8 @@ import com.benbenTaxi.v1.function.RequestAdapter;
 import com.benbenTaxi.v1.function.ShowDetail;
 import com.benbenTaxi.v1.function.StatusMachine;
 import com.benbenTaxi.v1.function.WaitingShow;
+import com.benbenTaxi.v1.function.api.JsonHelper;
+
 import android.content.Intent;
 import android.database.DataSetObserver;
 import android.os.Bundle;
@@ -128,8 +129,6 @@ public class ListMode extends BaseLocationActivity {
     	mWs.SetNegativeOnclick("取消请求", null);
     	mWs.setHandler(waitingHandler);
     	
-    	super.setLocationStart();
-    	
     	mReqAdapter.registerDataSetObserver(new DataSetObserver(){  
     		
             public void onChanged() {  
@@ -197,20 +196,12 @@ public class ListMode extends BaseLocationActivity {
 				int lastid = -1, newid = -1;
 				
 				if ( lastobj != null ) {
-					try {
-						lastid = lastobj.getInt("id");
-					} catch (JSONException e) {
-						lastid = -1;
-					}
+					lastid = JsonHelper.getInt(lastobj, "id");
 				}
 				
 				JSONObject obj = (JSONObject) mReqAdapter.getItem(arg2);
 				if ( obj != null ) {
-					try {
-						newid = obj.getInt("id");
-					} catch (JSONException e) {
-						newid = -1;
-					}
+					newid = JsonHelper.getInt(obj, "id");
 				} else {
 					Toast.makeText(ListMode.this, "无效的请求信息，请重试", Toast.LENGTH_SHORT).show();
 					return;
@@ -225,7 +216,6 @@ public class ListMode extends BaseLocationActivity {
 					return;
 				}
 				
-				mAp.setStopPlay();
 				mReqAdapter.setItemSelected(arg2);
 				ShowDetail.showPassengerRequestInfo(mApp, ListMode.this, obj, CODE_SHOW_DETAIL);
 			}
@@ -247,13 +237,15 @@ public class ListMode extends BaseLocationActivity {
 
 	@Override
 	protected void onResume() {
-		super.setLocationRequest();
 		super.onResume();
 	}
 	
 	@Override
 	protected void onStop() {
+		// 先暂停轮询，再停止声音
 		super.onStop();
+		// 停止声音播放
+		mAp.setStopPlay();
 	}
 
 	@Override
@@ -271,10 +263,9 @@ public class ListMode extends BaseLocationActivity {
 		case CODE_SHOW_DETAIL:
 			// 来自点击用户请求图标，司机处理用户请求
 			if ( resultCode > 0 ) {
-				int reqid = -1;
-				try {
-					reqid = reqobj.getInt("id");
-					mApp.setRequestID(reqid);
+				int reqid = JsonHelper.getInt(reqobj, "id");
+				mApp.setRequestID(reqid);
+				if ( reqid >= 0  ) {
 					LocationData locData = mApp.getCurrentLocData();
 					StatusMachine sm = new StatusMachine(mH, mData, reqobj);
 		    		// 这里是用保存的reqid，防止被更新为无效值
@@ -283,9 +274,10 @@ public class ListMode extends BaseLocationActivity {
 		    		// 显示延迟进度条，等待30s
 		    		// 问题已解决，可以使用popwin，注意不要在回调函数中dismiss当前的popwin
 		    		mWs.show();
-				} catch (JSONException e) {
+				} else {
 					reqid = -1;
-					Toast.makeText(this, "请求id解析错误: "+e.toString(), Toast.LENGTH_SHORT).show();
+					Toast.makeText(this, "请求id解析错误", Toast.LENGTH_SHORT).show();
+					mReqAdapter.resetItemSelected();
 				}
 			} else {
 				mReqAdapter.resetItemSelected();
@@ -294,16 +286,12 @@ public class ListMode extends BaseLocationActivity {
 		case CODE_SHOW_INFO:
 			if ( resultCode > 0 ) {
 				ShowDetail.showCall(this, reqobj);
-			} else {
-				super.setLocationRequest();
 			}
 			break;
 		case CODE_SHOW_CONFIRM_INFO:
 			if ( resultCode > 0 ) {
 				ShowDetail.showCall(this, mApp.getCurrentObject());
 			}
-			super.setLocationStart();
-			super.setLocationRequest();
 			Toast.makeText(this, "乘客请求["+mApp.getRequestID()+"]已确认，请前往乘客所在地！", Toast.LENGTH_SHORT).show();
 			resetStatus();
 			break;
@@ -338,7 +326,6 @@ public class ListMode extends BaseLocationActivity {
 			break;
 		case R.id.menu_map_mode:
 			// 返回地图模式
-			super.setLocationStop();
 			this.setResult(0);
 			finish();
 			break;
@@ -366,9 +353,7 @@ public class ListMode extends BaseLocationActivity {
 			mApp.setCurrentStat((String) msg.obj);
 			mReqAdapter.setItemConfirm();
 			mWs.Dismiss();
-			// 先暂停轮训，防止反复调用ListDetail
-			super.setLocationStop();
-			mAp.setStopPlay();
+			
 			ShowDetail.showPassengerConfirmInfo(this, CODE_SHOW_CONFIRM_INFO);
 			break;
 		case StatusMachine.MSG_STAT_TIMEOUT:
@@ -397,6 +382,14 @@ public class ListMode extends BaseLocationActivity {
 			//mAp.batchPlay();
 			
 			mAp.setRePlay();
+			break;
+		case StatusMachine.MSG_ERR_DRV_REPORT:
+			Toast.makeText(this, (String)msg.obj, Toast.LENGTH_SHORT).show();
+			break;
+		case StatusMachine.MSG_ERR_NETWORK:
+			Toast.makeText(this, (String)msg.obj, Toast.LENGTH_SHORT).show();
+			mWs.Dismiss();
+			resetStatus();
 			break;
 		default:
 			break;

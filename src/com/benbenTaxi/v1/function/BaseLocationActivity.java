@@ -61,6 +61,19 @@ public abstract class BaseLocationActivity extends ActionBarActivity {
 	}
     
     @Override
+	protected void onResume() {
+		setLocationStart();
+		setLocationRequest();
+		super.onResume();
+	}
+
+	@Override
+	protected void onStop() {
+		setLocationStop();
+		super.onStop();
+	}
+
+	@Override
 	protected void onDestroy() {
     	if (mLocClient != null)
     		mLocClient.stop();

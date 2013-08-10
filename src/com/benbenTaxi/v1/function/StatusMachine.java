@@ -56,7 +56,7 @@ public class StatusMachine extends GetInfoTask {
 	public StatusMachine(Handler h, DataPreference data, JSONObject curObj) {
 		mH = h;
 		
-		mHost = data.LoadString("host");
+		mHost = Configure.getService();
 		mTokenKey = data.LoadString("token_key");
 		mTokenVal = data.LoadString("token_value");
 		mMobile = data.LoadString("user");
@@ -95,7 +95,7 @@ public class StatusMachine extends GetInfoTask {
 		// /api/v1/taxi_requests?lat=8&lng=8&radius=10
 		_type = TYPE_DRV_REQ;
 		String url =  "http://"+mHost+"/api/v1/taxi_requests/nearby?lat="+lat+"&lng="+lng+"&radius=20000";
-		super.initCookies(mTokenKey, mTokenVal, "42.121.55.211");
+		super.initCookies(mTokenKey, mTokenVal, Configure.getHost());
 		execute(url, _useragent, GetInfoTask.TYPE_GET);
 	}
 	
@@ -121,13 +121,13 @@ public class StatusMachine extends GetInfoTask {
 		_type = TYPE_DRV_ASK;
 		
 		String url = "http://"+mHost+"/api/v1/taxi_requests/"+id;
-		super.initCookies(mTokenKey, mTokenVal, "42.121.55.211");
+		super.initCookies(mTokenKey, mTokenVal, Configure.getHost());
 		execute(url, _useragent, GetInfoTask.TYPE_GET);
 	}
 	
 	private void doPOST(String url) {
 		// 一定要初始化cookie和content-type!!!!!
-		super.initCookies(mTokenKey, mTokenVal, "42.121.55.211");
+		super.initCookies(mTokenKey, mTokenVal, Configure.getHost());
 		super.initHeaders("Content-Type", "application/json");
 		
 		execute(url, _useragent, GetInfoTask.TYPE_POST);
@@ -229,10 +229,10 @@ public class StatusMachine extends GetInfoTask {
 				try {
 					JSONObject ret = (JSONObject) jsParser.nextValue();
 					JSONObject err = ret.getJSONObject("errors");
-					_errmsg = err.getJSONArray("base").getString(0);
+					_errmsg = "数据解析错误: "+err.getJSONArray("base").getString(0);
 					succ = false;
 				} catch (Exception ee) {
-					_errmsg = "数据通信异常，请检查云服务器配置，或联系服务商";
+					_errmsg = "数据格式错误，请检查云服务器配置，或联系服务商";
 					succ = false;
 				}
 			} catch (Exception e) {
@@ -259,10 +259,11 @@ public class StatusMachine extends GetInfoTask {
 	private void doGetRequest(JSONTokener jsParser) throws JSONException {
 		// {"id":28,"state":"Waiting_Driver_Response","passenger_lat":8.0,"passenger_lng":8.0,"passenger_voice_url":"/uploads/taxi_request/voice/2013-05-31/03bd766e8ecc2e2429f1610c7bf6c3ec.m4a"}
 		// 用户只要处理state即可
-		String status = ((JSONObject)jsParser.nextValue()).getString("state");
+		JSONObject obj = (JSONObject)jsParser.nextValue();
+		String status = obj.getString("state");
 		int stat = -1;
 		
-		String drv_mobile = ((JSONObject)jsParser.nextValue()).getString("driver_mobile");
+		String drv_mobile = obj.getString("driver_mobile");
 		if ( drv_mobile.equals(mMobile) ) {
 			if ( status.equals(STAT_WAITING_DRV_RESP) ) {
 				// 继续等待

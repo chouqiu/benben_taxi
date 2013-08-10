@@ -1,5 +1,6 @@
 package com.benbenTaxi.v1.function.ad;
 
+import com.benbenTaxi.v1.function.Configure;
 import com.benbenTaxi.v1.function.DataPreference;
 import com.benbenTaxi.v1.function.GetInfoTask;
 import com.benbenTaxi.v1.function.background.BackgroundService;
@@ -23,7 +24,7 @@ public class TextAdTask extends GetInfoTask {
 	
 	public void send() {
 		String url =  "http://"+mData.LoadString("host")+mApiUrl;
-		super.initCookies(mData.LoadString("token_key"), mData.LoadString("token_value"), "42.121.55.211");
+		super.initCookies(mData.LoadString("token_key"), mData.LoadString("token_value"), Configure.getHost());
 		execute(url, mUA, GetInfoTask.TYPE_GET);
 	}
 	

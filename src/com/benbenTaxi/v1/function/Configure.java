@@ -2,11 +2,11 @@ package com.benbenTaxi.v1.function;
 
 public class Configure {
 
-	public String getService()
+	public static String getService()
 	{
 		return getHost()+":8081";
 	}
-	public String getHost()
+	public static String getHost()
 	{
 		return "42.121.55.211";
 	}
@@ -19,7 +19,7 @@ public class Configure {
 		return "android "+android.os.Build.VERSION.RELEASE;
 	}
 	
-	public String getClientVersion()
+	public static String getClientVersion()
 	{
 		//这个和分支一致
 		return "passenger-"+"0.1";

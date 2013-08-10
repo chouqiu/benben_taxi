@@ -1,6 +1,8 @@
 package com.benbenTaxi.v1.function;
 
 import com.benbenTaxi.R;
+
+import android.graphics.Color;
 import android.os.Handler;
 import android.os.SystemClock;
 import android.view.Gravity;
@@ -123,6 +125,8 @@ public class WaitingShow
 				}
 			}
 		});
+    	// 计时器字体设为白色
+    	mMeter.setTextColor(Color.rgb(255, 255, 255));
 	}
 	
 	private void doClean() {
