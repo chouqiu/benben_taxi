@@ -8,11 +8,14 @@ import java.util.LinkedHashMap;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.benbenTaxi.v1.function.api.AudioBuffer;
+
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
 import android.media.MediaPlayer.OnErrorListener;
 import android.media.MediaPlayer.OnPreparedListener;
 import android.os.Handler;
+import android.os.Message;
 import android.util.Log;
 
 public class AudioProcessor {
@@ -51,6 +54,7 @@ public class AudioProcessor {
 	private int mPlayFlag = 0, mPlayMode = 0;
 	
 	private String mHost = null;
+	private AudioBuffer mBuf;
 	
 	public AudioProcessor(String host, int play) {
 		mHost = host;
@@ -59,6 +63,21 @@ public class AudioProcessor {
 		mPlayListPingPang.add( new LinkedHashMap<Integer, JSONObject>() );
 		mPlayListPingPang.add( new LinkedHashMap<Integer, JSONObject>() );
 		initAudio();
+		
+		mBuf = new AudioBuffer(new Handler() {
+			@Override
+			public void handleMessage(Message msg) {
+				switch(msg.what) {
+				case AudioBuffer.MSG_PREPARE_OK:
+					playAudioUri((String)msg.obj);
+					break;
+				default:
+					doError(mMediaPlayer);
+					break;
+				}
+			}
+			
+		});
 	}
 	
 	public void setHandler(Handler h) {
@@ -121,13 +140,19 @@ public class AudioProcessor {
 	}
 	
 	private void resetPlayStatus() {
-		//if ( mMediaPlayer.isPlaying() ) {
-		mMediaPlayer.stop();
-		//}
-		mMediaPlayer.reset();
-		mPlaying = false;
-		mPlayFlag = 0;
-		//mPlayList.clear();
+		try {
+			if ( mMediaPlayer.isPlaying() ) {
+				mMediaPlayer.pause();
+				mMediaPlayer.stop();
+			}
+		}catch(IllegalStateException e) {
+			
+		} finally {
+			mMediaPlayer.reset();
+			mPlaying = false;
+			mPlayFlag = 0;
+			//mPlayList.clear();
+		}
 	}
 	
 	private void resetPlayList() {
@@ -166,7 +191,17 @@ public class AudioProcessor {
 		String info = null;
 		
 		try {
-			mMediaPlayer.setDataSource("http://"+mHost+uri);
+			String path = mBuf.GetFile(uri);
+			if ( path != null ) {
+				mMediaPlayer.setDataSource(path);
+				mMediaPlayer.prepare();
+				
+				mPlaying = true;
+				if ( mH != null )
+					mH.dispatchMessage(mH.obtainMessage(MSG_PLAY_READY, mCurrentKey, 0));
+			} else {
+				mBuf.PrepareFile(uri);
+			}
 		} catch (IllegalArgumentException e) {
 			msg = MSG_ERROR_ARG;
 			info = e.toString();
@@ -183,22 +218,6 @@ public class AudioProcessor {
 		
 		if ( msg > 0 && mH != null ) {
 			mH.dispatchMessage(mH.obtainMessage(msg, info));
-		}
-		
-		msg = -1;
-		info = null;
-		try {
-			mMediaPlayer.prepareAsync();
-		} catch (IllegalStateException e) {
-			msg = MSG_ERROR_PRE_STAT;
-			info = e.toString();
-		}
-		
-		if ( msg > 0 && mH != null ) {
-			mH.dispatchMessage(mH.obtainMessage(msg, info));
-		} else if ( msg <= 0 && mH != null ) {
-			mPlaying = true;
-			mH.dispatchMessage(mH.obtainMessage(MSG_PLAY_READY, mCurrentKey, 0));
 		}
 	}
 	
@@ -245,10 +264,7 @@ public class AudioProcessor {
 		mMediaPlayer.setOnErrorListener(new OnErrorListener() {
 			@Override
 			public boolean onError(MediaPlayer mp, int what, int extra) {
-				mMediaPlayer.reset();
-				if ( mH != null ) {
-					mH.dispatchMessage(mH.obtainMessage(MSG_PLAY_ERROR, mCurrentKey, 0));
-				}
+				doError(mp);
 				return false;
 			}
 		});
@@ -256,7 +272,7 @@ public class AudioProcessor {
 		mMediaPlayer.setOnPreparedListener(new OnPreparedListener() {
 			@Override
 			public void onPrepared(MediaPlayer mp) {
-				mp.start();
+				doGood(mp);
 			}
 		});
     }
@@ -297,6 +313,17 @@ public class AudioProcessor {
     	mAudioTrack.stop();
     }
     */
+	
+	private void doError(MediaPlayer mp) {
+		mp.reset();
+		if ( mH != null ) {
+			mH.dispatchMessage(mH.obtainMessage(MSG_PLAY_ERROR, mCurrentKey, 0));
+		}
+	}
+	
+	private void doGood(MediaPlayer mp) {
+		mp.start();
+	}
     
     private LinkedHashMap<Integer, JSONObject> getBackupPlayList() {
     	return mPlayListPingPang.get((mPlayListIdx+1) % mPlayListPingPang.size());

@@ -341,6 +341,12 @@ public class ListMode extends BaseLocationActivity {
 		
 		switch(msg.what) {
 		case StatusMachine.MSG_STAT_OTHER:
+			Toast.makeText(this, "乘客请求["+reqid+"]已被其他司机接受, 附近有"+mApp.getCurrentRequestList().length()+"个乘客", 
+					Toast.LENGTH_SHORT).show();
+			mApp.setCurrentStat(StatusMachine.STAT_CANCEL);
+			mWs.Dismiss();
+			resetStatus();
+			break;
 		case StatusMachine.MSG_STAT_CANCEL:
 			Toast.makeText(this, "乘客请求["+reqid+"]已被取消, 附近有"+mApp.getCurrentRequestList().length()+"个乘客", 
 					Toast.LENGTH_SHORT).show();
