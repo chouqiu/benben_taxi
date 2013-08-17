@@ -6,6 +6,7 @@ import java.io.IOException;
 
 import android.os.Environment;
 import android.os.Handler;
+import android.util.Log;
 
 import com.benbenTaxi.v1.function.Configure;
 import com.benbenTaxi.v1.function.GetInfoTask;
@@ -25,34 +26,21 @@ public class AudioBuffer {
 	}
 
 	public String GetFile(String uri) {
-		File sdCardDir = Environment.getExternalStorageDirectory();
-		try {
-			String fullPath = sdCardDir.getCanonicalPath()+ "benbenTaxi/audioBuf"+uri;
-			File targetFile = new File(fullPath);
-			if ( targetFile.exists() ) {
-				return fullPath;
-			}
-			
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		String fullPath = getVoicePath(uri);
+		Log.d("AudioBuf", fullPath);
+		File targetFile = new File(fullPath);
+		if ( targetFile.exists() ) {
+			return fullPath;
 		}
-		
+	
 		return null;
 	}
 	
 	public void RemoveFile(String uri) {
-		File sdCardDir = Environment.getExternalStorageDirectory();
-		try {
-			String fullPath = sdCardDir.getCanonicalPath()+ "benbenTaxi/audioBuf"+uri;
-			File targetFile = new File(fullPath);
-			if ( targetFile.exists() ) {
-				targetFile.delete();
-			}
-			
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		String fullPath = getVoicePath(uri);
+		File targetFile = new File(fullPath);
+		if ( targetFile.exists() ) {
+			targetFile.delete();
 		}
 	}
 	
@@ -61,16 +49,16 @@ public class AudioBuffer {
 		
 		public GetFileTask(String uri) {
 			mUri = uri;
-			execute(mUri, Configure.getUserAgent(), GetInfoTask.TYPE_GET);
+			execute("http://"+Configure.getService()+mUri, Configure.getUserAgent(), GetInfoTask.TYPE_GET);
 		}
 		
 		@Override
 		protected void onPostExecGet(Boolean succ) {
 			if ( succ ) {
 				// 保存文件并发送消息
-				File sdCardDir = Environment.getExternalStorageDirectory();
+				
 				try {
-					String fullPath = sdCardDir.getCanonicalPath()+ "benbenTaxi/audioBuf"+mUri;
+					String fullPath = getVoicePath(mUri);
 					File targetFile = new File(fullPath);
 					DirRecursion.mkDir(targetFile.getParentFile());
 					
@@ -112,5 +100,16 @@ public class AudioBuffer {
 			   file.mkdir();
 			  }
 			 }
+	}
+	
+	private String getVoicePath(String uri) {
+		File sdCardDir = Environment.getExternalStorageDirectory();
+		try {
+			return sdCardDir.getCanonicalPath()+ "/benbenTaxi/audioBuf"+uri;
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			//e.printStackTrace();
+			return "/SDCard/"+"/benbenTaxi/audioBuf"+uri;
+		}
 	}
 }
