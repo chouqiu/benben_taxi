@@ -22,7 +22,7 @@ public class Configure {
 	public static String getClientVersion()
 	{
 		//这个和分支一致
-		return "passenger-"+"0.1";
+		return "driver-"+"0.1";
 	}
 	
 	public static String getUserAgent() {

@@ -145,10 +145,10 @@ public class AudioProcessor {
 				mMediaPlayer.pause();
 				mMediaPlayer.stop();
 			}
+			mMediaPlayer.reset();
 		}catch(IllegalStateException e) {
 			
 		} finally {
-			mMediaPlayer.reset();
 			mPlaying = false;
 			mPlayFlag = 0;
 			//mPlayList.clear();

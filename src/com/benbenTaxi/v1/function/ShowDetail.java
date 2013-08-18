@@ -14,6 +14,7 @@ import android.os.Bundle;
 
 import com.benbenTaxi.v1.BenbenApplication;
 import com.benbenTaxi.v1.ListDetail;
+import com.benbenTaxi.v1.function.api.JsonHelper;
 
 public class ShowDetail {
 	private final static DecimalFormat mDF = new DecimalFormat("#.##");
@@ -46,6 +47,7 @@ public class ShowDetail {
 				
 		app.setCurrentInfo(voiceUrl);;
 		app.setCurrentObject(obj);
+		app.setCurrentStat(JsonHelper.getString(obj, "state"));
 		
 		Bundle tips = new Bundle();
 		tips.putString("pos", "х╥хо");

@@ -11,6 +11,7 @@ import com.baidu.mapapi.map.LocationData;
 import com.benbenTaxi.v1.BenbenApplication;
 import com.benbenTaxi.v1.BenbenLocationMain.NotifyLister;
 import com.benbenTaxi.v1.function.actionbar.ActionBarActivity;
+import com.benbenTaxi.v1.function.api.JsonHelper;
 import com.benbenTaxi.v1.function.remoteexception.RemoteExceptionHandler;
 
 import android.app.Activity;
@@ -42,7 +43,6 @@ public abstract class BaseLocationActivity extends ActionBarActivity {
     
     @Override
 	protected void onCreate(Bundle savedInstanceState) {
-		Thread.setDefaultUncaughtExceptionHandler(new RemoteExceptionHandler());
 		super.onCreate(savedInstanceState);
 		locData = new LocationData();
 		mApp = (BenbenApplication) this.getApplicationContext();
@@ -121,6 +121,24 @@ public abstract class BaseLocationActivity extends ActionBarActivity {
     protected void resetStatus() {
     	mApp.setRequestID(-1);
     	mApp.setCurrentReqIdx(-1);
+    }
+    
+    protected boolean checkLastRequestValid(JSONObject newobj) {
+    	JSONObject lastobj = mApp.getCurrentObject();
+    	if ( lastobj == null || newobj == null ) {
+    		return false;
+    	}
+    	
+    	int lastid = JsonHelper.getInt(lastobj, "id");
+    	int newid = JsonHelper.getInt(newobj, "id");
+    	
+    	if ( lastid>=0 && lastid==newid && (mApp.getCurrentStat().equals(StatusMachine.STAT_SUCCESS) ||
+				mApp.getCurrentStat().equals(StatusMachine.STAT_CANCEL) ||
+				mApp.getCurrentStat().equals(StatusMachine.STAT_TIMEOUT)) ) {
+    		return true;
+    	}
+    	
+    	return false;
     }
 
 	/**

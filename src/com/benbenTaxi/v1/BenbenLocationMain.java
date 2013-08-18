@@ -64,6 +64,7 @@ import com.benbenTaxi.v1.function.IdShow;
 import com.benbenTaxi.v1.function.ListShow;
 import com.benbenTaxi.v1.function.PopupWindowSize;
 import com.benbenTaxi.v1.function.ShowDetail;
+import com.benbenTaxi.v1.function.StatusMachine;
 import com.benbenTaxi.v1.function.WaitingShow;
 import com.benbenTaxi.v1.function.actionbar.ActionBarActivity;
 import com.benbenTaxi.v1.function.api.JsonHelper;
@@ -125,9 +126,17 @@ public class BenbenLocationMain extends ActionBarActivity {
             		try {
 						if ( mIsDriver ) {
 							if (mReqId < 0) {
-								mConfirmObj = mReqInfo.getJSONObject(mReqIdx);
-								mReqId = mConfirmObj.getInt("id");
-								ShowDetail.showPassengerRequestInfo(mApp, BenbenLocationMain.this, mConfirmObj, CODE_SHOW_DETAIL);
+								// 检查是否和上个请求重复
+								JSONObject newobj = mReqInfo.getJSONObject(mReqIdx);
+								int newid = newobj.getInt("id");
+								if ( checkLastRequestValid(newobj) == true ) {
+									Toast.makeText(BenbenLocationMain.this, "请求["+newid+"]已被处理，请点击查看了解详情", 
+											Toast.LENGTH_LONG).show();
+								} else {
+									mReqId = newid;
+									mConfirmObj = newobj;
+									ShowDetail.showPassengerRequestInfo(mApp, BenbenLocationMain.this, mConfirmObj, CODE_SHOW_DETAIL);
+								}
 							} else {
 								// 当前已有请求在处理，不能响应
 								Toast.makeText(BenbenLocationMain.this, "当前已有请求在处理，请点击查看了解详情", Toast.LENGTH_LONG).show();
@@ -213,8 +222,6 @@ public class BenbenLocationMain extends ActionBarActivity {
     
     @Override
     public void onCreate(Bundle savedInstanceState) {
-		Thread.setDefaultUncaughtExceptionHandler(new RemoteExceptionHandler());
-		
         super.onCreate(savedInstanceState);
         BenbenApplication app = (BenbenApplication)this.getApplication();
         if (app.mBMapManager == null) {
@@ -758,6 +765,24 @@ public class BenbenLocationMain extends ActionBarActivity {
     	}
     }
     
+    private boolean checkLastRequestValid(JSONObject newobj) {
+    	JSONObject lastobj = mApp.getCurrentObject();
+    	if ( lastobj == null || newobj == null ) {
+    		return false;
+    	}
+    	
+    	int lastid = JsonHelper.getInt(lastobj, "id");
+    	int newid = JsonHelper.getInt(newobj, "id");
+    	
+    	if ( lastid>=0 && lastid==newid && (mApp.getCurrentStat().equals(StatusMachine.STAT_SUCCESS) ||
+				mApp.getCurrentStat().equals(StatusMachine.STAT_CANCEL) ||
+				mApp.getCurrentStat().equals(StatusMachine.STAT_TIMEOUT)) ) {
+    		return true;
+    	}
+    	
+    	return false;
+    }
+    
 	private class GetTaxiTask extends GetInfoTask {
 		private static final int TYPE_GET_TAXI = 0;
 		private static final int TYPE_REQ_TAXI = 1;
@@ -866,7 +891,7 @@ public class BenbenLocationMain extends ActionBarActivity {
 		public void driverGetRequest(double lng, double lat, double radius) {
 			// /api/v1/taxi_requests?lat=8&lng=8&radius=10
 			_type = TYPE_DRV_REQ;
-			String url =  "http://"+Configure.getService()+"/api/v1/taxi_requests/nearby?lat="+lat+"&lng="+lng+"&radius=5000";
+			String url =  "http://"+Configure.getService()+"/api/v1/taxi_requests/nearby?lat="+lat+"&lng="+lng+"&radius=20000";
 			super.initCookies(mTokenKey, mTokenVal, Configure.getHost());
 			execute(url, _useragent, GetInfoTask.TYPE_GET);
 		}
