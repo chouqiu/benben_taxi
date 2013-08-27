@@ -72,14 +72,14 @@ public class ListMode extends BaseLocationActivity {
 				case AudioProcessor.MSG_PLAY_COMPLETE:
 				case AudioProcessor.MSG_PLAY_ERROR:
 				case AudioProcessor.MSG_PLAY_STOP:
-					if ( msg.arg1 >=0 ) {
+					//if ( msg.arg1 >=0 ) {
 						mReqAdapter.setItemOrg(msg.arg1);
-					}
+					//}
 					break;
 				case AudioProcessor.MSG_PLAY_REPLAY:
-					if ( msg.arg1 >=0 ) {
+					//if ( msg.arg1 >=0 ) {
 						mReqAdapter.setItemOrg(msg.arg1);
-					}
+					//}
 					if ( mAp != null )
 						mAp.resetBackupPlayList();
 					mReqAdapter.updateList();

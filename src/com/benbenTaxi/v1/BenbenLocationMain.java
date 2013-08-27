@@ -1126,8 +1126,8 @@ public class BenbenLocationMain extends ActionBarActivity {
 					msg = "请求["+mReqId+"]已有司机应答, 附近"+mGeoList.size()+"辆";
 				} else {
 					// 司机态，更新乘客图标
-					msg = "乘客请求["+mReqId+"]您已接受, 附近有"+mGeoList.size()+"个乘客";
 					if ( mReqIdx >= 0 ) {
+						msg = "乘客请求["+mReqId+"]您已接受, 附近有"+mGeoList.size()+"个乘客";
 						OverlayItem it = mGeoList.get(mReqIdx);
 						mOldMarker = it.getMarker();
 						it.setMarker(getResources().getDrawable(R.drawable.location2));

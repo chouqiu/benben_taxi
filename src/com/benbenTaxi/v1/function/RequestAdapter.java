@@ -118,6 +118,9 @@ public class RequestAdapter extends BaseAdapter {
 	}	
 	
 	public void setItemSelected(int itemid) {
+		if (mSelect != itemid && mSelect>=0 ) {
+			resetItemSelected();
+		}
 		mSelect = itemid;
 		updateView(mSelect, ITEM_STAT_WAIT);
 	}
@@ -132,11 +135,15 @@ public class RequestAdapter extends BaseAdapter {
 	}
 	
 	public void setItemPlay(int pos) {
+		if (mSelect != pos && mSelect>=0 ) {
+			resetItemSelected();
+		}
+		mSelect = pos;
 		updateView(pos, ITEM_STAT_PLAY);
 	}
 	
 	public void setItemOrg(int pos) {
-		updateView(pos, ITEM_STAT_ORG);
+		resetItemSelected();
 	}
 	
 	public void refreshIdx() {
@@ -221,4 +228,5 @@ public class RequestAdapter extends BaseAdapter {
 			
 		}
 	}
+
 }
