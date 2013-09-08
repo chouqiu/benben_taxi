@@ -1,14 +1,10 @@
 package com.benbenTaxi.v1;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -17,9 +13,7 @@ import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
 import android.widget.FrameLayout;
-import android.widget.PopupWindow;
 import android.widget.Toast;
 
 import com.baidu.mapapi.BMapManager;
@@ -29,7 +23,6 @@ import com.baidu.mapapi.map.MapController;
 import com.baidu.mapapi.map.MapPoi;
 import com.baidu.mapapi.map.MapView;
 import com.baidu.mapapi.map.MyLocationOverlay;
-import com.baidu.mapapi.map.OverlayItem;
 import com.baidu.platform.comapi.basestruct.GeoPoint;
 import com.benbenTaxi.R;
 import com.benbenTaxi.v1.function.BaseLocationActivity;
@@ -50,17 +43,9 @@ public class BenbenLocationTest extends BaseLocationActivity {
 	
 	MyLocationOverlay myLocationOverlay = null;
 	BenbenOverlay ov = null;
-	// 存放overlay图片
-	public List<Drawable>  res = new ArrayList<Drawable>();
-	private Drawable mDrvMarker;
-	// 存放overlayitem 
-	public List<OverlayItem> mGeoList = new ArrayList<OverlayItem>();
-	private Drawable mOldMarker = null; // 保存更新前使用的标记
 	
-	Button testUpdateButton = null;
-	
-	private final static int CODE_SHOW_DETAIL = 0x101;
-	private static final int CODE_CHANGE_MODE = 0x102;
+	private final static int CODE_SHOW_DETAIL = 0x1a1;
+	private static final int CODE_CHANGE_MODE = 0x1a2;
 	public final static int MSG_HANDLE_MAP_MOVE = 1;
 	public final static int MSG_HANDLE_POS_REFRESH = 2;
 	public final static int MSG_HANDLE_REQ_TIMEOUT = 3;
@@ -69,7 +54,6 @@ public class BenbenLocationTest extends BaseLocationActivity {
 	private DataPreference mData;
 	private boolean mIsDriver = false; // 是否是司机
 	
-	private View mDialogView; // 录音对话框的view
 	private WaitingShow mWs; // 等待响应popwin	
 	private Handler mapHandler = new Handler() {
 		@Override
@@ -86,11 +70,12 @@ public class BenbenLocationTest extends BaseLocationActivity {
 								JSONObject obj = mApp.getCurrentRequestList().getJSONObject(idx);
 								int reqid = obj.getInt("id");
 								mApp.setCurrentReqIdx(idx);
-								mApp.setRequestID(reqid);
-								mApp.setCurrentObject(obj);
 								// 更新乘客图标
 								updateRequestIcon(idx, false);
 								ShowDetail.showPassengerRequestInfo(mApp, BenbenLocationTest.this, obj, CODE_SHOW_DETAIL);
+								// 在ShowPassengerRequestInfo()中设置
+								//mApp.setRequestID(reqid);
+								//mApp.setCurrentObject(obj);
 							} else {
 								// 当前已有请求在处理，不能响应
 								Toast.makeText(BenbenLocationTest.this, "当前已有请求在处理，请点击查看了解详情", Toast.LENGTH_LONG).show();
@@ -186,23 +171,8 @@ public class BenbenLocationTest extends BaseLocationActivity {
 		mMapView.regMapViewListener(BenbenApplication.getInstance().mBMapManager, mMapListener);
 		
 	    // 初始化出租车/乘客位置列表
-		if ( mIsDriver ) {
-			mDrvMarker = this.getResources().getDrawable(R.drawable.icon_marka);
-			res.add(getResources().getDrawable(R.drawable.icon_marka));
-			res.add(getResources().getDrawable(R.drawable.icon_markb));
-			res.add(getResources().getDrawable(R.drawable.icon_markc));
-			res.add(getResources().getDrawable(R.drawable.icon_markd));
-			res.add(getResources().getDrawable(R.drawable.icon_marke));
-			res.add(getResources().getDrawable(R.drawable.icon_markf));
-			res.add(getResources().getDrawable(R.drawable.icon_markg));
-			res.add(getResources().getDrawable(R.drawable.icon_markh));
-			res.add(getResources().getDrawable(R.drawable.icon_marki));
-			res.add(getResources().getDrawable(R.drawable.icon_markj));
-		} else {
-			mDrvMarker = this.getResources().getDrawable(R.drawable.steering);
-			res.add(getResources().getDrawable(R.drawable.steering));
-		}
-	    ov = new BenbenOverlay(mDrvMarker, this,mMapView, mapHandler); 
+	    ov = new BenbenOverlay(this.getResources().getDrawable(R.drawable.icon_marka), 
+	    		this,mMapView, mapHandler); 
 	    mMapView.getOverlays().add(ov);
 	    
 		myLocationOverlay = new MyLocationOverlay(mMapView);
@@ -210,15 +180,6 @@ public class BenbenLocationTest extends BaseLocationActivity {
 		mMapView.getOverlays().add(myLocationOverlay);
 		myLocationOverlay.enableCompass();
 		mMapView.refresh();
-		
-		testUpdateButton = (Button)findViewById(R.id.btn_callTaxi);
-	    
-	    if ( mIsDriver ) {
-	    	testUpdateButton.setVisibility(View.GONE);
-	    }
-	    
-    	mDialogView = getLayoutInflater().inflate(R.layout.record_dialog, null);
-    	new PopupWindow(mDialogView, 600, 600);
     	
     	View vv = getLayoutInflater().inflate(R.layout.waiting_dialog, null);
     	mWs = new WaitingShow("等待乘客响应", 30, PopupWindowSize.getPopupWindoWidth(this), 
@@ -314,24 +275,27 @@ public class BenbenLocationTest extends BaseLocationActivity {
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		super.onActivityResult(requestCode, resultCode, data);
-		int reqid = mApp.getRequestID();
-		JSONObject reqobj = mApp.getCurrentObject();
 		
 		switch(requestCode) {
 		case CODE_SHOW_DETAIL:
 			// 来自点击用户请求图标，司机处理用户请求
-			if ( resultCode > 0 && reqid >= 0 ) {
-				LocationData locData = mApp.getCurrentLocData();
-				StatusMachine sm = new StatusMachine(mH, mData, reqobj);
-	    		// 这里是用保存的reqid，防止被更新为无效值
-	    		sm.driverConfirm(locData.longitude, locData.latitude, reqid);
-	    		
-	    		// 显示延迟进度条，等待30s
-	    		// 问题已解决，可以使用popwin，注意不要在回调函数中dismiss当前的popwin
-	    		mWs.show();
-
-			} else if ( resultCode > 0 ) {
-				Toast.makeText(this, "该请求已无效，请选取其他请求", Toast.LENGTH_SHORT).show();
+			if ( resultCode > 0 ) {
+				JSONObject reqobj = mApp.getCurrentObject();
+				int reqid = JsonHelper.getInt(reqobj, "id");
+				if ( reqid >= 0 ) {
+					mApp.setRequestID(reqid);
+					LocationData locData = mApp.getCurrentLocData();
+					StatusMachine sm = new StatusMachine(mH, mData, reqobj);
+		    		// 这里是用保存的reqid，防止被更新为无效值
+		    		sm.driverConfirm(locData.longitude, locData.latitude, reqid);
+		    		
+		    		// 显示延迟进度条，等待30s
+		    		// 问题已解决，可以使用popwin，注意不要在回调函数中dismiss当前的popwin
+		    		mWs.show();
+				} else {
+					Toast.makeText(this, "当前选择乘客信息有误，请联系管理员："+reqobj.toString(), Toast.LENGTH_SHORT).show();
+				}
+				
 			} else {
 				updateRequestIcon(mApp.getCurrentReqIdx(), true);
 				resetStatus();
@@ -373,11 +337,7 @@ public class BenbenLocationTest extends BaseLocationActivity {
     }
 
     private void updateMapView() {
-    	ov.removeAll();
-    	if ( ov.size() < mGeoList.size()){
-    		//ov.addItem(mGeoList.get(ov.size() ));
-    		ov.addItem(mGeoList);
-    	}
+    	ov.updateOverlayView();
 	    mMapView.refresh();
     }
 	
@@ -414,37 +374,19 @@ public class BenbenLocationTest extends BaseLocationActivity {
 	
 	private void updateListView() {
 		JSONArray reqInfo = mApp.getCurrentRequestList();
-		//清除所有添加的Overlay
-        mGeoList.clear();
-        
-		//添加一个item
-    	//当要添加的item较多时，可以使用addItem(List<OverlayItem> items) 接口
-        for( int i=0; i<reqInfo.length(); ++i ) {
-        	JSONObject pos = JsonHelper.getJsonObj(reqInfo, i);        	
-        	OverlayItem item = new OverlayItem(new GeoPoint((int)(JsonHelper.getDouble(pos, "passenger_lat")*1e6), 
-    				(int)(JsonHelper.getDouble(pos, "passenger_lng")*1e6)),
-	        		"乘客"+JsonHelper.getInt(pos, "id"), "声音: "+JsonHelper.getString(pos, "passenger_voice_url"));
-	        
-        	if ( item != null ) {
-			   	item.setMarker(res.get(i%res.size()));
-			   	mGeoList.add(item);
-        	}
-        }
+		ov.addPreparedItem(reqInfo);
     	updateMapView();
 	}
 	
 	private void updateRequestIcon(int reqidx, boolean reset) {
+		if ( reqidx < 0 ) {
+			return;
+		}
 		if ( reset == false ) {
-			OverlayItem it = mGeoList.get(reqidx);
-			mOldMarker = it.getMarker();
-			it.setMarker(getResources().getDrawable(R.drawable.location2));
-			mGeoList.set(reqidx, it);
+			ov.setSelectItem(reqidx);
 			updateMapView();
 		} else {
-			OverlayItem it = mGeoList.get(reqidx);
-			it.setMarker(mOldMarker);
-			mOldMarker = null;
-			mGeoList.set(reqidx, it);
+			ov.resetSelectItem();
 			updateMapView();
 		}
 	}

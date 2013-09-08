@@ -208,27 +208,8 @@ public class ListMode extends BaseLocationActivity {
 				}
 				
 				mReqAdapter.setItemSelected(arg2);
-				//ShowDetail.showPassengerRequestInfo(mApp, ListMode.this, obj, CODE_SHOW_DETAIL);
-				ShowDetail.showPassengerRequestInfo(mApp, ListMode.this, obj, ShowDetail.NOT_SHOW);
-				
-				// 直接显示确认后的详情页，简化流程
-				mApp.setRequestID(newid);
-				obj = mApp.getCurrentObject();
-				if ( newid >= 0  ) {
-					LocationData locData = mApp.getCurrentLocData();
-					StatusMachine sm = new StatusMachine(mH, mData, obj);
-		    		sm.driverConfirm(locData.longitude, locData.latitude, newid);
-		    		
-		    		// 停止声音播放
-		    		mAp.setStopPlay();
-		    		
-		    		// 显示延迟进度条，等待30s
-		    		// 问题已解决，可以使用popwin，注意不要在回调函数中dismiss当前的popwin
-		    		mWs.show();
-				} else {
-					//Toast.makeText(this, "请求id解析错误", Toast.LENGTH_SHORT).show();
-					mReqAdapter.resetItemSelected();
-				}
+				ShowDetail.showPassengerRequestInfo(mApp, ListMode.this, obj, CODE_SHOW_DETAIL);
+				//ShowDetail.showPassengerRequestInfo(mApp, ListMode.this, obj, ShowDetail.NOT_SHOW);
 			}
 		});
 		
@@ -244,7 +225,29 @@ public class ListMode extends BaseLocationActivity {
 			}
 		};
 	}
-
+	
+	private void setConfirmRequest() {
+		JSONObject obj = mApp.getCurrentObject();
+		int newid = JsonHelper.getInt(obj, "id");
+		
+		mApp.setRequestID(newid);
+		obj = mApp.getCurrentObject();
+		if ( newid >= 0  ) {
+			LocationData locData = mApp.getCurrentLocData();
+			StatusMachine sm = new StatusMachine(mH, mData, obj);
+    		sm.driverConfirm(locData.longitude, locData.latitude, newid);
+    		
+    		// 停止声音播放
+    		mAp.setStopPlay();
+    		
+    		// 显示延迟进度条，等待30s
+    		// 问题已解决，可以使用popwin，注意不要在回调函数中dismiss当前的popwin
+    		mWs.show();
+		} else {
+			//Toast.makeText(this, "请求id解析错误", Toast.LENGTH_SHORT).show();
+			mReqAdapter.resetItemSelected();
+		}
+	}
 
 	@Override
 	protected void onResume() {
@@ -272,35 +275,15 @@ public class ListMode extends BaseLocationActivity {
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		super.onActivityResult(requestCode, resultCode, data);
-		JSONObject reqobj = mApp.getCurrentObject();
 		
 		switch(requestCode) {
 		case CODE_SHOW_DETAIL:
-			/*
-			 * 精简流程，不需要了
-			 * 
-			// 来自点击用户请求图标，司机处理用户请求
 			if ( resultCode > 0 ) {
-				int reqid = JsonHelper.getInt(reqobj, "id");
-				mApp.setRequestID(reqid);
-				if ( reqid >= 0  ) {
-					LocationData locData = mApp.getCurrentLocData();
-					StatusMachine sm = new StatusMachine(mH, mData, reqobj);
-		    		// 这里是用保存的reqid，防止被更新为无效值
-		    		sm.driverConfirm(locData.longitude, locData.latitude, reqid);
-		    		
-		    		// 显示延迟进度条，等待30s
-		    		// 问题已解决，可以使用popwin，注意不要在回调函数中dismiss当前的popwin
-		    		mWs.show();
-				} else {
-					reqid = -1;
-					Toast.makeText(this, "请求id解析错误", Toast.LENGTH_SHORT).show();
-					mReqAdapter.resetItemSelected();
-				}
+				// 直接显示确认后的详情页，简化流程
+				setConfirmRequest();
 			} else {
 				mReqAdapter.resetItemSelected();
 			}
-			*/
 			break;
 		case CODE_SHOW_INFO:
 			/*

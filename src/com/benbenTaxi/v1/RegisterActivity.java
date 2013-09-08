@@ -25,7 +25,6 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
-import android.widget.Toast;
 
 public class RegisterActivity extends Activity {
 	//private String TAG = RegisterActivity.class.getName();
@@ -54,7 +53,7 @@ public class RegisterActivity extends Activity {
 		        R.array.tenants_array, android.R.layout.simple_spinner_item);
 		adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 		spinner.setAdapter(adapter);
-		Toast.makeText(this, spinner.getSelectedItem().toString(),Toast.LENGTH_LONG).show();
+		//Toast.makeText(this, spinner.getSelectedItem().toString(),Toast.LENGTH_LONG).show();
 		buttonBind();
 
 		mData = new DataPreference(this);
@@ -281,7 +280,7 @@ public class RegisterActivity extends Activity {
 					mData.SaveData("token_value", ret.getString("token_value"));
 					mData.SaveData("useragent",  mEquipmentId.getId());
 
-					Intent yunjianIntent = new Intent(RegisterActivity.this,BenbenLocationTest.class);					
+					Intent yunjianIntent = new Intent(RegisterActivity.this,LoginActivity.class);					
 					startActivity(yunjianIntent);
 				} catch (JSONException e) {
 					try {

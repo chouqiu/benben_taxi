@@ -197,6 +197,10 @@ public class RequestAdapter extends BaseAdapter {
 	}
 	
 	private void updateView( int id, int stat ) {
+		if( id < 0 ) {
+			return;
+		}
+		
 		int vpos = mLV.getFirstVisiblePosition();
 		View v = mLV.getChildAt(id-vpos);
 		

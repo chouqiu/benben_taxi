@@ -1,5 +1,7 @@
 package com.benbenTaxi.v1.function.index;
 
+import org.json.JSONObject;
+
 import com.benbenTaxi.R;
 import com.benbenTaxi.v1.BenbenApplication;
 import com.benbenTaxi.v1.function.ShowDetail;
@@ -7,6 +9,7 @@ import com.benbenTaxi.v1.function.actionbar.ActionBarActivity;
 import com.benbenTaxi.v1.function.taxirequest.TaxiRequest;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
@@ -26,6 +29,8 @@ public class TaxiRequestIndexActivity extends ActionBarActivity  {
 	public final static int MSG_HANDLE_INDEX_TASK_START		    =	0;
 	public final static int MSG_HANDLE_INDEX_TASK_SUCCESS		=	1;
 	public final static int MSG_HANDLE_INDEX_TASK_ERROR			= 	2;
+	
+	private final static int CODE_HISTORY_DETAIL = 0xb01;
 	
 	//private final String TAG			     					= TaxiRequestDetail.class.getName();
 	private MyAdapter adapter				 					= null;  
@@ -58,8 +63,7 @@ public class TaxiRequestIndexActivity extends ActionBarActivity  {
     @Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		
-		
+			
 		setContentView(R.layout.activity_taxirequstindex);
 		mApp						= (BenbenApplication)this.getApplication();
 		mListView 					= (ListView)findViewById(R.id.lv);  
@@ -73,13 +77,29 @@ public class TaxiRequestIndexActivity extends ActionBarActivity  {
                     long arg3) {
 				    MyAdapter 		myAdapter 				= (MyAdapter) arg0.getAdapter();
                 	ShowDetail.showCurrentPassengerRequest((TaxiRequest) myAdapter.getItem(arg2), 
-                			TaxiRequestIndexActivity.this, mApp);               
+                			TaxiRequestIndexActivity.this, mApp, CODE_HISTORY_DETAIL);               
             }     
         });		
 		
     }
     
-    protected void showList(TaxiRequestIndexResponse taxiRequestIndexResponse){    	
+    @Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		super.onActivityResult(requestCode, resultCode, data);
+		
+		switch(requestCode) {
+		case CODE_HISTORY_DETAIL:
+			if ( resultCode > 0 ) {
+				TaxiRequest tx = mApp.getCurrentShowTaxiRequest();
+				ShowDetail.showCall(this, tx);
+			}
+			break;
+		default:
+			break;
+		}
+	}
+
+	protected void showList(TaxiRequestIndexResponse taxiRequestIndexResponse){    	
     	mListView = (ListView)findViewById(R.id.lv);  
     	if(taxiRequestIndexResponse==null)
     		return;

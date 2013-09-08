@@ -18,12 +18,12 @@
 	    android:clickable="true"
 	    android:layout_weight="100"
 	/>
-    
+    <!-- 
     <Button
         android:id="@+id/btn_callTaxi"
         style="@style/loginButton"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:text="@string/call_taxi" />
-
+	 -->
 </LinearLayout>

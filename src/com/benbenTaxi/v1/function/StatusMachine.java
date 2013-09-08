@@ -316,9 +316,10 @@ public class StatusMachine extends GetInfoTask {
 	}
 	
 	private void doDriverConfirm(JSONTokener jsParser) throws JSONException {
-		// 不需处理，由doGetRequest轮询得到
-		//JSONObject ret = (JSONObject) jsParser.nextValue();
-		//mStatus = ret.getString("state");
+		/*
+		 * 简化流程，由返回值直接确认是否成功
+		 */
+		doGetRequest(jsParser);
 	}
 	
 	private void doDriverReport(JSONTokener jsParser) throws JSONException {

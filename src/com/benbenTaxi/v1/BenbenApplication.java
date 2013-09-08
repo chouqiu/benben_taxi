@@ -76,7 +76,7 @@ public class BenbenApplication extends Application {
 	}
 	
 	public void setCurrentShowTaxiRequest(TaxiRequest item) {
-		;
+		mCurrentTaxiRequest = item;
 	}
 	
 	public void setCurrentObject(JSONObject obj) {

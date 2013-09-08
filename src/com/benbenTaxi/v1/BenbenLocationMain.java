@@ -305,14 +305,14 @@ public class BenbenLocationMain extends ActionBarActivity {
 		mMapView.refresh();
 		mMapViewValid = true;
 		
-		testUpdateButton = (Button)findViewById(R.id.btn_callTaxi);
-	    testUpdateButton.setOnClickListener(mCallTaxiListener);
+		//testUpdateButton = (Button)findViewById(R.id.btn_callTaxi);
+	    //testUpdateButton.setOnClickListener(mCallTaxiListener);
 	    
 	    // 初始化声音组件
 	    //initAudio();
 	    
 	    if ( mIsDriver ) {
-	    	testUpdateButton.setVisibility(View.GONE);
+	    	//testUpdateButton.setVisibility(View.GONE);
 	    }
 	    
     	mDialogView = getLayoutInflater().inflate(R.layout.record_dialog, null);

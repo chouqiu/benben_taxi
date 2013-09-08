@@ -6,7 +6,7 @@
     <string name="prompt_email">手机</string>
     <string name="prompt_password">密码</string>
     <string name="action_sign_in_register"><b>登录</b></string>
-    <string name="action_create_register"><b>注册</b></string>
+    <string name="action_create_register"><b>申请</b></string>
     <string name="action_sign_in_short">登录</string>
     <string name="menu_forgot_password">找回密码</string>
     <string name="login_progress_signing_in">登录&#8230;</string>

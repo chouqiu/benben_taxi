@@ -2,10 +2,9 @@
 <resources><string name="prompt_mobile">手机</string>
 <string name="prompt_name">姓名</string>
 <string name="prompt_license">车牌号</string>
-<string name="action_register">注册</string>
-<string name="register">注册</string>
+<string name="register">申请</string>
 <string name="goback">返回</string>
-<string name="passenger_register">司机注册</string>
+<string name="passenger_register">司机申请</string>
 <string name="prompt_password_confirm">确认密码</string> 
 
 <string name="password_confirm_invalid">两次密码不一致</string> 

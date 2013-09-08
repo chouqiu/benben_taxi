@@ -10,6 +10,7 @@
     <string name="hello_world">Hello world!</string>
     <string name="title_activity_navi_demo">导航</string>
     <string name="title_activity_main">一键打车</string>
+    <string name="version">v1.0</string>
     
     <string name="call_taxi">一键打车</string>
     <string name="recall_taxi">重新打车</string>

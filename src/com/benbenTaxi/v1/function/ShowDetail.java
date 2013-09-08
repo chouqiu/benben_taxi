@@ -45,7 +45,7 @@ public class ShowDetail {
 		}
     }
 	
-	static public void showCurrentPassengerRequest(TaxiRequest tx, Activity con, BenbenApplication app) {
+	static public void showCurrentPassengerRequest(TaxiRequest tx, Activity con, BenbenApplication app, int code) {
 		String[] txInfo = new String[5];
     	
     	txInfo[0] = ""+tx.getID();
@@ -58,10 +58,11 @@ public class ShowDetail {
 		app.setCurrentInfo(txInfo);
 		
 		Bundle tips = new Bundle();
+		tips.putString("pos", "µç»°");
 		tips.putString("neg", "·µ»Ø");
 		Intent detail = new Intent(con, ListDetail.class);
 		detail.putExtras(tips);
-		con.startActivity(detail);
+		con.startActivityForResult(detail, code);
     }
 	
 	static public void showPassengerConfirmInfo(Activity con, int code) {
@@ -92,16 +93,18 @@ public class ShowDetail {
     }
     
     static public void showCall(Activity con, JSONObject obj) {
-    	String mobile;
-		try {
-			mobile = obj.getString("passenger_mobile");
-			//mobile = "12345";
-		} catch (JSONException e) {
-			mobile = "000000";
-		}
-		
+    	String mobile = JsonHelper.getString(obj, "passenger_mobile");
+		doCall(con, mobile);
+    }
+
+	public static void showCall(Activity con, TaxiRequest tx) {
+		String mobile = tx.getPassengerMobile();
+		doCall(con, mobile);
+	}
+	
+	private static void doCall(Activity con, String mobile) {
 		Uri uri = Uri.parse("tel:"+mobile);
 	    Intent incall = new Intent(Intent.ACTION_DIAL, uri);
 	    con.startActivity(incall);
-    }
+	}
 }
