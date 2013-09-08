@@ -1,6 +1,5 @@
 package com.benbenTaxi.v1.function;
 
-import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -15,46 +14,54 @@ import android.os.Bundle;
 import com.benbenTaxi.v1.BenbenApplication;
 import com.benbenTaxi.v1.ListDetail;
 import com.benbenTaxi.v1.function.api.JsonHelper;
+import com.benbenTaxi.v1.function.taxirequest.TaxiRequest;
 
 public class ShowDetail {
-	private final static DecimalFormat mDF = new DecimalFormat("#.##");
+	public final static int NOT_SHOW = -1;
+	
+	//private final static DecimalFormat mDF = new DecimalFormat("#.##");
 	
 	static public void showPassengerRequestInfo(BenbenApplication app, Activity con, final JSONObject obj, int code) {
     	String[] voiceUrl = new String[5];
-    	int id = 0;
+    	int id = JsonHelper.getInt(obj, "id");
     	
-    	SimpleDateFormat dateformat1=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-    	String now = dateformat1.format(new Date());
-    	
-		try {
-			id = obj.getInt("id");
-			voiceUrl[0] = ""+id;
-			voiceUrl[1] = obj.getString("passenger_mobile");
-			//voiceUrl[2] = "lat: "+mDF.format(obj.getDouble("passenger_lat"))+"/lng: "+mDF.format(obj.getDouble("passenger_lng"));
-			voiceUrl[2] = obj.getString("source");
-			//voiceUrl[3] = "大连西路120号";
-			voiceUrl[3] = now;
-			voiceUrl[4] = obj.getString("passenger_voice_url");
-			//voiceUrl[3] = obj.getString("passenger_voice_url");
-		} catch (JSONException e) {
-			voiceUrl[0] = "未知";
-			voiceUrl[1] = "未知";
-			voiceUrl[2] = "未知";
-			voiceUrl[3] = "未知";
-			voiceUrl[4] = "";
-			//voiceUrl[3] = "乘客信息获取错误: "+e.toString();
-		}
+    	voiceUrl[0] = ""+id;
+    	voiceUrl[1] = JsonHelper.getString(obj, "passenger_mobile");
+    	voiceUrl[2] = JsonHelper.getString(obj, "source");
+    	voiceUrl[3] = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
+    	voiceUrl[4] = JsonHelper.getString(obj, "passenger_voice_url");
 				
-		app.setCurrentInfo(voiceUrl);;
+		app.setCurrentInfo(voiceUrl);
 		app.setCurrentObject(obj);
 		app.setCurrentStat(JsonHelper.getString(obj, "state"));
 		
+		if ( code != NOT_SHOW ) {
+			Bundle tips = new Bundle();
+			tips.putString("pos", "确认");
+			tips.putString("neg", "返回");
+			Intent detail = new Intent(con, ListDetail.class);
+			detail.putExtras(tips);
+			con.startActivityForResult(detail, code);
+		}
+    }
+	
+	static public void showCurrentPassengerRequest(TaxiRequest tx, Activity con, BenbenApplication app) {
+		String[] txInfo = new String[5];
+    	
+    	txInfo[0] = ""+tx.getID();
+    	txInfo[1] = tx.getPassengerMobile();
+    	txInfo[2] = tx.getSource();
+    	txInfo[3] = tx.getCreatedAt();
+    	txInfo[4] = tx.getURI();
+		
+    	app.setCurrentShowTaxiRequest(tx);
+		app.setCurrentInfo(txInfo);
+		
 		Bundle tips = new Bundle();
-		tips.putString("pos", "确认");
 		tips.putString("neg", "返回");
 		Intent detail = new Intent(con, ListDetail.class);
 		detail.putExtras(tips);
-		con.startActivityForResult(detail, code);
+		con.startActivity(detail);
     }
 	
 	static public void showPassengerConfirmInfo(Activity con, int code) {

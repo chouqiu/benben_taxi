@@ -6,6 +6,7 @@ import org.json.JSONObject;
 
 import com.benbenTaxi.R;
 import com.benbenTaxi.v1.BenbenApplication;
+import com.benbenTaxi.v1.function.api.JsonHelper;
 
 import android.content.Context;
 import android.graphics.Color;
@@ -175,21 +176,14 @@ public class RequestAdapter extends BaseAdapter {
     	 * "driver_lat":null,"driver_lng":null}] 
     	 */
 		for( int i=0; i<size; ++i ) {
-        	try {
-				JSONObject pos = reqList.getJSONObject(i);
-				mTitle[i] = "电话: "+pos.getString("passenger_mobile");
-				double lat = pos.getDouble("passenger_lat");
-				double lng = pos.getDouble("passenger_lng");				
-				mContent[i] = "距离: "+Distance.getDistanceFormat(lat, lng, mApp.getCurrentLocData().latitude, mApp.getCurrentLocData().longitude)+"公里";
-				
-				mUrl[i] = pos.getString("passenger_voice_url");
-				mStat[i] = pos.getString("state");
-				
-			} catch (JSONException e) {
-				mTitle[i] = "电话: 解析错误";
-				mContent[i] = "距离: 解析错误";
-				mUrl[i] = "";
-			}
+			JSONObject pos = JsonHelper.getJsonObj(reqList, i);
+			mTitle[i] = "请求序号: "+JsonHelper.getInt(pos, "id");
+			double lat = JsonHelper.getDouble(pos, "passenger_lat");
+			double lng = JsonHelper.getDouble(pos, "passenger_lng");
+			mContent[i] = "距离: "+Distance.getDistanceFormat(lat, lng, mApp.getCurrentLocData().latitude, 
+					mApp.getCurrentLocData().longitude)+"公里";
+			mUrl[i] = JsonHelper.getString(pos, "passenger_voice_url");
+			mStat[i] = JsonHelper.getString(pos, "state");
 		}
 		
 		mReqList = reqList;

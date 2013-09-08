@@ -169,6 +169,9 @@ public abstract class GetInfoTask extends AsyncTask<String, Integer, Boolean> {
 	abstract protected void onPostExecGet( Boolean succ );
 	abstract protected void onPostExecPost( Boolean succ );
 	abstract protected void onPostExecError( String type, int code );
+	protected String getApiUrl() {
+		return null;
+	}
 	
 	public String toString() {
 		return new String(result);
@@ -178,11 +181,24 @@ public abstract class GetInfoTask extends AsyncTask<String, Integer, Boolean> {
 		return result;
 	}
 	
+	public String getErrorMsg() {
+		return _errmsg;
+	}
+	
 	public int getHttpCode() {
 		if ( _httpResp != null ) {
 			return _httpResp.getStatusLine().getStatusCode();
 		} else {
 			return -1;
 		}
+	}
+	
+	public void executePOST() {
+		initHeaders("Content-Type", "application/json");
+		execute(getApiUrl(), Configure.getUserAgent(), GetInfoTask.TYPE_POST);
+	}
+	
+	public void executeGET() {
+		execute(getApiUrl(), Configure.getUserAgent(), GetInfoTask.TYPE_GET);
 	}
 }

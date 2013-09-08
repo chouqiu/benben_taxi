@@ -15,6 +15,7 @@ import com.benbenTaxi.v1.function.ShowDetail;
 import com.benbenTaxi.v1.function.StatusMachine;
 import com.benbenTaxi.v1.function.WaitingShow;
 import com.benbenTaxi.v1.function.api.JsonHelper;
+import com.benbenTaxi.v1.function.index.TaxiRequestIndexActivity;
 
 import android.content.Intent;
 import android.database.DataSetObserver;
@@ -193,10 +194,10 @@ public class ListMode extends BaseLocationActivity {
 			public void onItemClick(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
 				int reqid = mApp.getRequestID();				
 				JSONObject obj = (JSONObject) mReqAdapter.getItem(arg2);
+				int newid = JsonHelper.getInt(obj, "id");
 				
 				if ( reqid >= 0 || checkLastRequestValid(obj)==true )
 				{
-					int newid = JsonHelper.getInt(obj, "id");
 					if (reqid < 0)
 						Toast.makeText(ListMode.this, "请求["+newid+"]已被处理过", 
 								Toast.LENGTH_SHORT).show();
@@ -207,7 +208,27 @@ public class ListMode extends BaseLocationActivity {
 				}
 				
 				mReqAdapter.setItemSelected(arg2);
-				ShowDetail.showPassengerRequestInfo(mApp, ListMode.this, obj, CODE_SHOW_DETAIL);
+				//ShowDetail.showPassengerRequestInfo(mApp, ListMode.this, obj, CODE_SHOW_DETAIL);
+				ShowDetail.showPassengerRequestInfo(mApp, ListMode.this, obj, ShowDetail.NOT_SHOW);
+				
+				// 直接显示确认后的详情页，简化流程
+				mApp.setRequestID(newid);
+				obj = mApp.getCurrentObject();
+				if ( newid >= 0  ) {
+					LocationData locData = mApp.getCurrentLocData();
+					StatusMachine sm = new StatusMachine(mH, mData, obj);
+		    		sm.driverConfirm(locData.longitude, locData.latitude, newid);
+		    		
+		    		// 停止声音播放
+		    		mAp.setStopPlay();
+		    		
+		    		// 显示延迟进度条，等待30s
+		    		// 问题已解决，可以使用popwin，注意不要在回调函数中dismiss当前的popwin
+		    		mWs.show();
+				} else {
+					//Toast.makeText(this, "请求id解析错误", Toast.LENGTH_SHORT).show();
+					mReqAdapter.resetItemSelected();
+				}
 			}
 		});
 		
@@ -255,6 +276,9 @@ public class ListMode extends BaseLocationActivity {
 		
 		switch(requestCode) {
 		case CODE_SHOW_DETAIL:
+			/*
+			 * 精简流程，不需要了
+			 * 
 			// 来自点击用户请求图标，司机处理用户请求
 			if ( resultCode > 0 ) {
 				int reqid = JsonHelper.getInt(reqobj, "id");
@@ -276,11 +300,16 @@ public class ListMode extends BaseLocationActivity {
 			} else {
 				mReqAdapter.resetItemSelected();
 			}
+			*/
 			break;
 		case CODE_SHOW_INFO:
+			/*
+			 * 精简流程，不需要了
+			 *
 			if ( resultCode > 0 ) {
 				ShowDetail.showCall(this, reqobj);
 			}
+			*/
 			break;
 		case CODE_SHOW_CONFIRM_INFO:
 			if ( resultCode > 0 ) {
@@ -323,6 +352,10 @@ public class ListMode extends BaseLocationActivity {
 			this.setResult(0);
 			finish();
 			break;
+		case R.id.menu_list_history:
+			Intent historyList = new Intent(this, TaxiRequestIndexActivity.class);
+			this.startActivity(historyList);
+			break;
 		default:
 			break;
 		}
@@ -354,7 +387,13 @@ public class ListMode extends BaseLocationActivity {
 			mReqAdapter.setItemConfirm();
 			mWs.Dismiss();
 			
-			ShowDetail.showPassengerConfirmInfo(this, CODE_SHOW_CONFIRM_INFO);
+			/*
+			 * 精简流程，不再显示确认页，直接电话乘客
+			 */
+			//ShowDetail.showPassengerConfirmInfo(this, CODE_SHOW_CONFIRM_INFO);
+			Toast.makeText(this, "乘客请求["+mApp.getRequestID()+"]已确认，请前往乘客所在地！", Toast.LENGTH_SHORT).show();
+			resetStatus();
+			ShowDetail.showCall(this, mApp.getCurrentObject());
 			break;
 		case StatusMachine.MSG_STAT_TIMEOUT:
 			Toast.makeText(this, "乘客请求["+reqid+"]已超时, 附近有"+mApp.getCurrentRequestList().length()+"个乘客",

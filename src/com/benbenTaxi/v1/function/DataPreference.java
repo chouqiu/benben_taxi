@@ -12,6 +12,18 @@ public class DataPreference {
 		mCon = con;
 	}
 	
+	public String getTokenKey() {
+		return LoadString("token_key");
+	}
+	
+	public String getTokenValue() {
+		return LoadString("token_value");
+	}
+	
+	public String getMobile() {
+		return LoadString("user");
+	}
+	
 	public String LoadString(String key) {
 		SharedPreferences settings = mCon.getSharedPreferences(PREFS_NAME, 0);  
 		return settings.getString(key, "");

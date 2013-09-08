@@ -12,6 +12,8 @@ import com.baidu.mapapi.BMapManager;
 import com.baidu.mapapi.MKGeneralListener;
 import com.baidu.mapapi.map.LocationData;
 import com.baidu.mapapi.map.MKEvent;
+import com.benbenTaxi.v1.function.DataPreference;
+import com.benbenTaxi.v1.function.taxirequest.TaxiRequest;
 
 
 public class BenbenApplication extends Application {
@@ -30,12 +32,19 @@ public class BenbenApplication extends Application {
 	//private int mStatVal = -1; // 代替字符串比较，提高性能
 	private LocationData mCurrentLocData = new LocationData();
 	
+	private DataPreference mSession = null;
+	private TaxiRequest mCurrentTaxiRequest;
+	
 	public static final int STATVAL_SUCCESS = 1;
 	public static final int STATVAL_CANCEL = 0;
 	public static final int STATVAL_TIMEOUT = 2;
 	
 	public String[] getCurrentInfo() {
 		return mCurrentInfo;
+	}
+	
+	public TaxiRequest getCurrentShowTaxiRequest() {
+		return mCurrentTaxiRequest;
 	}
 	
 	public JSONObject getCurrentObject() {
@@ -66,6 +75,10 @@ public class BenbenApplication extends Application {
 		mCurrentInfo = info;
 	}
 	
+	public void setCurrentShowTaxiRequest(TaxiRequest item) {
+		;
+	}
+	
 	public void setCurrentObject(JSONObject obj) {
 		mCurrentObj = obj;
 	}
@@ -93,11 +106,17 @@ public class BenbenApplication extends Application {
         mCurrentLocData.direction = data.direction;
 	}
 	
+	public DataPreference getSession() {
+		return mSession;
+	}
+	
 	@Override
     public void onCreate() {
 	    super.onCreate();
 		mInstance = this;
 		initEngineManager(this);
+		
+		mSession = new DataPreference(this);
 	}
 	
 	@Override
@@ -125,8 +144,7 @@ public class BenbenApplication extends Application {
 	public static BenbenApplication getInstance() {
 		return mInstance;
 	}
-	
-	
+
 	// 常用事件监听，用来处理通常的网络错误，授权验证错误等
     public static class MyGeneralListener implements MKGeneralListener {
         

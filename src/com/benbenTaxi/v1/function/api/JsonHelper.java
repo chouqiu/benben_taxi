@@ -1,5 +1,6 @@
 package com.benbenTaxi.v1.function.api;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -7,12 +8,12 @@ public class JsonHelper {
 	public static String getString(JSONObject o,String k)
 	{
 		if (o == null)
-			return "";
+			return "invalid, null";
 
 		try {
 			return o.getString(k);
 		} catch (JSONException e) {
-			return "";
+			return "error, null";
 		}
 	}
 	
@@ -60,5 +61,15 @@ public class JsonHelper {
 		}
 	}
 
-
+	public static JSONObject getJsonObj(JSONArray arr, int idx) {
+		if ( arr == null || idx < 0 || idx >= arr.length() ) {
+			return null;
+		}
+		
+		try {
+			return arr.getJSONObject(idx);
+		} catch (JSONException e) {
+			return null;
+		}
+	}
 }

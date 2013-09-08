@@ -264,7 +264,7 @@ public class StatusMachine extends GetInfoTask {
 		int stat = -1;
 		
 		String drv_mobile = obj.getString("driver_mobile");
-		if ( drv_mobile.equals(mMobile) ) {
+		if ( drv_mobile == null || drv_mobile.equals(mMobile) ) {
 			if ( status.equals(STAT_WAITING_DRV_RESP) ) {
 				// 继续等待
 				stat = StatusMachine.MSG_STAT_WAITING_DRV;
@@ -288,6 +288,7 @@ public class StatusMachine extends GetInfoTask {
 		} else {
 			// 非司机本人确认
 			stat = StatusMachine.MSG_STAT_OTHER;
+			status = drv_mobile;
 		}	
 		
 		if ( mH != null && stat > 0 ) {

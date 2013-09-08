@@ -23,5 +23,6 @@
     <string name="menu_info">查看</string>
     <string name="menu_list_mode">列表模式</string>
     <string name="menu_map_mode">地图模式</string>
+    <string name="menu_history">历史记录</string>
 
 </resources>

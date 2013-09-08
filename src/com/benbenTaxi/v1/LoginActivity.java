@@ -438,7 +438,7 @@ public class LoginActivity extends Activity {
 					//Bundle sess_data = new Bundle();
 					//sess_data.putString("token_key", ret.getString("token_key"));
 					//sess_data.putString("token_value", ret.getString("token_value"));
-					Intent yunjianIntent = new Intent(LoginActivity.this,BenbenLocationMain.class);
+					Intent yunjianIntent = new Intent(LoginActivity.this,BenbenLocationTest.class);
 					//yunjianIntent.putExtras(sess_data);
 					
 					startActivity(yunjianIntent);
@@ -456,7 +456,7 @@ public class LoginActivity extends Activity {
 						succ = false;
 					}
 				} catch (Exception e) {
-					_errmsg = "网络错误，请检查云服务器配置，并确认网络正常后再试";
+					_errmsg = "网络错误，请检查云服务器配置，并确认网络正常后再试："+e.toString();
 					succ = false;
 				}
 				

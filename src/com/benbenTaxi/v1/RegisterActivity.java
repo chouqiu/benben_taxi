@@ -281,7 +281,7 @@ public class RegisterActivity extends Activity {
 					mData.SaveData("token_value", ret.getString("token_value"));
 					mData.SaveData("useragent",  mEquipmentId.getId());
 
-					Intent yunjianIntent = new Intent(RegisterActivity.this,BenbenLocationMain.class);					
+					Intent yunjianIntent = new Intent(RegisterActivity.this,BenbenLocationTest.class);					
 					startActivity(yunjianIntent);
 				} catch (JSONException e) {
 					try {

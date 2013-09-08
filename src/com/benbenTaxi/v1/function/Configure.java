@@ -4,11 +4,13 @@ public class Configure {
 
 	public static String getService()
 	{
-		return getHost()+":8081";
+		//return getHost()+":8081";
+		return getHost()+":80";
 	}
 	public static String getHost()
 	{
-		return "42.121.55.211";
+		//return "42.121.55.211";
+		return "yangquan.benbentaxi.com";
 	}
 	public String getEquipmentId()
 	{

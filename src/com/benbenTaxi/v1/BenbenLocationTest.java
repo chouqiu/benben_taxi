@@ -39,6 +39,8 @@ import com.benbenTaxi.v1.function.PopupWindowSize;
 import com.benbenTaxi.v1.function.ShowDetail;
 import com.benbenTaxi.v1.function.StatusMachine;
 import com.benbenTaxi.v1.function.WaitingShow;
+import com.benbenTaxi.v1.function.api.JsonHelper;
+import com.benbenTaxi.v1.function.index.TaxiRequestIndexActivity;
 
 public class BenbenLocationTest extends BaseLocationActivity {	
 	static MapView mMapView = null;
@@ -86,6 +88,8 @@ public class BenbenLocationTest extends BaseLocationActivity {
 								mApp.setCurrentReqIdx(idx);
 								mApp.setRequestID(reqid);
 								mApp.setCurrentObject(obj);
+								// 更新乘客图标
+								updateRequestIcon(idx, false);
 								ShowDetail.showPassengerRequestInfo(mApp, BenbenLocationTest.this, obj, CODE_SHOW_DETAIL);
 							} else {
 								// 当前已有请求在处理，不能响应
@@ -262,9 +266,6 @@ public class BenbenLocationTest extends BaseLocationActivity {
     	mMapView.onRestoreInstanceState(savedInstanceState);
     }
     
-    public void testUpdateClick(){
-        super.setLocationRequest();
-    }
     private void initMapView() {
         mMapView.setLongClickable(true);
         //mMapController.setMapClickEnable(true);
@@ -279,6 +280,11 @@ public class BenbenLocationTest extends BaseLocationActivity {
     
     @Override
 	public boolean onOptionsItemSelected(MenuItem item) {
+    	if ( mWs.isShow() ) {
+    		Toast.makeText(this, "正在等待中，请稍后再试", Toast.LENGTH_SHORT).show();
+    		return super.onOptionsItemSelected(item);
+    	}
+
 		switch(item.getItemId()) {
 		case R.id.menu_info:
 			Intent detail = new Intent(this, ListDetail.class);
@@ -291,10 +297,13 @@ public class BenbenLocationTest extends BaseLocationActivity {
 			break;
 		case R.id.menu_mode:
 			// 模式切换
-			super.setLocationStop();
 			Intent lstmode = new Intent(this, ListMode.class);
 			lstmode.putExtra("pos", "换一批");
 			this.startActivityForResult(lstmode, CODE_CHANGE_MODE);
+			break;
+		case R.id.menu_map_history:
+			Intent historyList = new Intent(this, TaxiRequestIndexActivity.class);
+			this.startActivity(historyList);
 			break;
 		default:
 			break;
@@ -324,6 +333,8 @@ public class BenbenLocationTest extends BaseLocationActivity {
 			} else if ( resultCode > 0 ) {
 				Toast.makeText(this, "该请求已无效，请选取其他请求", Toast.LENGTH_SHORT).show();
 			} else {
+				updateRequestIcon(mApp.getCurrentReqIdx(), true);
+				resetStatus();
 			}
 			break;
 		case 2:
@@ -346,8 +357,7 @@ public class BenbenLocationTest extends BaseLocationActivity {
 			}
 			break;
 		case CODE_CHANGE_MODE:
-			super.setLocationRequest();
-			super.setLocationStart();
+			// 已在父类onResume中恢复定位功能
 			break;
 		default:
 			break;
@@ -356,20 +366,10 @@ public class BenbenLocationTest extends BaseLocationActivity {
     
     protected void resetStatus() {
     	super.resetStatus();
-    	testUpdateButton.setText(this.getResources().getString(R.string.call_taxi));
     }
     
     private void requestAbandon() {
     	mWs.Dismiss();
-    	int idx = mApp.getCurrentReqIdx();
-    	
-    	if ( idx > 0 && mOldMarker != null ) {
-			OverlayItem it = mGeoList.get(idx);
-			it.setMarker(mOldMarker);
-			mOldMarker = null;
-			mGeoList.set(idx, it);
-			updateMapView();
-		}
     }
 
     private void updateMapView() {
@@ -400,8 +400,6 @@ public class BenbenLocationTest extends BaseLocationActivity {
 	    */
 	    return super.onKeyDown(keyCode, event);
 	}
-	
-	
 
 	@Override
 	protected void refreshProcess() {
@@ -413,12 +411,58 @@ public class BenbenLocationTest extends BaseLocationActivity {
         
 		super.refreshProcess();
 	}
+	
+	private void updateListView() {
+		JSONArray reqInfo = mApp.getCurrentRequestList();
+		//清除所有添加的Overlay
+        mGeoList.clear();
+        
+		//添加一个item
+    	//当要添加的item较多时，可以使用addItem(List<OverlayItem> items) 接口
+        for( int i=0; i<reqInfo.length(); ++i ) {
+        	JSONObject pos = JsonHelper.getJsonObj(reqInfo, i);        	
+        	OverlayItem item = new OverlayItem(new GeoPoint((int)(JsonHelper.getDouble(pos, "passenger_lat")*1e6), 
+    				(int)(JsonHelper.getDouble(pos, "passenger_lng")*1e6)),
+	        		"乘客"+JsonHelper.getInt(pos, "id"), "声音: "+JsonHelper.getString(pos, "passenger_voice_url"));
+	        
+        	if ( item != null ) {
+			   	item.setMarker(res.get(i%res.size()));
+			   	mGeoList.add(item);
+        	}
+        }
+    	updateMapView();
+	}
+	
+	private void updateRequestIcon(int reqidx, boolean reset) {
+		if ( reset == false ) {
+			OverlayItem it = mGeoList.get(reqidx);
+			mOldMarker = it.getMarker();
+			it.setMarker(getResources().getDrawable(R.drawable.location2));
+			mGeoList.set(reqidx, it);
+			updateMapView();
+		} else {
+			OverlayItem it = mGeoList.get(reqidx);
+			it.setMarker(mOldMarker);
+			mOldMarker = null;
+			mGeoList.set(reqidx, it);
+			updateMapView();
+		}
+	}
 
 	@Override
 	protected void doProcessMsg(Message msg) {
 		int idx = mApp.getCurrentReqIdx();
+		int reqid = mApp.getRequestID();
 		
 		switch (msg.what) {	
+		case StatusMachine.MSG_STAT_OTHER:
+			String mobile = (String)msg.obj;
+			Toast.makeText(this, "乘客请求["+reqid+"]已被其他司机["+mobile+"]接受, 附近有"+mApp.getCurrentRequestList().length()+"个乘客", 
+					Toast.LENGTH_SHORT).show();
+			mApp.setCurrentStat(StatusMachine.STAT_CANCEL);
+			requestAbandon();
+			resetStatus();
+			break;
     	case StatusMachine.MSG_STAT_CANCEL:
 			Toast.makeText(this, "乘客请求["+idx+"]已被取消, 附近有"+mApp.getCurrentRequestList().length()+"个乘客", 
 					Toast.LENGTH_SHORT).show();
@@ -427,10 +471,15 @@ public class BenbenLocationTest extends BaseLocationActivity {
 			mApp.setCurrentStat(StatusMachine.STAT_CANCEL);
 			break;
 		case StatusMachine.MSG_STAT_SUCCESS:
-			Toast.makeText(this, "乘客请求["+idx+"]已确认，请前往乘客所在地！", Toast.LENGTH_SHORT).show();
-			requestAbandon();
-			resetStatus();
 			mApp.setCurrentStat(StatusMachine.STAT_SUCCESS);
+			requestAbandon();
+			/*
+			 * 精简流程，不再显示确认页，直接电话乘客
+			 */
+			Toast.makeText(this, "乘客请求["+mApp.getRequestID()+"]已确认，请前往乘客所在地！", Toast.LENGTH_SHORT).show();
+			resetStatus();
+			ShowDetail.showCall(this, mApp.getCurrentObject());
+			break;
 		case StatusMachine.MSG_STAT_TIMEOUT:
 			Toast.makeText(this, "乘客请求["+idx+"]已超时, 附近有"+mApp.getCurrentRequestList().length()+"个乘客",
 					Toast.LENGTH_SHORT).show();
@@ -439,7 +488,6 @@ public class BenbenLocationTest extends BaseLocationActivity {
 			mApp.setCurrentStat(StatusMachine.STAT_TIMEOUT);
 			break;
 		case StatusMachine.MSG_STAT_WAITING_PASS:
-			// TODO: 改变选项的显示方式
 			Toast.makeText(this, "等待乘客确认请求["+idx+"], 附近有"+mApp.getCurrentRequestList().length()+"个乘客",
 					Toast.LENGTH_SHORT).show();
 			mApp.setCurrentStat(StatusMachine.STAT_WAITING_PAS_CONF);
@@ -453,9 +501,17 @@ public class BenbenLocationTest extends BaseLocationActivity {
 			// 存入app中
 			JSONArray obj = (JSONArray) msg.obj;
 			mApp.setCurrentRequestList(obj);
+			updateListView();
 			Toast.makeText(this, "附近有"+obj.length()+"个乘客请求", Toast.LENGTH_SHORT).show();
 			break;
-		
+		case StatusMachine.MSG_ERR_DRV_REPORT:
+			Toast.makeText(this, (String)msg.obj, Toast.LENGTH_SHORT).show();
+			break;
+		case StatusMachine.MSG_ERR_NETWORK:
+			Toast.makeText(this, (String)msg.obj, Toast.LENGTH_SHORT).show();
+			requestAbandon();
+			resetStatus();
+			break;
     	default:
     		break;
     	}
