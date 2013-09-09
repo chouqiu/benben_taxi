@@ -35,7 +35,7 @@ public abstract class BaseLocationActivity extends ActionBarActivity {
 	//protected String mStatus;
     
     protected boolean mIsDriver = true;
-    protected int mLoopSpan = -1;
+    private int mLoopSpan = -1;
     
 	public final static int MSG_HANDLE_POS_REFRESH = 2;
 	public final static int MSG_HANDLE_REQ_TIMEOUT = 3;
@@ -54,7 +54,7 @@ public abstract class BaseLocationActivity extends ActionBarActivity {
         mLocClient.registerLocationListener( myListener );
         
         // 5ÃëÌ«¶Ì
-        mLoopSpan = 10; // mData.LoadInt("loop");
+        mLoopSpan = 30; // mData.LoadInt("loop");
         if ( mLoopSpan <= 0 ) {
         	mLoopSpan = 5; // Ä¬ÈÏÂÖÑµÊ±¼ä3s
         }
